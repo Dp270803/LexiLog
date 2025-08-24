@@ -1,0 +1,176 @@
+/* Custom styles for LexiLog */
+
+/* Tab Navigation Styles */
+.tab-button {
+    position: relative;
+    color: #6b7280;
+}
+
+.tab-button.active {
+    background-color: #ffffff;
+    color: #1f2937;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #3b82f6;
+    border-radius: 1px;
+}
+
+/* Tab Content Styles */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Definition Styles */
+.definition-item {
+    border-left: 3px solid #e5e7eb;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+.definition-item:last-child {
+    margin-bottom: 0;
+}
+
+.part-of-speech {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.definition-text {
+    color: #374151;
+    margin: 0.5rem 0;
+}
+
+.example-text {
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid #e5e7eb;
+}
+
+/* Word Card Styles */
+.word-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.word-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Audio Button Animation */
+.audio-button {
+    transition: all 0.2s ease-in-out;
+}
+
+.audio-button:hover {
+    transform: scale(1.1);
+}
+
+.audio-button:active {
+    transform: scale(0.95);
+}
+
+/* Loading Animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions for all interactive elements */
+button, input, .word-card {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar for word list */
+#wordList {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+}
+
+#wordList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#wordList::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+#wordList::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+#wordList::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .tab-button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .max-w-2xl {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+}
+
+/* Focus styles for accessibility */
+button:focus, input:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Success animation for saved words */
+@keyframes saveSuccess {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.save-success {
+    animation: saveSuccess 0.3s ease-in-out;
+}
