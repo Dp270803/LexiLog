@@ -224,7 +224,7 @@ function logout() {
         // Clear all stored data
         localStorage.removeItem('lexilog_user_name');
         localStorage.removeItem('lexilog_vocabulary');
-        localStorage.removeItem('lexilog_daily_word');
+        localStorage.removeItem('lexilog_daily_word_local_user');
         
         // Reset global variables
         currentUser = null;
@@ -643,9 +643,10 @@ async function deleteWord(word) {
 async function fetchWordOfTheDay() {
     try {
         const today = new Date().toISOString().split('T')[0];
+        const userId = 'local_user'; // Demo version uses local user
         
-        // Check localStorage for today's word
-        const dailyWordData = localStorage.getItem('lexilog_daily_word');
+        // Check localStorage for today's word for this user
+        const dailyWordData = localStorage.getItem(`lexilog_daily_word_${userId}`);
         if (dailyWordData) {
             const parsed = JSON.parse(dailyWordData);
             if (parsed.date === today) {
@@ -654,7 +655,7 @@ async function fetchWordOfTheDay() {
             }
         }
         
-        // Fetch new word from API
+        // Fetch new random word from API
         const wordData = await fetchRandomWord();
         
         if (wordData) {
@@ -664,8 +665,8 @@ async function fetchWordOfTheDay() {
                 timestamp: Date.now()
             };
             
-            // Save to localStorage
-            localStorage.setItem('lexilog_daily_word', JSON.stringify(wordWithDate));
+            // Save to localStorage (user-specific)
+            localStorage.setItem(`lexilog_daily_word_${userId}`, JSON.stringify(wordWithDate));
             displayDailyWord(wordData);
         }
     } catch (error) {
@@ -679,16 +680,23 @@ async function fetchRandomWord() {
         'serendipity', 'ephemeral', 'mellifluous', 'petrichor', 'aurora',
         'luminous', 'ethereal', 'cascade', 'whisper', 'twilight',
         'enchant', 'resilient', 'graceful', 'mystical', 'tranquil',
-        'radiant', 'serene', 'majestic', 'wonder', 'bliss'
+        'radiant', 'serene', 'majestic', 'wonder', 'bliss',
+        'eloquent', 'profound', 'whimsical', 'serene', 'luminous',
+        'ethereal', 'mystical', 'enchanting', 'radiant', 'tranquil',
+        'graceful', 'majestic', 'wonderful', 'blissful', 'serendipitous',
+        'ephemeral', 'mellifluous', 'petrichor', 'aurora', 'cascade'
     ];
     
-    // Try first 5 words with timeout
-    for (let i = 0; i < Math.min(5, commonWords.length); i++) {
+    // Shuffle the array to get random order
+    const shuffledWords = [...commonWords].sort(() => Math.random() - 0.5);
+    
+    // Try up to 10 random words with timeout
+    for (let i = 0; i < Math.min(10, shuffledWords.length); i++) {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
             
-            const response = await fetch(`${DICTIONARY_API_BASE}en/${commonWords[i]}`, {
+            const response = await fetch(`${DICTIONARY_API_BASE}en/${shuffledWords[i]}`, {
                 signal: controller.signal
             });
             
@@ -701,7 +709,7 @@ async function fetchRandomWord() {
                 }
             }
         } catch (error) {
-            console.error(`Error fetching word ${commonWords[i]}:`, error);
+            console.error(`Error fetching word ${shuffledWords[i]}:`, error);
         }
     }
     
