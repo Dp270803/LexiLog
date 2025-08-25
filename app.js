@@ -111,17 +111,8 @@ function initializeElements() {
         searchTab: document.getElementById('searchTab'),
         translateTab: document.getElementById('translateTab'),
         libraryTab: document.getElementById('libraryTab'),
+        dailyTab: document.getElementById('dailyTab'),
         logoutButton: document.getElementById('logoutButton'),
-        
-        // Word of the Day Popup
-        wordOfDayPopup: document.getElementById('wordOfDayPopup'),
-        rocketAnimation: document.getElementById('rocketAnimation'),
-        popupContent: document.getElementById('popupContent'),
-        popupWord: document.getElementById('popupWord'),
-        popupPhonetic: document.getElementById('popupPhonetic'),
-        popupDefinition: document.getElementById('popupDefinition'),
-        addDailyWordBtn: document.getElementById('addDailyWordBtn'),
-        closeDailyPopup: document.getElementById('closeDailyPopup'),
         
         // Search View
         searchInput: document.getElementById('searchInput'),
@@ -143,7 +134,18 @@ function initializeElements() {
         // Views
         searchView: document.getElementById('searchView'),
         translateView: document.getElementById('translateView'),
-        libraryView: document.getElementById('libraryView')
+        libraryView: document.getElementById('libraryView'),
+        dailyView: document.getElementById('dailyView'),
+        
+        // Daily Word
+        dailyWordContent: document.getElementById('dailyWordContent'),
+        dailyLoading: document.getElementById('dailyLoading'),
+        dailyWord: document.getElementById('dailyWord'),
+        dailyWordText: document.getElementById('dailyWordText'),
+        dailyPhonetic: document.getElementById('dailyPhonetic'),
+        dailyDefinitions: document.getElementById('dailyDefinitions'),
+        playDailyAudio: document.getElementById('playDailyAudio'),
+        saveDailyWord: document.getElementById('saveDailyWord')
     };
     
     // Debug: Log missing elements
@@ -447,9 +449,7 @@ function showMainApp(userProfile) {
     // Initialize features
     initializeSpeechRecognition();
     loadUserVocabulary();
-    
-    // Show Word of the Day popup after a short delay
-    setTimeout(showWordOfDayPopup, 2000);
+    fetchWordOfTheDay();
 }
 
 // User Activity Tracking
@@ -543,6 +543,8 @@ function initializeTabNavigation() {
             // Refresh data when switching tabs
             if (targetTab === 'library') {
                 loadUserVocabulary();
+            } else if (targetTab === 'daily') {
+                fetchWordOfTheDay();
             }
         });
     });
@@ -1442,189 +1444,109 @@ async function deleteWord(word) {
     }
 }
 
-// Word of the Day Popup System
-let currentDailyWord = null;
-
-async function showWordOfDayPopup() {
-    const today = new Date().toISOString().split('T')[0];
-    const userId = currentUser?.uid || currentUserId || 'local_user';
-    
-    // Check if user has already seen today's word
-    const seenKey = `lexilog_daily_seen_${userId}_${today}`;
-    if (localStorage.getItem(seenKey)) {
-        return; // Already seen today
-    }
-    
+// Word of the Day Functions
+async function fetchWordOfTheDay() {
     try {
-        let dailyWord = await fetchTrulyRandomWord();
+        if (!elements.dailyLoading || !elements.dailyWord) {
+            console.log('Daily word elements not found, skipping...');
+            return;
+        }
         
-        if (dailyWord) {
-            currentDailyWord = { ...dailyWord, date: today, isWordOfDay: true };
-            displayWordOfDayPopup(currentDailyWord);
+        const today = new Date().toISOString().split('T')[0];
+        const userId = currentUserId || 'local_user';
+        
+        // Check localStorage first for today's word for this user
+        const dailyWordData = localStorage.getItem(`lexilog_daily_word_${userId}`);
+        if (dailyWordData) {
+            const parsed = JSON.parse(dailyWordData);
+            if (parsed.date === today) {
+                displayDailyWord(parsed);
+                return;
+            }
+        }
+        
+        // Fetch new random word from API
+        const wordData = await fetchRandomWord();
+        
+        if (wordData) {
+            const wordWithDate = {
+                ...wordData,
+                date: today,
+                timestamp: Date.now()
+            };
             
-            // Show the popup with animation
-            elements.wordOfDayPopup.classList.remove('hidden');
+            // Save to localStorage (user-specific)
+            localStorage.setItem(`lexilog_daily_word_${userId}`, JSON.stringify(wordWithDate));
             
-            // Reset animations
-            elements.rocketAnimation.style.animation = 'none';
-            elements.popupContent.style.animation = 'none';
-            
-            // Trigger animations
-            setTimeout(() => {
-                elements.rocketAnimation.style.animation = 'rocketFly 2s ease-out forwards';
-                elements.popupContent.style.animation = 'popupAppear 1s ease-out forwards';
-                elements.popupContent.style.animationDelay = '1.5s';
-            }, 100);
+            displayDailyWord(wordData);
         }
     } catch (error) {
-        console.error('Error showing word of the day popup:', error);
+        console.error('Error fetching word of the day:', error);
+        showDailyWordError();
     }
 }
 
-async function fetchTrulyRandomWord() {
-    // Try multiple random word sources for variety
-    const sources = [
-        () => fetchFromWordnikAPI(),
-        () => fetchFromRandomWordsList(),
-        () => fetchFromGeminiRandom()
-    ];
-    
-    for (const source of sources) {
-        try {
-            const word = await source();
-            if (word) {
-                // Get full definition for the random word
-                const definition = await getEnglishDefinition(word);
-                if (definition) {
-                    return definition;
-                }
-            }
-        } catch (error) {
-            console.log('Random word source failed, trying next...', error);
-        }
+function displayDailyWord(wordData) {
+    if (!elements.dailyLoading || !elements.dailyWord) {
+        return;
     }
     
-    // Ultimate fallback with a truly beautiful word
-    return {
+    elements.dailyLoading.classList.add('hidden');
+    elements.dailyWord.classList.remove('hidden');
+    
+    elements.dailyWordText.textContent = wordData.word;
+    elements.dailyPhonetic.textContent = wordData.phonetic || '';
+    
+    // Clear previous definitions
+    elements.dailyDefinitions.innerHTML = '';
+    
+    // Display definitions
+    wordData.meanings.forEach(meaning => {
+        const meaningDiv = document.createElement('div');
+        meaningDiv.className = 'definition-item mb-4';
+        
+        meaningDiv.innerHTML = `
+            <div class="text-sm text-purple-600 uppercase tracking-wide mb-2">${meaning.partOfSpeech}</div>
+            <div class="text-gray-700 mb-2">${meaning.definitions[0].definition}</div>
+            ${meaning.definitions[0].example ? `<div class="text-gray-600 italic">"${meaning.definitions[0].example}"</div>` : ''}
+        `;
+        
+        elements.dailyDefinitions.appendChild(meaningDiv);
+    });
+    
+    // Store current word for saving
+    window.currentDailyWord = wordData;
+}
+
+function showDailyWordError() {
+    if (!elements.dailyLoading || !elements.dailyWord) {
+        return;
+    }
+    
+    elements.dailyLoading.classList.add('hidden');
+    elements.dailyWord.classList.remove('hidden');
+    
+    elements.dailyWordText.textContent = 'serendipity';
+    elements.dailyPhonetic.textContent = '/ˌserənˈdipədē/';
+    elements.dailyDefinitions.innerHTML = `
+        <div class="definition-item mb-4">
+            <div class="text-sm text-purple-600 uppercase tracking-wide mb-2">noun</div>
+            <div class="text-gray-700 mb-2">The occurrence and development of events by chance in a happy or beneficial way.</div>
+            <div class="text-gray-600 italic">"A fortunate stroke of serendipity"</div>
+        </div>
+    `;
+    
+    window.currentDailyWord = {
         word: 'serendipity',
-        phonetic: '/ˌsɛrənˈdɪpɪti/',
+        phonetic: '/ˌserənˈdipədē/',
         meanings: [{
             partOfSpeech: 'noun',
             definitions: [{
                 definition: 'The occurrence and development of events by chance in a happy or beneficial way.',
-                example: 'A fortunate stroke of serendipity brought the two old friends together.'
+                example: 'A fortunate stroke of serendipity'
             }]
         }]
     };
-}
-
-async function fetchFromWordnikAPI() {
-    try {
-        // Try Wordnik's random word API (free tier)
-        const response = await fetch(`${RANDOM_WORDS_API}?hasDictionaryDef=true&minCorpusCount=1000&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=5&maxLength=15`);
-        if (response.ok) {
-            const data = await response.json();
-            return data.word;
-        }
-    } catch (error) {
-        console.error('Wordnik API error:', error);
-    }
-    return null;
-}
-
-async function fetchFromRandomWordsList() {
-    // High-quality word list for educational purposes
-    const educationalWords = [
-        'serendipity', 'eloquent', 'perseverance', 'ephemeral', 'resilience',
-        'luminous', 'tranquil', 'vivacious', 'benevolent', 'sagacious',
-        'ubiquitous', 'mellifluous', 'ineffable', 'quintessential', 'perspicacious',
-        'magnanimous', 'ethereal', 'effervescent', 'incandescent', 'harmonious',
-        'meticulous', 'tenacious', 'exuberant', 'profound', 'pristine',
-        'enigmatic', 'scintillating', 'resplendent', 'transcendent', 'magnificent',
-        'euphoric', 'iridescent', 'luminescent', 'opalescent', 'phosphorescent',
-        'incorrigible', 'indefatigable', 'indomitable', 'irrepressible', 'insatiable',
-        'effulgent', 'coruscating', 'diaphanous', 'gossamer', 'halcyon',
-        'incipient', 'lambent', 'nascent', 'palimpsest', 'penumbra',
-        'petrichor', 'saudade', 'susurrus', 'vellichor', 'wanderlust'
-    ];
-    
-    // Use crypto.getRandomValues for true randomness
-    const randomBytes = new Uint32Array(1);
-    crypto.getRandomValues(randomBytes);
-    const randomIndex = randomBytes[0] % educationalWords.length;
-    
-    return educationalWords[randomIndex];
-}
-
-async function fetchFromGeminiRandom() {
-    if (GEMINI_API_KEY === 'your-gemini-api-key-here') {
-        return null;
-    }
-    
-    try {
-        const prompt = `Generate a single beautiful, educational English word that would be perfect for vocabulary building. The word should be:
-        1. Interesting and meaningful
-        2. Not too common but not extremely obscure
-        3. Between 5-15 characters long
-        4. Suitable for adult learners
-        
-        Respond with just the word, nothing else.`;
-        
-        const response = await fetch(`${GEMINI_API_BASE}?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (content) {
-                return content.trim().toLowerCase();
-            }
-        }
-    } catch (error) {
-        console.error('Gemini random word error:', error);
-    }
-    return null;
-}
-
-function displayWordOfDayPopup(wordData) {
-    elements.popupWord.textContent = wordData.word;
-    elements.popupPhonetic.textContent = wordData.phonetic || '';
-    
-    // Display first definition
-    if (wordData.meanings && wordData.meanings.length > 0) {
-        const firstMeaning = wordData.meanings[0];
-        const firstDef = firstMeaning.definitions[0];
-        elements.popupDefinition.innerHTML = `
-            <div class="text-sm text-purple-600 font-medium mb-2">${firstMeaning.partOfSpeech}</div>
-            <div>${firstDef.definition}</div>
-        `;
-    }
-}
-
-function closeWordOfDayPopup() {
-    const today = new Date().toISOString().split('T')[0];
-    const userId = currentUser?.uid || currentUserId || 'local_user';
-    const seenKey = `lexilog_daily_seen_${userId}_${today}`;
-    
-    // Mark as seen for today
-    localStorage.setItem(seenKey, 'true');
-    
-    // Hide popup
-    elements.wordOfDayPopup.classList.add('hidden');
-    currentDailyWord = null;
-}
-
-async function addWordOfDayToLibrary() {
-    if (currentDailyWord) {
-        await saveWordToVocabulary(currentDailyWord);
-        showNotification('✨ Word of the Day added to your LexiLog!', 'success');
-        closeWordOfDayPopup();
-    }
 }
 
 async function fetchRandomWord() {
@@ -1870,20 +1792,12 @@ function initializeEventListeners() {
         elements.audioButton.addEventListener('click', toggleAudioSearch);
     }
     
-    // Word of the Day popup listeners
-    if (elements.closeDailyPopup) {
-        elements.closeDailyPopup.addEventListener('click', closeWordOfDayPopup);
-    }
-    
-    if (elements.addDailyWordBtn) {
-        elements.addDailyWordBtn.addEventListener('click', addWordOfDayToLibrary);
-    }
-    
-    // Close popup when clicking outside
-    if (elements.wordOfDayPopup) {
-        elements.wordOfDayPopup.addEventListener('click', (e) => {
-            if (e.target === elements.wordOfDayPopup) {
-                closeWordOfDayPopup();
+    // Daily word save functionality
+    if (elements.saveDailyWord) {
+        elements.saveDailyWord.addEventListener('click', async () => {
+            if (window.currentDailyWord) {
+                await saveWordToVocabulary(window.currentDailyWord);
+                showNotification(`"${window.currentDailyWord.word}" added to your LexiLog!`, 'success');
             }
         });
     }

@@ -160,6 +160,13 @@
                         >
                             My LexiLog
                         </button>
+                        <button 
+                            id="dailyTab" 
+                                class="tab-button px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 no-focus-outline"
+                            data-tab="daily"
+                        >
+                            Word of the Day
+                        </button>
 
                         </div>
                         <!-- User Profile Dropdown -->
@@ -204,49 +211,6 @@
         <main class="pt-20">
             <!-- Homepage/Search View -->
             <div id="searchView" class="tab-content active">
-                <!-- Word of the Day Rocket Popup -->
-                <div id="wordOfDayPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-                    <div class="relative">
-                        <!-- Animated Rocket -->
-                        <div id="rocketAnimation" class="absolute -top-20 left-1/2 transform -translate-x-1/2 rocket-flying">
-                            <div class="text-6xl animate-bounce">🚀</div>
-                            <div class="absolute top-16 left-1/2 transform -translate-x-1/2 w-2 h-8 bg-gradient-to-t from-orange-500 to-yellow-400 rocket-flame"></div>
-                        </div>
-                        
-                        <!-- Popup Content -->
-                        <div id="popupContent" class="bg-white rounded-3xl p-8 shadow-2xl max-w-md mx-4 transform scale-0 popup-appear">
-                            <div class="text-center">
-                                <div class="text-4xl mb-4">🌟</div>
-                                <h2 class="text-2xl font-bold text-gray-800 mb-2">Word of the Day!</h2>
-                                <p class="text-gray-600 mb-6">Discover a new word to expand your vocabulary</p>
-                                
-                                <!-- Word Display -->
-                                <div id="popupWordCard" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-6">
-                                    <div id="popupWord" class="text-3xl font-bold text-gray-800 mb-2">Loading...</div>
-                                    <div id="popupPhonetic" class="text-gray-600 mb-3"></div>
-                                    <div id="popupDefinition" class="text-gray-700 leading-relaxed"></div>
-                                </div>
-                                
-                                <!-- Action Buttons -->
-                                <div class="flex gap-3">
-                                    <button 
-                                        id="addDailyWordBtn" 
-                                        class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                                    >
-                                        ✨ Add to My LexiLog
-                                    </button>
-                                    <button 
-                                        id="closeDailyPopup" 
-                                        class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors font-medium"
-                                    >
-                                        Skip
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Hero Section -->
                 <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center">
                     <!-- Animated Background Elements -->
@@ -573,6 +537,49 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Word of the Day View -->
+            <div id="dailyView" class="tab-content">
+                <section class="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-pink-50 min-h-screen">
+                    <div class="max-w-6xl mx-auto px-4 py-20">
+                        <div class="text-center mb-12 animate-fade-in-up">
+                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                                <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                    🌟 Word of the Day
+                                </span>
+                            </h2>
+                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Discover a beautiful new word every day and expand your vocabulary
+                            </p>
+                        </div>
+
+                        <div id="dailyWordContent" class="max-w-2xl mx-auto">
+                            <div id="dailyLoading" class="bg-white rounded-lg shadow-md p-6 text-center">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p class="text-gray-600">Loading word of the day...</p>
+                            </div>
+                            <div id="dailyWord" class="bg-white rounded-lg shadow-md p-6 hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 id="dailyWordText" class="text-2xl font-bold text-gray-800"></h3>
+                                    <button id="playDailyAudio" class="text-blue-600 hover:text-blue-800">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="dailyPhonetic" class="text-gray-600 mb-4"></div>
+                                <div id="dailyDefinitions"></div>
+                                <button 
+                                    id="saveDailyWord" 
+                                    class="mt-6 w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                                >
+                                    Add to My LexiLog
+                                </button>
                             </div>
                         </div>
                     </div>
