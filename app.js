@@ -61,10 +61,32 @@ let isListening = false;
 
 // DOM Elements
 const elements = {
-    onboardingView: document.getElementById('onboardingView'),
+    // Authentication Views
+    loginView: document.getElementById('loginView'),
+    signupView: document.getElementById('signupView'),
     mainApp: document.getElementById('mainApp'),
-    onboardingForm: document.getElementById('onboardingForm'),
-    userName: document.getElementById('userName'),
+    
+    // Login Form
+    loginForm: document.getElementById('loginForm'),
+    loginEmail: document.getElementById('loginEmail'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginButton: document.getElementById('loginButton'),
+    showSignupBtn: document.getElementById('showSignupBtn'),
+    
+    // Signup Form
+    signupForm: document.getElementById('signupForm'),
+    signupName: document.getElementById('signupName'),
+    signupEmail: document.getElementById('signupEmail'),
+    signupPassword: document.getElementById('signupPassword'),
+    signupButton: document.getElementById('signupButton'),
+    showLoginBtn: document.getElementById('showLoginBtn'),
+    
+    // User Profile
+    userProfileButton: document.getElementById('userProfileButton'),
+    userProfileDropdown: document.getElementById('userProfileDropdown'),
+    userInitials: document.getElementById('userInitials'),
+    userDisplayName: document.getElementById('userDisplayName'),
+    userDisplayEmail: document.getElementById('userDisplayEmail'),
     greeting: document.getElementById('greeting'),
     
     // Language Selection
@@ -174,34 +196,126 @@ function initializeSpeechRecognition() {
 
 // Authentication Functions
 async function initializeAuth() {
+    // Check if Firebase is properly configured
+    if (firebaseConfig.apiKey === "your-api-key") {
+        // Firebase not configured, show login
+        console.log('Firebase not configured - please configure Firebase for authentication');
+        showLogin();
+        return;
+    }
+
     try {
-        // Check if Firebase is properly configured
-        if (firebaseConfig.apiKey === "your-api-key") {
-            throw new Error('Firebase not configured');
-        }
-        
-        // Sign in anonymously
-        const userCredential = await auth.signInAnonymously();
-        currentUser = userCredential.user;
-        currentUserId = currentUser.uid;
-        
-        // Check if user has a name
-        const userProfile = await getUserProfile();
-        
-        if (userProfile && userProfile.name) {
-            showMainApp(userProfile.name);
-        } else {
-            showOnboarding();
-        }
+        // Listen for authentication state changes
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                currentUserId = user.uid;
+                
+                // Get user profile from Firestore
+                const profile = await getUserProfile();
+                if (profile && profile.name && profile.email) {
+                    showMainApp(profile);
+                } else {
+                    // User exists but no profile, this shouldn't happen with our flow
+                    // But handle it gracefully
+                    await signOut();
+                }
+            } else {
+                // No user signed in
+                currentUser = null;
+                currentUserId = null;
+                showLogin();
+            }
+        });
     } catch (error) {
-        console.error('Authentication error:', error);
-        // Fallback to local storage for demo purposes
-        const userName = localStorage.getItem('lexilog_user_name');
-        if (userName) {
-            showMainApp(userName);
-        } else {
-            showOnboarding();
+        console.error('Authentication initialization error:', error);
+        showLogin();
+    }
+}
+
+// Sign up with email and password
+async function signUpWithEmail(name, email, password) {
+    try {
+        // Create user account
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
+        
+        // Save user profile
+        await saveUserProfile(name, email);
+        
+        showNotification('Account created successfully! Welcome to LexiLog!', 'success');
+        return true;
+    } catch (error) {
+        console.error('Sign up error:', error);
+        let errorMessage = 'Failed to create account. Please try again.';
+        
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = 'This email is already registered. Please sign in instead.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Please enter a valid email address.';
+                break;
+            case 'auth/weak-password':
+                errorMessage = 'Password should be at least 6 characters long.';
+                break;
+            case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your connection.';
+                break;
         }
+        
+        showNotification(errorMessage, 'error');
+        return false;
+    }
+}
+
+// Sign in with email and password
+async function signInWithEmail(email, password) {
+    try {
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
+        
+        showNotification('Welcome back!', 'success');
+        return true;
+    } catch (error) {
+        console.error('Sign in error:', error);
+        let errorMessage = 'Failed to sign in. Please check your credentials.';
+        
+        switch (error.code) {
+            case 'auth/user-not-found':
+                errorMessage = 'No account found with this email. Please sign up first.';
+                break;
+            case 'auth/wrong-password':
+                errorMessage = 'Incorrect password. Please try again.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Please enter a valid email address.';
+                break;
+            case 'auth/user-disabled':
+                errorMessage = 'This account has been disabled. Please contact support.';
+                break;
+            case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your connection.';
+                break;
+        }
+        
+        showNotification(errorMessage, 'error');
+        return false;
+    }
+}
+
+// Sign out
+async function signOut() {
+    try {
+        await auth.signOut();
+        currentUser = null;
+        currentUserId = null;
+        showNotification('Signed out successfully', 'info');
+    } catch (error) {
+        console.error('Sign out error:', error);
+        showNotification('Error signing out', 'error');
     }
 }
 
@@ -218,37 +332,56 @@ async function getUserProfile() {
     }
 }
 
-async function saveUserProfile(name) {
+async function saveUserProfile(name, email) {
     try {
+        const profileData = {
+            name: name,
+            email: email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
         await db.collection('artifacts').doc(APP_ID)
             .collection('users').doc(currentUserId)
-            .collection('profile').doc('data').set({
-                name: name,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        
-        // Also save to localStorage as fallback
-        localStorage.setItem('lexilog_user_name', name);
+            .collection('profile').doc('data').set(profileData);
         
         return true;
     } catch (error) {
         console.error('Error saving user profile:', error);
-        // Fallback to localStorage
-        localStorage.setItem('lexilog_user_name', name);
-        return true;
+        throw error;
     }
 }
 
 // UI Functions
-function showOnboarding() {
-    elements.onboardingView.classList.remove('hidden');
+function showLogin() {
+    elements.loginView.classList.remove('hidden');
+    elements.signupView.classList.add('hidden');
     elements.mainApp.classList.add('hidden');
 }
 
-function showMainApp(userName) {
-    elements.onboardingView.classList.add('hidden');
+function showSignup() {
+    elements.signupView.classList.remove('hidden');
+    elements.loginView.classList.add('hidden');
+    elements.mainApp.classList.add('hidden');
+}
+
+function showMainApp(userProfile) {
+    elements.loginView.classList.add('hidden');
+    elements.signupView.classList.add('hidden');
     elements.mainApp.classList.remove('hidden');
-    elements.greeting.textContent = `Hi ${userName}, Here is your Pocket Dictionary`;
+    
+    // Update user profile display
+    const firstName = userProfile.name.split(' ')[0];
+    elements.greeting.textContent = `Hi ${firstName}, Here is your Pocket Dictionary`;
+    elements.userDisplayName.textContent = userProfile.name;
+    elements.userDisplayEmail.textContent = userProfile.email;
+    
+    // Update user initials
+    const initials = userProfile.name.split(' ')
+        .map(name => name.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+    elements.userInitials.textContent = initials;
     
     // Initialize features
     initializeSpeechRecognition();
@@ -257,49 +390,23 @@ function showMainApp(userName) {
 }
 
 // Logout Function
-function logout() {
-    if (confirm('Are you sure you want to logout? This will clear your session and vocabulary.')) {
-        // Clear all stored data
-        localStorage.removeItem('lexilog_user_name');
-        localStorage.removeItem('lexilog_vocabulary');
-        // Clear user-specific daily word
-        if (currentUserId) {
-            localStorage.removeItem(`lexilog_daily_word_${currentUserId}`);
-        } else {
-            localStorage.removeItem('lexilog_daily_word_local_user');
-        }
-        
-        // Clear Firebase data if configured
-        if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-            try {
-                // Clear user profile
-                db.collection('artifacts').doc(APP_ID)
-                    .collection('users').doc(currentUserId)
-                    .collection('profile').doc('data').delete();
-                
-                // Clear vocabulary (optional - you might want to keep this)
-                // db.collection('artifacts').doc(APP_ID)
-                //     .collection('users').doc(currentUserId)
-                //     .collection('vocabulary').get().then(snapshot => {
-                //         snapshot.forEach(doc => doc.ref.delete());
-                //     });
-            } catch (error) {
-                console.error('Error clearing Firebase data:', error);
+async function logout() {
+    if (confirm('Are you sure you want to sign out?')) {
+        try {
+            // Clear local storage
+            if (currentUserId) {
+                localStorage.removeItem(`lexilog_daily_word_${currentUserId}`);
             }
+            
+            // Reset language
+            currentLanguage = 'en';
+            
+            // Sign out from Firebase
+            await signOut();
+        } catch (error) {
+            console.error('Logout error:', error);
+            showNotification('Error signing out', 'error');
         }
-        
-        // Reset global variables
-        currentUser = null;
-        currentUserId = null;
-        currentLanguage = 'en';
-        
-        // Show notification
-        showNotification('Logged out successfully. Starting fresh session.', 'info');
-        
-        // Show onboarding
-        setTimeout(() => {
-            showOnboarding();
-        }, 1000);
     }
 }
 
@@ -1005,13 +1112,62 @@ async function saveDailyWord(wordData) {
 
 // Event Listeners
 function initializeEventListeners() {
-    // Onboarding form
-    elements.onboardingForm.addEventListener('submit', async (e) => {
+    // Login form
+    elements.loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = elements.userName.value.trim();
-        if (name) {
-            await saveUserProfile(name);
-            showMainApp(name);
+        const email = elements.loginEmail.value.trim();
+        const password = elements.loginPassword.value;
+        
+        if (email && password) {
+            elements.loginButton.disabled = true;
+            elements.loginButton.textContent = 'Signing In...';
+            
+            const success = await signInWithEmail(email, password);
+            
+            elements.loginButton.disabled = false;
+            elements.loginButton.textContent = 'Sign In';
+            
+            if (!success) {
+                // Error handling is done in signInWithEmail function
+            }
+        }
+    });
+    
+    // Signup form
+    elements.signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = elements.signupName.value.trim();
+        const email = elements.signupEmail.value.trim();
+        const password = elements.signupPassword.value;
+        
+        if (name && email && password) {
+            elements.signupButton.disabled = true;
+            elements.signupButton.textContent = 'Creating Account...';
+            
+            const success = await signUpWithEmail(name, email, password);
+            
+            elements.signupButton.disabled = false;
+            elements.signupButton.textContent = 'Create Account';
+            
+            if (!success) {
+                // Error handling is done in signUpWithEmail function
+            }
+        }
+    });
+    
+    // Show signup/login buttons
+    elements.showSignupBtn.addEventListener('click', showSignup);
+    elements.showLoginBtn.addEventListener('click', showLogin);
+    
+    // User profile dropdown
+    elements.userProfileButton.addEventListener('click', () => {
+        elements.userProfileDropdown.classList.toggle('hidden');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!elements.userProfileButton.contains(e.target)) {
+            elements.userProfileDropdown.classList.add('hidden');
         }
     });
     
