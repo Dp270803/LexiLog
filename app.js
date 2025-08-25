@@ -67,83 +67,83 @@ let currentUserId = null;
 let speechRecognition = null;
 let isListening = false;
 
-// DOM Elements
-const elements = {
-    // Authentication Views
-    loginView: document.getElementById('loginView'),
-    signupView: document.getElementById('signupView'),
-    mainApp: document.getElementById('mainApp'),
-    
-    // Login Form
-    loginForm: document.getElementById('loginForm'),
-    loginEmail: document.getElementById('loginEmail'),
-    loginPassword: document.getElementById('loginPassword'),
-    loginButton: document.getElementById('loginButton'),
-    showSignupBtn: document.getElementById('showSignupBtn'),
-    
-    // Signup Form
-    signupForm: document.getElementById('signupForm'),
-    signupName: document.getElementById('signupName'),
-    signupEmail: document.getElementById('signupEmail'),
-    signupPassword: document.getElementById('signupPassword'),
-    signupButton: document.getElementById('signupButton'),
-    showLoginBtn: document.getElementById('showLoginBtn'),
-    
-    // User Profile
-    userProfileButton: document.getElementById('userProfileButton'),
-    userProfileDropdown: document.getElementById('userProfileDropdown'),
-    userInitials: document.getElementById('userInitials'),
-    userDisplayName: document.getElementById('userDisplayName'),
-    userDisplayEmail: document.getElementById('userDisplayEmail'),
-    greeting: document.getElementById('greeting'),
-    
-    // Language Selection
-    languageSelector: document.getElementById('languageSelector'),
-    
-    // Navigation
-    homeButton: document.getElementById('homeButton'),
-    searchTab: document.getElementById('searchTab'),
-    translateTab: document.getElementById('translateTab'),
-    libraryTab: document.getElementById('libraryTab'),
-    logoutButton: document.getElementById('logoutButton'),
-    
-    // Word of the Day Popup
-    wordOfDayPopup: document.getElementById('wordOfDayPopup'),
-    rocketAnimation: document.getElementById('rocketAnimation'),
-    popupContent: document.getElementById('popupContent'),
-    popupWord: document.getElementById('popupWord'),
-    popupPhonetic: document.getElementById('popupPhonetic'),
-    popupDefinition: document.getElementById('popupDefinition'),
-    addDailyWordBtn: document.getElementById('addDailyWordBtn'),
-    closeDailyPopup: document.getElementById('closeDailyPopup'),
-    
-    // Search View
-    searchInput: document.getElementById('searchInput'),
-    searchButton: document.getElementById('searchButton'),
-    audioButton: document.getElementById('audioButton'),
-    searchResults: document.getElementById('searchResults'),
-    loadingState: document.getElementById('loadingState'),
-    errorState: document.getElementById('errorState'),
-    resultWord: document.getElementById('resultWord'),
-    resultPhonetic: document.getElementById('resultPhonetic'),
-    resultDefinitions: document.getElementById('resultDefinitions'),
-    playAudio: document.getElementById('playAudio'),
-    
-    // Library View
-    libraryContent: document.getElementById('libraryContent'),
-    emptyLibrary: document.getElementById('emptyLibrary'),
-    wordList: document.getElementById('wordList'),
-    
-    // Daily Word View
-    dailyWordContent: document.getElementById('dailyWordContent'),
-    dailyLoading: document.getElementById('dailyLoading'),
-    dailyWord: document.getElementById('dailyWord'),
-    dailyWordText: document.getElementById('dailyWordText'),
-    dailyPhonetic: document.getElementById('dailyPhonetic'),
-    dailyDefinitions: document.getElementById('dailyDefinitions'),
-    playDailyAudio: document.getElementById('playDailyAudio'),
-    saveDailyWord: document.getElementById('saveDailyWord')
-};
+// DOM Elements - will be initialized after DOM loads
+let elements = {};
+
+// Initialize DOM Elements
+function initializeElements() {
+    elements = {
+        // Authentication Views
+        loginView: document.getElementById('loginView'),
+        signupView: document.getElementById('signupView'),
+        mainApp: document.getElementById('mainApp'),
+        
+        // Login Form
+        loginForm: document.getElementById('loginForm'),
+        loginEmail: document.getElementById('loginEmail'),
+        loginPassword: document.getElementById('loginPassword'),
+        loginButton: document.getElementById('loginButton'),
+        showSignupBtn: document.getElementById('showSignupBtn'),
+        
+        // Signup Form
+        signupForm: document.getElementById('signupForm'),
+        signupName: document.getElementById('signupName'),
+        signupEmail: document.getElementById('signupEmail'),
+        signupPassword: document.getElementById('signupPassword'),
+        signupButton: document.getElementById('signupButton'),
+        showLoginBtn: document.getElementById('showLoginBtn'),
+        
+        // User Profile
+        userProfileButton: document.getElementById('userProfileButton'),
+        userProfileDropdown: document.getElementById('userProfileDropdown'),
+        userInitials: document.getElementById('userInitials'),
+        userDisplayName: document.getElementById('userDisplayName'),
+        userDisplayEmail: document.getElementById('userDisplayEmail'),
+        greeting: document.getElementById('greeting'),
+        
+        // Language Selection
+        languageSelector: document.getElementById('languageSelector'),
+        
+        // Navigation
+        homeButton: document.getElementById('homeButton'),
+        searchTab: document.getElementById('searchTab'),
+        translateTab: document.getElementById('translateTab'),
+        libraryTab: document.getElementById('libraryTab'),
+        logoutButton: document.getElementById('logoutButton'),
+        
+        // Word of the Day Popup
+        wordOfDayPopup: document.getElementById('wordOfDayPopup'),
+        rocketAnimation: document.getElementById('rocketAnimation'),
+        popupContent: document.getElementById('popupContent'),
+        popupWord: document.getElementById('popupWord'),
+        popupPhonetic: document.getElementById('popupPhonetic'),
+        popupDefinition: document.getElementById('popupDefinition'),
+        addDailyWordBtn: document.getElementById('addDailyWordBtn'),
+        closeDailyPopup: document.getElementById('closeDailyPopup'),
+        
+        // Search View
+        searchInput: document.getElementById('searchInput'),
+        searchButton: document.getElementById('searchButton'),
+        audioButton: document.getElementById('audioButton'),
+        searchResults: document.getElementById('searchResults'),
+        loadingState: document.getElementById('loadingState'),
+        errorState: document.getElementById('errorState'),
+        resultWord: document.getElementById('resultWord'),
+        resultPhonetic: document.getElementById('resultPhonetic'),
+        resultDefinitions: document.getElementById('resultDefinitions'),
+        playAudio: document.getElementById('playAudio'),
+        
+        // Library View
+        libraryContent: document.getElementById('libraryContent'),
+        emptyLibrary: document.getElementById('emptyLibrary'),
+        wordList: document.getElementById('wordList'),
+        
+        // Views
+        searchView: document.getElementById('searchView'),
+        translateView: document.getElementById('translateView'),
+        libraryView: document.getElementById('libraryView')
+    };
+}
 
 // Initialize Speech Recognition
 function initializeSpeechRecognition() {
@@ -1864,8 +1864,36 @@ function initializeEventListeners() {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
-    initializeEventListeners();
-    initializeAuth();
+    try {
+        console.log('DOM loaded, initializing LexiLog...');
+        
+        // Initialize DOM elements first
+        initializeElements();
+        console.log('Elements initialized');
+        
+        // Then initialize event listeners and auth
+        initializeEventListeners();
+        console.log('Event listeners initialized');
+        
+        initializeAuth();
+        console.log('Auth initialized');
+        
+        console.log('LexiLog initialization complete');
+    } catch (error) {
+        console.error('Error initializing LexiLog:', error);
+        
+        // Show a basic error message to the user
+        document.body.innerHTML = `
+            <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+                <h1 style="color: #dc2626;">LexiLog Error</h1>
+                <p>There was an error loading the application. Please refresh the page.</p>
+                <p style="color: #666; font-size: 14px;">Error: ${error.message}</p>
+                <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Refresh Page
+                </button>
+            </div>
+        `;
+    }
 });
 
 // Make functions globally available for onclick handlers
