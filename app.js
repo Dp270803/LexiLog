@@ -72,6 +72,8 @@ let elements = {};
 
 // Initialize DOM Elements
 function initializeElements() {
+    console.log('Initializing DOM elements...');
+    
     elements = {
         // Authentication Views
         loginView: document.getElementById('loginView'),
@@ -143,6 +145,20 @@ function initializeElements() {
         translateView: document.getElementById('translateView'),
         libraryView: document.getElementById('libraryView')
     };
+    
+    // Debug: Log missing elements
+    const missingElements = [];
+    for (const [key, element] of Object.entries(elements)) {
+        if (!element) {
+            missingElements.push(key);
+        }
+    }
+    
+    if (missingElements.length > 0) {
+        console.warn('Missing DOM elements:', missingElements);
+    } else {
+        console.log('All DOM elements found successfully');
+    }
 }
 
 // Initialize Speech Recognition
@@ -1725,7 +1741,8 @@ async function saveDailyWord(wordData) {
 // Event Listeners
 function initializeEventListeners() {
     // Login form
-    elements.loginForm.addEventListener('submit', async (e) => {
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = elements.loginEmail.value.trim();
         const password = elements.loginPassword.value;
@@ -1744,9 +1761,11 @@ function initializeEventListeners() {
             }
         }
     });
+    }
     
     // Signup form
-    elements.signupForm.addEventListener('submit', async (e) => {
+    if (elements.signupForm) {
+        elements.signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = elements.signupName.value.trim();
         const email = elements.signupEmail.value.trim();
@@ -1766,22 +1785,29 @@ function initializeEventListeners() {
             }
         }
     });
+    }
     
     // Show signup/login buttons
-    elements.showSignupBtn.addEventListener('click', showSignup);
-    elements.showLoginBtn.addEventListener('click', showLogin);
+    if (elements.showSignupBtn) {
+        elements.showSignupBtn.addEventListener('click', showSignup);
+    }
+    if (elements.showLoginBtn) {
+        elements.showLoginBtn.addEventListener('click', showLogin);
+    }
     
     // User profile dropdown
-    elements.userProfileButton.addEventListener('click', () => {
-        elements.userProfileDropdown.classList.toggle('hidden');
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!elements.userProfileButton.contains(e.target)) {
-            elements.userProfileDropdown.classList.add('hidden');
-        }
-    });
+    if (elements.userProfileButton && elements.userProfileDropdown) {
+        elements.userProfileButton.addEventListener('click', () => {
+            elements.userProfileDropdown.classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!elements.userProfileButton.contains(e.target)) {
+                elements.userProfileDropdown.classList.add('hidden');
+            }
+        });
+    }
     
     // Home button functionality
     if (elements.homeButton) {
@@ -1821,24 +1847,28 @@ function initializeEventListeners() {
     }
     
     // Search functionality
-    elements.searchButton.addEventListener('click', () => {
-        const word = elements.searchInput.value.trim();
-        if (word) {
-            searchWord(word);
-        }
-    });
-    
-    elements.searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    if (elements.searchButton && elements.searchInput) {
+        elements.searchButton.addEventListener('click', () => {
             const word = elements.searchInput.value.trim();
             if (word) {
                 searchWord(word);
             }
-        }
-    });
+        });
+        
+        elements.searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const word = elements.searchInput.value.trim();
+                if (word) {
+                    searchWord(word);
+                }
+            }
+        });
+    }
     
     // Audio search
-    elements.audioButton.addEventListener('click', toggleAudioSearch);
+    if (elements.audioButton) {
+        elements.audioButton.addEventListener('click', toggleAudioSearch);
+    }
     
     // Word of the Day popup listeners
     if (elements.closeDailyPopup) {
