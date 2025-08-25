@@ -24,6 +24,12 @@ const APP_ID = 'lexilog-vocabulary-builder';
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/';
 const WIKTIONARY_API_BASE = 'https://en.wiktionary.org/api/rest_v1/page/definition/';
 const GOOGLE_TRANSLATE_API = 'https://translate.googleapis.com/translate_a/single';
+const WORDNIK_API_BASE = 'https://api.wordnik.com/v4/word.json/';
+const COLLINS_API_BASE = 'https://api.collinsdictionary.com/api/v1/dictionaries/';
+
+// Gemini AI Configuration (you'll need to add your API key)
+const GEMINI_API_KEY = 'your-gemini-api-key-here'; // Replace with your actual API key
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
 // Supported Languages
 const SUPPORTED_LANGUAGES = {
@@ -216,12 +222,12 @@ async function initializeAuth() {
                 const profile = await getUserProfile();
                 if (profile && profile.name && profile.email) {
                     showMainApp(profile);
-                } else {
+        } else {
                     // User exists but no profile, this shouldn't happen with our flow
                     // But handle it gracefully
                     await signOut();
                 }
-            } else {
+        } else {
                 // No user signed in
                 currentUser = null;
                 currentUserId = null;
@@ -548,7 +554,7 @@ function updateSpeechRecognitionLanguage() {
     }
 }
 
-// Search Functions
+// Enhanced Search Functions
 async function searchWord(word) {
     if (!word.trim()) return;
     
@@ -558,26 +564,15 @@ async function searchWord(word) {
     
     try {
         let wordData = null;
+        const searchTerm = word.trim().toLowerCase();
         
-        // Try multiple dictionary sources
+        // New approach: Always accept English input, translate if needed
         if (currentLanguage === 'en') {
-            // For English, try the main dictionary API first
-            try {
-                const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        wordData = data[0];
-                    }
-                }
-            } catch (error) {
-                console.log('Main dictionary API failed, trying alternatives...');
-            }
-        }
-        
-        // If no data from main API, try translation and basic definition
-        if (!wordData) {
-            wordData = await getWordDefinitionFromTranslation(word.trim());
+            // For English: Try multiple sources for better definitions
+            wordData = await getEnglishDefinition(searchTerm);
+        } else {
+            // For other languages: Translate English input to target language
+            wordData = await getMultilingualDefinition(searchTerm, currentLanguage);
         }
         
         if (wordData) {
@@ -592,6 +587,204 @@ async function searchWord(word) {
         console.error('Search error:', error);
         showError();
     }
+}
+
+// Enhanced English Definition with Multiple Sources
+async function getEnglishDefinition(word) {
+    // Try multiple sources in order of preference
+    const sources = [
+        () => getDictionaryApiDefinition(word),
+        () => getGeminiDefinition(word, 'en'),
+        () => getWiktionaryDefinition(word)
+    ];
+    
+    for (const source of sources) {
+        try {
+            const result = await source();
+            if (result) {
+                return result;
+            }
+        } catch (error) {
+            console.log(`Source failed, trying next...`, error);
+        }
+    }
+    
+    return null;
+}
+
+// Multilingual Definition (English input → Target language)
+async function getMultilingualDefinition(englishWord, targetLanguage) {
+    try {
+        // Step 1: Get English definition first
+        const englishDef = await getEnglishDefinition(englishWord);
+        
+        // Step 2: Translate the word to target language
+        const translatedWord = await translateText(englishWord, 'en', targetLanguage);
+        
+        // Step 3: Get definition in target language using Gemini
+        let targetDef = null;
+        if (translatedWord) {
+            targetDef = await getGeminiDefinition(translatedWord, targetLanguage);
+        }
+        
+        // Step 4: Combine results
+        const combinedDef = {
+            word: translatedWord || englishWord,
+            originalWord: englishWord,
+            phonetic: englishDef?.phonetic || '',
+            meanings: [],
+            translation: translatedWord,
+            originalLanguage: targetLanguage,
+            englishDefinition: englishDef
+        };
+        
+        // Add target language definition if available
+        if (targetDef && targetDef.meanings) {
+            combinedDef.meanings = targetDef.meanings;
+        } else if (englishDef && englishDef.meanings) {
+            // Fallback to English definition with translation note
+            combinedDef.meanings = englishDef.meanings.map(meaning => ({
+                ...meaning,
+                definitions: meaning.definitions.map(def => ({
+                    ...def,
+                    definition: `(English: ${def.definition}) - Translation: ${translatedWord || englishWord}`
+                }))
+            }));
+        } else {
+            // Basic fallback
+            combinedDef.meanings = [{
+                partOfSpeech: 'word',
+                definitions: [{
+                    definition: `Translation of "${englishWord}" in ${SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage}: ${translatedWord || englishWord}`,
+                    example: ''
+                }]
+            }];
+        }
+        
+        return combinedDef;
+    } catch (error) {
+        console.error('Multilingual definition error:', error);
+        return null;
+    }
+}
+
+// Dictionary API Definition
+async function getDictionaryApiDefinition(word) {
+    try {
+        const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return data[0];
+            }
+        }
+    } catch (error) {
+        console.error('Dictionary API error:', error);
+    }
+    return null;
+}
+
+// Gemini AI Definition
+async function getGeminiDefinition(word, language) {
+    if (GEMINI_API_KEY === 'your-gemini-api-key-here') {
+        console.log('Gemini API key not configured, skipping...');
+        return null;
+    }
+    
+    try {
+        const languageName = SUPPORTED_LANGUAGES[language]?.name || language;
+        const prompt = language === 'en' 
+            ? `Define the word "${word}" in English. Provide: 1) Part of speech, 2) Clear definition, 3) Example sentence. Format as JSON with structure: {"word": "${word}", "phonetic": "", "meanings": [{"partOfSpeech": "", "definitions": [{"definition": "", "example": ""}]}]}`
+            : `Define the word "${word}" in ${languageName}. Provide the definition in ${languageName} language. Format as JSON with structure: {"word": "${word}", "phonetic": "", "meanings": [{"partOfSpeech": "", "definitions": [{"definition": "", "example": ""}]}]}`;
+        
+        const response = await fetch(`${GEMINI_API_BASE}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (content) {
+                try {
+                    // Try to parse JSON response
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        return JSON.parse(jsonMatch[0]);
+                    }
+                } catch (parseError) {
+                    console.error('Gemini JSON parse error:', parseError);
+                }
+                
+                // Fallback: Create structured response from text
+                return {
+                    word: word,
+                    phonetic: '',
+                    meanings: [{
+                        partOfSpeech: 'definition',
+                        definitions: [{
+                            definition: content.replace(/\*\*/g, '').trim(),
+                            example: ''
+                        }]
+                    }]
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Gemini API error:', error);
+    }
+    return null;
+}
+
+// Wiktionary Definition
+async function getWiktionaryDefinition(word) {
+    try {
+        const response = await fetch(`${WIKTIONARY_API_BASE}${encodeURIComponent(word)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.en && data.en.length > 0) {
+                const entry = data.en[0];
+                return {
+                    word: word,
+                    phonetic: '',
+                    meanings: [{
+                        partOfSpeech: entry.partOfSpeech || 'word',
+                        definitions: [{
+                            definition: entry.definitions?.[0]?.definition || entry.definition || 'Definition available',
+                            example: entry.examples?.[0] || ''
+                        }]
+                    }]
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Wiktionary API error:', error);
+    }
+    return null;
+}
+
+// Enhanced Translation Function
+async function translateText(text, fromLang, toLang) {
+    try {
+        const response = await fetch(`${GOOGLE_TRANSLATE_API}?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`);
+        const data = await response.json();
+        
+        if (data && data[0] && data[0][0]) {
+            return data[0][0][0];
+        }
+    } catch (error) {
+        console.error('Translation error:', error);
+    }
+    return null;
 }
 
 async function getWordDefinitionFromTranslation(word) {
@@ -646,31 +839,50 @@ function displaySearchResults(wordData) {
     hideLoading();
     hideError();
     
-    elements.resultWord.textContent = wordData.word;
-    
-    // Show translation if available
-    if (wordData.translation && wordData.originalLanguage !== 'en') {
-        elements.resultPhonetic.innerHTML = `
-            <div class="text-blue-600 font-medium">Translation: ${wordData.translation}</div>
-            ${wordData.phonetic ? `<div class="text-gray-600">${wordData.phonetic}</div>` : ''}
+    // Enhanced display for multilingual results
+    if (wordData.originalWord && wordData.originalWord !== wordData.word) {
+        // Show both original English word and translation
+        elements.resultWord.innerHTML = `
+            <div class="text-2xl font-bold text-gray-800">${wordData.word}</div>
+            <div class="text-lg text-blue-600 mt-1">English: "${wordData.originalWord}"</div>
         `;
     } else {
-        elements.resultPhonetic.textContent = wordData.phonetic || '';
+    elements.resultWord.textContent = wordData.word;
     }
+    
+    // Enhanced phonetic and translation display
+    let phoneticHtml = '';
+    if (wordData.phonetic) {
+        phoneticHtml += `<div class="text-gray-600 mb-2">${wordData.phonetic}</div>`;
+    }
+    if (wordData.translation && wordData.originalLanguage !== 'en') {
+        const langName = SUPPORTED_LANGUAGES[wordData.originalLanguage]?.name || wordData.originalLanguage;
+        phoneticHtml += `<div class="text-blue-600 font-medium mb-2">🌐 ${langName} Translation</div>`;
+    }
+    if (wordData.originalWord && currentLanguage !== 'en') {
+        phoneticHtml += `<div class="text-green-600 text-sm mb-2">✨ Searched in English, translated to ${SUPPORTED_LANGUAGES[currentLanguage]?.name || currentLanguage}</div>`;
+    }
+    
+    elements.resultPhonetic.innerHTML = phoneticHtml;
     
     // Clear previous definitions
     elements.resultDefinitions.innerHTML = '';
     
-    // Display definitions
-    wordData.meanings.forEach(meaning => {
+    // Display definitions with enhanced formatting
+    wordData.meanings.forEach((meaning, index) => {
         const meaningDiv = document.createElement('div');
-        meaningDiv.className = 'definition-item';
+        meaningDiv.className = 'definition-item hover-lift';
         
+        // Enhanced styling for definitions
         meaningDiv.innerHTML = `
-            <div class="part-of-speech">${meaning.partOfSpeech}</div>
-            <div class="definition-text">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
+            <div class="part-of-speech bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs uppercase tracking-wide inline-block mb-3">${meaning.partOfSpeech}</div>
+            <div class="definition-text text-gray-800 text-lg leading-relaxed mb-3">${meaning.definitions[0].definition}</div>
+            ${meaning.definitions[0].example ? `<div class="example-text bg-gray-50 border-l-4 border-blue-500 pl-4 py-2 italic text-gray-700 rounded">"${meaning.definitions[0].example}"</div>` : ''}
         `;
+        
+        // Add animation delay for each definition
+        meaningDiv.style.animationDelay = `${index * 0.1}s`;
+        meaningDiv.classList.add('animate-fade-in-up');
         
         elements.resultDefinitions.appendChild(meaningDiv);
     });
@@ -684,6 +896,10 @@ function displaySearchResults(wordData) {
     }
     
     elements.searchResults.classList.remove('hidden');
+    
+    // Add success notification
+    const langName = SUPPORTED_LANGUAGES[currentLanguage]?.name || 'the selected language';
+    showNotification(`✨ Found definition for "${wordData.originalWord || wordData.word}" in ${langName}!`, 'success');
 }
 
 function showLoading() {
@@ -786,7 +1002,7 @@ function toggleAudioSearch() {
         speechRecognition.stop();
     } else {
         try {
-            speechRecognition.start();
+        speechRecognition.start();
         } catch (error) {
             console.error('Error starting speech recognition:', error);
             alert('Unable to start voice search. Please check your microphone permissions and try again.');
@@ -808,10 +1024,10 @@ async function saveWordToVocabulary(wordData) {
         
         // Try Firebase first
         if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-            await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary').doc(wordData.word.toLowerCase())
-                .set(wordDoc);
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('vocabulary').doc(wordData.word.toLowerCase())
+            .set(wordDoc);
         }
         
         // Always save to localStorage as fallback
@@ -886,15 +1102,15 @@ async function loadUserVocabulary() {
         
         // Try Firebase first
         if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-            const snapshot = await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary')
-                .orderBy('timestamp', 'desc')
-                .get();
-            
-            snapshot.forEach(doc => {
-                words.push({ id: doc.id, ...doc.data() });
-            });
+        const snapshot = await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('vocabulary')
+            .orderBy('timestamp', 'desc')
+            .get();
+        
+        snapshot.forEach(doc => {
+            words.push({ id: doc.id, ...doc.data() });
+        });
         }
         
         // If no words from Firebase, try localStorage
@@ -913,7 +1129,7 @@ async function loadUserVocabulary() {
             displayVocabulary(words);
         } catch (localError) {
             console.error('Error loading from localStorage:', localError);
-            displayVocabulary([]);
+        displayVocabulary([]);
         }
     }
 }
@@ -975,10 +1191,10 @@ async function deleteWord(word) {
         try {
             // Try Firebase first
             if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-                await db.collection('artifacts').doc(APP_ID)
-                    .collection('users').doc(currentUserId)
-                    .collection('vocabulary').doc(word.toLowerCase())
-                    .delete();
+            await db.collection('artifacts').doc(APP_ID)
+                .collection('users').doc(currentUserId)
+                .collection('vocabulary').doc(word.toLowerCase())
+                .delete();
             }
             
             // Always remove from localStorage
@@ -1022,16 +1238,16 @@ async function fetchWordOfTheDay() {
         // Try Firebase if configured (user-specific daily word)
         if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
             try {
-                const dailyDoc = await db.collection('artifacts').doc(APP_ID)
+        const dailyDoc = await db.collection('artifacts').doc(APP_ID)
                     .collection('users').doc(currentUserId)
-                    .collection('daily_word').doc(today).get();
-                
-                if (dailyDoc.exists) {
+            .collection('daily_word').doc(today).get();
+        
+        if (dailyDoc.exists) {
                     const wordData = dailyDoc.data();
                     // Save to localStorage for future use
                     localStorage.setItem(`lexilog_daily_word_${userId}`, JSON.stringify(wordData));
                     displayDailyWord(wordData);
-                    return;
+            return;
                 }
             } catch (firebaseError) {
                 console.error('Firebase error for daily word:', firebaseError);
@@ -1054,13 +1270,13 @@ async function fetchWordOfTheDay() {
             // Try to save to Firebase if configured (user-specific)
             if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
                 try {
-                    await db.collection('artifacts').doc(APP_ID)
+            await db.collection('artifacts').doc(APP_ID)
                         .collection('users').doc(currentUserId)
-                        .collection('daily_word').doc(today).set({
-                            ...wordData,
-                            date: today,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
+                .collection('daily_word').doc(today).set({
+                    ...wordData,
+                    date: today,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
                 } catch (firebaseError) {
                     console.error('Error saving daily word to Firebase:', firebaseError);
                 }
