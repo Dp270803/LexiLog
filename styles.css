@@ -83,6 +83,28 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
+/* Remove Default Outlines */
+*:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+input:focus,
+select:focus,
+button:focus,
+textarea:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Remove focus outline for specific elements */
+.no-focus-outline:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: inherit !important;
+}
+
 /* Smooth Transitions */
 * {
     transition: all 0.3s ease;
