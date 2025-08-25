@@ -3,13 +3,13 @@
 
 // Firebase Configuration
 const firebaseConfig = {
-    // You'll need to replace these with your actual Firebase config
-    apiKey: "your-api-key",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "your-sender-id",
-    appId: "your-app-id"
+    apiKey: "AIzaSyByQABCkc1kQgSZevk30UKWQe3dq0bhHbs",
+    authDomain: "lexilog-c1559.firebaseapp.com",
+    projectId: "lexilog-c1559",
+    storageBucket: "lexilog-c1559.firebasestorage.app",
+    messagingSenderId: "383823777893",
+    appId: "1:383823777893:web:ffe084adfbf2d1ee7cf68c",
+    measurementId: "G-QXMEFRQ36N"
 };
 
 // Initialize Firebase
