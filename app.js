@@ -338,12 +338,29 @@ async function saveUserProfile(name, email) {
             name: name,
             email: email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+            totalWordsSearched: 0,
+            totalWordsSaved: 0
         };
         
         await db.collection('artifacts').doc(APP_ID)
             .collection('users').doc(currentUserId)
             .collection('profile').doc('data').set(profileData);
+        
+        // Also create user analytics document
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('analytics').doc('users')
+            .collection('activity').doc(currentUserId).set({
+                userId: currentUserId,
+                name: name,
+                email: email,
+                signupDate: firebase.firestore.FieldValue.serverTimestamp(),
+                lastActivity: firebase.firestore.FieldValue.serverTimestamp(),
+                sessionsCount: 1,
+                wordsSearched: 0,
+                wordsSaved: 0
+            });
         
         return true;
     } catch (error) {
@@ -383,10 +400,57 @@ function showMainApp(userProfile) {
         .substring(0, 2);
     elements.userInitials.textContent = initials;
     
+    // Track user session
+    trackUserActivity('session_start');
+    
     // Initialize features
     initializeSpeechRecognition();
     loadUserVocabulary();
     fetchWordOfTheDay();
+}
+
+// User Activity Tracking
+async function trackUserActivity(action, data = {}) {
+    if (!currentUserId) return;
+    
+    try {
+        const activityData = {
+            userId: currentUserId,
+            action: action,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            ...data
+        };
+        
+        // Log activity
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('analytics').doc('users')
+            .collection('activity').doc(currentUserId)
+            .collection('sessions').add(activityData);
+        
+        // Update user stats
+        const userStatsRef = db.collection('artifacts').doc(APP_ID)
+            .collection('analytics').doc('users')
+            .collection('activity').doc(currentUserId);
+        
+        if (action === 'word_saved') {
+            await userStatsRef.update({
+                wordsSaved: firebase.firestore.FieldValue.increment(1),
+                lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } else if (action === 'word_searched') {
+            await userStatsRef.update({
+                wordsSearched: firebase.firestore.FieldValue.increment(1),
+                lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } else if (action === 'session_start') {
+            await userStatsRef.update({
+                sessionsCount: firebase.firestore.FieldValue.increment(1),
+                lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    } catch (error) {
+        console.error('Error tracking user activity:', error);
+    }
 }
 
 // Logout Function
@@ -512,6 +576,8 @@ async function searchWord(word) {
         if (wordData) {
             displaySearchResults(wordData);
             await saveWordToVocabulary(wordData);
+            // Track word search activity
+            trackUserActivity('word_searched', { word: wordData.word, language: currentLanguage });
         } else {
             throw new Error('Word not found');
         }
@@ -755,6 +821,9 @@ async function saveWordToVocabulary(wordData) {
         
         // Show success animation and notification
         elements.searchResults.classList.add('save-success');
+        
+        // Track word save activity
+        trackUserActivity('word_saved', { word: wordData.word });
         
         // Create and show notification
         showNotification(`${wordData.word} has been added to your LexiLog!`, 'success');
