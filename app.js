@@ -26,6 +26,8 @@ const WIKTIONARY_API_BASE = 'https://en.wiktionary.org/api/rest_v1/page/definiti
 const GOOGLE_TRANSLATE_API = 'https://translate.googleapis.com/translate_a/single';
 const WORDNIK_API_BASE = 'https://api.wordnik.com/v4/word.json/';
 const COLLINS_API_BASE = 'https://api.collinsdictionary.com/api/v1/dictionaries/';
+const RANDOM_WORDS_API = 'https://api.wordnik.com/v4/words.json/randomWord';
+const WORDS_API_BASE = 'https://wordsapiv1.mashape.com/words/';
 
 // Gemini AI Configuration (you'll need to add your API key)
 const GEMINI_API_KEY = 'your-gemini-api-key-here'; // Replace with your actual API key
@@ -101,9 +103,19 @@ const elements = {
     // Navigation
     homeButton: document.getElementById('homeButton'),
     searchTab: document.getElementById('searchTab'),
+    translateTab: document.getElementById('translateTab'),
     libraryTab: document.getElementById('libraryTab'),
-    dailyTab: document.getElementById('dailyTab'),
     logoutButton: document.getElementById('logoutButton'),
+    
+    // Word of the Day Popup
+    wordOfDayPopup: document.getElementById('wordOfDayPopup'),
+    rocketAnimation: document.getElementById('rocketAnimation'),
+    popupContent: document.getElementById('popupContent'),
+    popupWord: document.getElementById('popupWord'),
+    popupPhonetic: document.getElementById('popupPhonetic'),
+    popupDefinition: document.getElementById('popupDefinition'),
+    addDailyWordBtn: document.getElementById('addDailyWordBtn'),
+    closeDailyPopup: document.getElementById('closeDailyPopup'),
     
     // Search View
     searchInput: document.getElementById('searchInput'),
@@ -419,7 +431,9 @@ function showMainApp(userProfile) {
     // Initialize features
     initializeSpeechRecognition();
     loadUserVocabulary();
-    fetchWordOfTheDay();
+    
+    // Show Word of the Day popup after a short delay
+    setTimeout(showWordOfDayPopup, 2000);
 }
 
 // User Activity Tracking
@@ -513,8 +527,6 @@ function initializeTabNavigation() {
             // Refresh data when switching tabs
             if (targetTab === 'library') {
                 loadUserVocabulary();
-            } else if (targetTab === 'daily') {
-                fetchWordOfTheDay();
             }
         });
     });
@@ -554,7 +566,7 @@ function updateSpeechRecognitionLanguage() {
     }
 }
 
-// Enhanced Search Functions
+// Native Language Dictionary Search
 async function searchWord(word) {
     if (!word.trim()) return;
     
@@ -566,13 +578,12 @@ async function searchWord(word) {
         let wordData = null;
         const searchTerm = word.trim().toLowerCase();
         
-        // New approach: Always accept English input, translate if needed
         if (currentLanguage === 'en') {
             // For English: Try multiple sources for better definitions
             wordData = await getEnglishDefinition(searchTerm);
         } else {
-            // For other languages: Translate English input to target language
-            wordData = await getMultilingualDefinition(searchTerm, currentLanguage);
+            // For other languages: Treat input as romanized/transliterated native word
+            wordData = await getNativeLanguageDefinition(searchTerm, currentLanguage);
         }
         
         if (wordData) {
@@ -587,6 +598,127 @@ async function searchWord(word) {
         console.error('Search error:', error);
         showError();
     }
+}
+
+// Native Language Definition (Romanized input → Native script + definition)
+async function getNativeLanguageDefinition(romanizedWord, targetLanguage) {
+    try {
+        const languageName = SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage;
+        
+        // Step 1: Try to get native script version using Gemini
+        let nativeWord = null;
+        let definition = null;
+        
+        if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
+            const geminiResult = await getGeminiNativeDefinition(romanizedWord, targetLanguage);
+            if (geminiResult) {
+                nativeWord = geminiResult.nativeScript;
+                definition = geminiResult.definition;
+            }
+        }
+        
+        // Step 2: Fallback - try translation services
+        if (!nativeWord) {
+            nativeWord = await translateText(romanizedWord, 'en', targetLanguage);
+        }
+        
+        // Step 3: Create comprehensive result
+        const wordData = {
+            word: nativeWord || romanizedWord,
+            romanized: romanizedWord,
+            phonetic: '',
+            meanings: [],
+            language: targetLanguage,
+            isNativeLanguage: true
+        };
+        
+        if (definition) {
+            // Use Gemini definition
+            wordData.meanings = [{
+                partOfSpeech: 'word',
+                definitions: [{
+                    definition: definition,
+                    example: ''
+                }]
+            }];
+        } else {
+            // Fallback definition
+            wordData.meanings = [{
+                partOfSpeech: 'word',
+                definitions: [{
+                    definition: `${languageName} word "${romanizedWord}" ${nativeWord ? `(${nativeWord})` : ''}`,
+                    example: ''
+                }]
+            }];
+        }
+        
+        return wordData;
+    } catch (error) {
+        console.error('Native language definition error:', error);
+        return null;
+    }
+}
+
+// Gemini AI Native Language Definition
+async function getGeminiNativeDefinition(romanizedWord, language) {
+    if (GEMINI_API_KEY === 'your-gemini-api-key-here') {
+        console.log('Gemini API key not configured, skipping native definition...');
+        return null;
+    }
+    
+    try {
+        const languageName = SUPPORTED_LANGUAGES[language]?.name || language;
+        const prompt = `You are a ${languageName} dictionary. The user typed "${romanizedWord}" in English script (romanized/transliterated). 
+        
+Please provide:
+1. The correct native script version of this word in ${languageName}
+2. The meaning/definition of this word in ${languageName}
+
+Respond in JSON format:
+{
+  "nativeScript": "word in native script",
+  "definition": "definition in ${languageName}",
+  "isValid": true/false
+}
+
+If "${romanizedWord}" is not a valid ${languageName} word, set isValid to false.`;
+        
+        const response = await fetch(`${GEMINI_API_BASE}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (content) {
+                try {
+                    // Try to parse JSON response
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const result = JSON.parse(jsonMatch[0]);
+                        if (result.isValid) {
+                            return result;
+                        }
+                    }
+                } catch (parseError) {
+                    console.error('Gemini native definition parse error:', parseError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Gemini native definition API error:', error);
+    }
+    return null;
 }
 
 // Enhanced English Definition with Multiple Sources
@@ -839,23 +971,32 @@ function displaySearchResults(wordData) {
     hideLoading();
     hideError();
     
-    // Enhanced display for multilingual results
-    if (wordData.originalWord && wordData.originalWord !== wordData.word) {
+    // Enhanced display for native language results
+    if (wordData.isNativeLanguage && wordData.romanized) {
+        // Show native script word with romanized version
+        elements.resultWord.innerHTML = `
+            <div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>
+            <div class="text-lg text-blue-600">Romanized: "${wordData.romanized}"</div>
+        `;
+    } else if (wordData.originalWord && wordData.originalWord !== wordData.word) {
         // Show both original English word and translation
         elements.resultWord.innerHTML = `
             <div class="text-2xl font-bold text-gray-800">${wordData.word}</div>
             <div class="text-lg text-blue-600 mt-1">English: "${wordData.originalWord}"</div>
         `;
     } else {
-    elements.resultWord.textContent = wordData.word;
+        elements.resultWord.textContent = wordData.word;
     }
     
-    // Enhanced phonetic and translation display
+    // Enhanced phonetic and language display
     let phoneticHtml = '';
     if (wordData.phonetic) {
         phoneticHtml += `<div class="text-gray-600 mb-2">${wordData.phonetic}</div>`;
     }
-    if (wordData.translation && wordData.originalLanguage !== 'en') {
+    if (wordData.isNativeLanguage) {
+        const langName = SUPPORTED_LANGUAGES[wordData.language]?.name || wordData.language;
+        phoneticHtml += `<div class="text-purple-600 font-medium mb-2">📚 ${langName} Dictionary</div>`;
+    } else if (wordData.translation && wordData.originalLanguage !== 'en') {
         const langName = SUPPORTED_LANGUAGES[wordData.originalLanguage]?.name || wordData.originalLanguage;
         phoneticHtml += `<div class="text-blue-600 font-medium mb-2">🌐 ${langName} Translation</div>`;
     }
@@ -873,11 +1014,16 @@ function displaySearchResults(wordData) {
         const meaningDiv = document.createElement('div');
         meaningDiv.className = 'definition-item hover-lift';
         
+        // Choose gradient based on language type
+        const gradient = wordData.isNativeLanguage 
+            ? 'from-purple-500 to-pink-500' 
+            : 'from-blue-500 to-purple-500';
+        
         // Enhanced styling for definitions
         meaningDiv.innerHTML = `
-            <div class="part-of-speech bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs uppercase tracking-wide inline-block mb-3">${meaning.partOfSpeech}</div>
+            <div class="part-of-speech bg-gradient-to-r ${gradient} text-white px-3 py-1 rounded-full text-xs uppercase tracking-wide inline-block mb-3">${meaning.partOfSpeech}</div>
             <div class="definition-text text-gray-800 text-lg leading-relaxed mb-3">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="example-text bg-gray-50 border-l-4 border-blue-500 pl-4 py-2 italic text-gray-700 rounded">"${meaning.definitions[0].example}"</div>` : ''}
+            ${meaning.definitions[0].example ? `<div class="example-text bg-gray-50 border-l-4 border-purple-500 pl-4 py-2 italic text-gray-700 rounded">"${meaning.definitions[0].example}"</div>` : ''}
         `;
         
         // Add animation delay for each definition
@@ -887,8 +1033,11 @@ function displaySearchResults(wordData) {
         elements.resultDefinitions.appendChild(meaningDiv);
     });
     
-    // Store audio URL if available
-    if (wordData.phonetics && wordData.phonetics.length > 0) {
+    // Handle audio pronunciation for native languages
+    if (wordData.isNativeLanguage && wordData.word) {
+        // Use Text-to-Speech for native pronunciation
+        elements.playAudio.onclick = () => playNativePronunciation(wordData.word, wordData.language);
+    } else if (wordData.phonetics && wordData.phonetics.length > 0) {
         const audioUrl = wordData.phonetics.find(p => p.audio)?.audio;
         if (audioUrl) {
             elements.playAudio.onclick = () => playAudio(audioUrl);
@@ -899,7 +1048,48 @@ function displaySearchResults(wordData) {
     
     // Add success notification
     const langName = SUPPORTED_LANGUAGES[currentLanguage]?.name || 'the selected language';
-    showNotification(`✨ Found definition for "${wordData.originalWord || wordData.word}" in ${langName}!`, 'success');
+    const searchType = wordData.isNativeLanguage ? 'native word' : 'definition';
+    showNotification(`✨ Found ${searchType} for "${wordData.romanized || wordData.originalWord || wordData.word}" in ${langName}!`, 'success');
+}
+
+// Native Language Pronunciation using Text-to-Speech
+function playNativePronunciation(word, language) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        
+        // Map our language codes to speech synthesis language codes
+        const speechLangMap = {
+            'hi': 'hi-IN',
+            'es': 'es-ES',
+            'fr': 'fr-FR',
+            'de': 'de-DE',
+            'it': 'it-IT',
+            'pt': 'pt-PT',
+            'ru': 'ru-RU',
+            'ja': 'ja-JP',
+            'ko': 'ko-KR',
+            'zh': 'zh-CN',
+            'ar': 'ar-SA',
+            'bn': 'bn-IN',
+            'te': 'te-IN',
+            'ta': 'ta-IN',
+            'kn': 'kn-IN',
+            'ml': 'ml-IN',
+            'gu': 'gu-IN',
+            'pa': 'pa-IN',
+            'mr': 'mr-IN'
+        };
+        
+        utterance.lang = speechLangMap[language] || language;
+        utterance.rate = 0.8; // Slightly slower for clarity
+        utterance.pitch = 1;
+        
+        speechSynthesis.speak(utterance);
+        
+        showNotification(`🔊 Playing pronunciation in ${SUPPORTED_LANGUAGES[language]?.name || language}`, 'info');
+    } else {
+        showNotification('❌ Text-to-speech not supported in this browser', 'error');
+    }
 }
 
 function showLoading() {
@@ -1019,7 +1209,10 @@ async function saveWordToVocabulary(wordData) {
             meanings: wordData.meanings,
             audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
             savedAt: new Date().toISOString(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            // Add Word of the Day tag if applicable
+            isWordOfDay: wordData.isWordOfDay || false,
+            wordOfDayDate: wordData.isWordOfDay ? wordData.date : null
         };
         
         // Try Firebase first
@@ -1159,9 +1352,23 @@ function createWordCard(wordData) {
     const primaryMeaning = wordData.meanings[0];
     const primaryDefinition = primaryMeaning.definitions[0];
     
+    // Format date for Word of the Day tag
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     card.innerHTML = `
         <div class="flex items-center justify-between mb-3">
-            <h3 class="text-xl font-bold text-gray-800">${wordData.word}</h3>
+            <div class="flex items-center gap-3">
+                <h3 class="text-xl font-bold text-gray-800">${wordData.word}</h3>
+                ${wordData.isWordOfDay ? `
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-sm">
+                        🌟 Word of the Day - ${formatDate(wordData.wordOfDayDate)}
+                    </span>
+                ` : ''}
+            </div>
             <div class="flex space-x-2">
                 ${wordData.audioUrl ? `
                     <button class="audio-button text-blue-600 hover:text-blue-800" onclick="playAudio('${wordData.audioUrl}')">
@@ -1219,75 +1426,188 @@ async function deleteWord(word) {
     }
 }
 
-// Word of the Day Functions
-async function fetchWordOfTheDay() {
+// Word of the Day Popup System
+let currentDailyWord = null;
+
+async function showWordOfDayPopup() {
+    const today = new Date().toISOString().split('T')[0];
+    const userId = currentUser?.uid || currentUserId || 'local_user';
+    
+    // Check if user has already seen today's word
+    const seenKey = `lexilog_daily_seen_${userId}_${today}`;
+    if (localStorage.getItem(seenKey)) {
+        return; // Already seen today
+    }
+    
     try {
-        const today = new Date().toISOString().split('T')[0];
-        const userId = currentUserId || 'local_user';
+        let dailyWord = await fetchTrulyRandomWord();
         
-        // Check localStorage first for today's word for this user
-        const dailyWordData = localStorage.getItem(`lexilog_daily_word_${userId}`);
-        if (dailyWordData) {
-            const parsed = JSON.parse(dailyWordData);
-            if (parsed.date === today) {
-                displayDailyWord(parsed);
-                return;
-            }
-        }
-        
-        // Try Firebase if configured (user-specific daily word)
-        if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-            try {
-        const dailyDoc = await db.collection('artifacts').doc(APP_ID)
-                    .collection('users').doc(currentUserId)
-            .collection('daily_word').doc(today).get();
-        
-        if (dailyDoc.exists) {
-                    const wordData = dailyDoc.data();
-                    // Save to localStorage for future use
-                    localStorage.setItem(`lexilog_daily_word_${userId}`, JSON.stringify(wordData));
-                    displayDailyWord(wordData);
-            return;
-                }
-            } catch (firebaseError) {
-                console.error('Firebase error for daily word:', firebaseError);
-            }
-        }
-        
-        // Fetch new random word from API
-        const wordData = await fetchRandomWord();
-        
-        if (wordData) {
-            const wordWithDate = {
-                ...wordData,
-                date: today,
-                timestamp: Date.now()
-            };
+        if (dailyWord) {
+            currentDailyWord = { ...dailyWord, date: today, isWordOfDay: true };
+            displayWordOfDayPopup(currentDailyWord);
             
-            // Save to localStorage (user-specific)
-            localStorage.setItem(`lexilog_daily_word_${userId}`, JSON.stringify(wordWithDate));
+            // Show the popup with animation
+            elements.wordOfDayPopup.classList.remove('hidden');
             
-            // Try to save to Firebase if configured (user-specific)
-            if (firebaseConfig.apiKey !== "your-api-key" && currentUserId) {
-                try {
-            await db.collection('artifacts').doc(APP_ID)
-                        .collection('users').doc(currentUserId)
-                .collection('daily_word').doc(today).set({
-                    ...wordData,
-                    date: today,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                } catch (firebaseError) {
-                    console.error('Error saving daily word to Firebase:', firebaseError);
-                }
-            }
+            // Reset animations
+            elements.rocketAnimation.style.animation = 'none';
+            elements.popupContent.style.animation = 'none';
             
-            displayDailyWord(wordData);
+            // Trigger animations
+            setTimeout(() => {
+                elements.rocketAnimation.style.animation = 'rocketFly 2s ease-out forwards';
+                elements.popupContent.style.animation = 'popupAppear 1s ease-out forwards';
+                elements.popupContent.style.animationDelay = '1.5s';
+            }, 100);
         }
     } catch (error) {
-        console.error('Error fetching word of the day:', error);
-        // Retry with a different word
-        setTimeout(fetchWordOfTheDay, 1000);
+        console.error('Error showing word of the day popup:', error);
+    }
+}
+
+async function fetchTrulyRandomWord() {
+    // Try multiple random word sources for variety
+    const sources = [
+        () => fetchFromWordnikAPI(),
+        () => fetchFromRandomWordsList(),
+        () => fetchFromGeminiRandom()
+    ];
+    
+    for (const source of sources) {
+        try {
+            const word = await source();
+            if (word) {
+                // Get full definition for the random word
+                const definition = await getEnglishDefinition(word);
+                if (definition) {
+                    return definition;
+                }
+            }
+        } catch (error) {
+            console.log('Random word source failed, trying next...', error);
+        }
+    }
+    
+    // Ultimate fallback with a truly beautiful word
+    return {
+        word: 'serendipity',
+        phonetic: '/ˌsɛrənˈdɪpɪti/',
+        meanings: [{
+            partOfSpeech: 'noun',
+            definitions: [{
+                definition: 'The occurrence and development of events by chance in a happy or beneficial way.',
+                example: 'A fortunate stroke of serendipity brought the two old friends together.'
+            }]
+        }]
+    };
+}
+
+async function fetchFromWordnikAPI() {
+    try {
+        // Try Wordnik's random word API (free tier)
+        const response = await fetch(`${RANDOM_WORDS_API}?hasDictionaryDef=true&minCorpusCount=1000&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=5&maxLength=15`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.word;
+        }
+    } catch (error) {
+        console.error('Wordnik API error:', error);
+    }
+    return null;
+}
+
+async function fetchFromRandomWordsList() {
+    // High-quality word list for educational purposes
+    const educationalWords = [
+        'serendipity', 'eloquent', 'perseverance', 'ephemeral', 'resilience',
+        'luminous', 'tranquil', 'vivacious', 'benevolent', 'sagacious',
+        'ubiquitous', 'mellifluous', 'ineffable', 'quintessential', 'perspicacious',
+        'magnanimous', 'ethereal', 'effervescent', 'incandescent', 'harmonious',
+        'meticulous', 'tenacious', 'exuberant', 'profound', 'pristine',
+        'enigmatic', 'scintillating', 'resplendent', 'transcendent', 'magnificent',
+        'euphoric', 'iridescent', 'luminescent', 'opalescent', 'phosphorescent',
+        'incorrigible', 'indefatigable', 'indomitable', 'irrepressible', 'insatiable',
+        'effulgent', 'coruscating', 'diaphanous', 'gossamer', 'halcyon',
+        'incipient', 'lambent', 'nascent', 'palimpsest', 'penumbra',
+        'petrichor', 'saudade', 'susurrus', 'vellichor', 'wanderlust'
+    ];
+    
+    // Use crypto.getRandomValues for true randomness
+    const randomBytes = new Uint32Array(1);
+    crypto.getRandomValues(randomBytes);
+    const randomIndex = randomBytes[0] % educationalWords.length;
+    
+    return educationalWords[randomIndex];
+}
+
+async function fetchFromGeminiRandom() {
+    if (GEMINI_API_KEY === 'your-gemini-api-key-here') {
+        return null;
+    }
+    
+    try {
+        const prompt = `Generate a single beautiful, educational English word that would be perfect for vocabulary building. The word should be:
+        1. Interesting and meaningful
+        2. Not too common but not extremely obscure
+        3. Between 5-15 characters long
+        4. Suitable for adult learners
+        
+        Respond with just the word, nothing else.`;
+        
+        const response = await fetch(`${GEMINI_API_BASE}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (content) {
+                return content.trim().toLowerCase();
+            }
+        }
+    } catch (error) {
+        console.error('Gemini random word error:', error);
+    }
+    return null;
+}
+
+function displayWordOfDayPopup(wordData) {
+    elements.popupWord.textContent = wordData.word;
+    elements.popupPhonetic.textContent = wordData.phonetic || '';
+    
+    // Display first definition
+    if (wordData.meanings && wordData.meanings.length > 0) {
+        const firstMeaning = wordData.meanings[0];
+        const firstDef = firstMeaning.definitions[0];
+        elements.popupDefinition.innerHTML = `
+            <div class="text-sm text-purple-600 font-medium mb-2">${firstMeaning.partOfSpeech}</div>
+            <div>${firstDef.definition}</div>
+        `;
+    }
+}
+
+function closeWordOfDayPopup() {
+    const today = new Date().toISOString().split('T')[0];
+    const userId = currentUser?.uid || currentUserId || 'local_user';
+    const seenKey = `lexilog_daily_seen_${userId}_${today}`;
+    
+    // Mark as seen for today
+    localStorage.setItem(seenKey, 'true');
+    
+    // Hide popup
+    elements.wordOfDayPopup.classList.add('hidden');
+    currentDailyWord = null;
+}
+
+async function addWordOfDayToLibrary() {
+    if (currentDailyWord) {
+        await saveWordToVocabulary(currentDailyWord);
+        showNotification('✨ Word of the Day added to your LexiLog!', 'success');
+        closeWordOfDayPopup();
     }
 }
 
@@ -1519,6 +1839,24 @@ function initializeEventListeners() {
     
     // Audio search
     elements.audioButton.addEventListener('click', toggleAudioSearch);
+    
+    // Word of the Day popup listeners
+    if (elements.closeDailyPopup) {
+        elements.closeDailyPopup.addEventListener('click', closeWordOfDayPopup);
+    }
+    
+    if (elements.addDailyWordBtn) {
+        elements.addDailyWordBtn.addEventListener('click', addWordOfDayToLibrary);
+    }
+    
+    // Close popup when clicking outside
+    if (elements.wordOfDayPopup) {
+        elements.wordOfDayPopup.addEventListener('click', (e) => {
+            if (e.target === elements.wordOfDayPopup) {
+                closeWordOfDayPopup();
+            }
+        });
+    }
     
     // Tab navigation
     initializeTabNavigation();
