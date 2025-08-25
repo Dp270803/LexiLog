@@ -44,10 +44,32 @@ let isListening = false;
 
 // DOM Elements
 const elements = {
-    onboardingView: document.getElementById('onboardingView'),
+    // Authentication Views
+    loginView: document.getElementById('loginView'),
+    signupView: document.getElementById('signupView'),
     mainApp: document.getElementById('mainApp'),
-    onboardingForm: document.getElementById('onboardingForm'),
-    userName: document.getElementById('userName'),
+    
+    // Login Form
+    loginForm: document.getElementById('loginForm'),
+    loginEmail: document.getElementById('loginEmail'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginButton: document.getElementById('loginButton'),
+    showSignupBtn: document.getElementById('showSignupBtn'),
+    
+    // Signup Form
+    signupForm: document.getElementById('signupForm'),
+    signupName: document.getElementById('signupName'),
+    signupEmail: document.getElementById('signupEmail'),
+    signupPassword: document.getElementById('signupPassword'),
+    signupButton: document.getElementById('signupButton'),
+    showLoginBtn: document.getElementById('showLoginBtn'),
+    
+    // User Profile
+    userProfileButton: document.getElementById('userProfileButton'),
+    userProfileDropdown: document.getElementById('userProfileDropdown'),
+    userInitials: document.getElementById('userInitials'),
+    userDisplayName: document.getElementById('userDisplayName'),
+    userDisplayEmail: document.getElementById('userDisplayEmail'),
     greeting: document.getElementById('greeting'),
     
     // Language Selection
@@ -186,31 +208,126 @@ function initializeSpeechRecognition() {
     }
 }
 
-// Authentication Functions (Demo version using localStorage only)
-async function initializeAuth() {
-    const userName = localStorage.getItem('lexilog_user_name');
-    if (userName) {
-        showMainApp(userName);
+// LocalStorage-based Authentication Functions (Demo Version)
+function initializeAuth() {
+    // Check if user is logged in
+    const currentUserData = localStorage.getItem('lexilog_demo_user');
+    if (currentUserData) {
+        const userData = JSON.parse(currentUserData);
+        currentUser = userData;
+        showMainApp(userData);
     } else {
-        showOnboarding();
+        showLogin();
     }
 }
 
-async function saveUserProfile(name) {
-    localStorage.setItem('lexilog_user_name', name);
-    return true;
+// Sign up with localStorage
+function signUpWithEmail(name, email, password) {
+    try {
+        // Check if user already exists
+        const existingUsers = JSON.parse(localStorage.getItem('lexilog_demo_users') || '[]');
+        const userExists = existingUsers.find(user => user.email === email);
+        
+        if (userExists) {
+            showNotification('This email is already registered. Please sign in instead.', 'error');
+            return false;
+        }
+        
+        if (password.length < 6) {
+            showNotification('Password should be at least 6 characters long.', 'error');
+            return false;
+        }
+        
+        // Create new user
+        const newUser = {
+            id: Date.now().toString(),
+            name: name,
+            email: email,
+            password: password, // In real app, this would be hashed
+            createdAt: new Date().toISOString()
+        };
+        
+        // Save to users list
+        existingUsers.push(newUser);
+        localStorage.setItem('lexilog_demo_users', JSON.stringify(existingUsers));
+        
+        // Set as current user
+        currentUser = { name: newUser.name, email: newUser.email, id: newUser.id };
+        localStorage.setItem('lexilog_demo_user', JSON.stringify(currentUser));
+        
+        showNotification('Account created successfully! Welcome to LexiLog!', 'success');
+        showMainApp(currentUser);
+        return true;
+    } catch (error) {
+        console.error('Sign up error:', error);
+        showNotification('Failed to create account. Please try again.', 'error');
+        return false;
+    }
+}
+
+// Sign in with localStorage
+function signInWithEmail(email, password) {
+    try {
+        const existingUsers = JSON.parse(localStorage.getItem('lexilog_demo_users') || '[]');
+        const user = existingUsers.find(u => u.email === email && u.password === password);
+        
+        if (!user) {
+            showNotification('Invalid email or password. Please try again.', 'error');
+            return false;
+        }
+        
+        // Set as current user
+        currentUser = { name: user.name, email: user.email, id: user.id };
+        localStorage.setItem('lexilog_demo_user', JSON.stringify(currentUser));
+        
+        showNotification('Welcome back!', 'success');
+        showMainApp(currentUser);
+        return true;
+    } catch (error) {
+        console.error('Sign in error:', error);
+        showNotification('Failed to sign in. Please try again.', 'error');
+        return false;
+    }
+}
+
+// Sign out
+function signOut() {
+    localStorage.removeItem('lexilog_demo_user');
+    currentUser = null;
+    showNotification('Signed out successfully', 'info');
+    showLogin();
 }
 
 // UI Functions
-function showOnboarding() {
-    elements.onboardingView.classList.remove('hidden');
+function showLogin() {
+    elements.loginView.classList.remove('hidden');
+    elements.signupView.classList.add('hidden');
     elements.mainApp.classList.add('hidden');
 }
 
-function showMainApp(userName) {
-    elements.onboardingView.classList.add('hidden');
+function showSignup() {
+    elements.signupView.classList.remove('hidden');
+    elements.loginView.classList.add('hidden');
+    elements.mainApp.classList.add('hidden');
+}
+
+function showMainApp(userProfile) {
+    elements.loginView.classList.add('hidden');
+    elements.signupView.classList.add('hidden');
     elements.mainApp.classList.remove('hidden');
-    elements.greeting.textContent = `Hi ${userName}, Here is your Pocket Dictionary`;
+    
+    // Update user profile display
+    const firstName = userProfile.name.split(' ')[0];
+    elements.greeting.textContent = `Hi ${firstName}, Here is your Pocket Dictionary`;
+    elements.userDisplayName.textContent = userProfile.name;
+    elements.userDisplayEmail.textContent = userProfile.email;
+    
+    // Update user initials
+    const initials = userProfile.name.split(' ')
+        .map(name => name.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+    elements.userInitials.textContent = initials;
     
     // Initialize features
     initializeSpeechRecognition();
@@ -219,26 +336,27 @@ function showMainApp(userName) {
 }
 
 // Logout Function
-function logout() {
-    if (confirm('Are you sure you want to logout? This will clear your session and vocabulary.')) {
-        // Clear all stored data
-        localStorage.removeItem('lexilog_user_name');
-        localStorage.removeItem('lexilog_vocabulary');
-        localStorage.removeItem('lexilog_daily_word_local_user');
-        
-        // Reset global variables
-        currentUser = null;
-        currentLanguage = 'en';
-        
-        // Show notification
-        showNotification('Logged out successfully. Starting fresh session.', 'info');
-        
-        // Show onboarding
-        setTimeout(() => {
-            showOnboarding();
-        }, 1000);
+async function logout() {
+    if (confirm('Are you sure you want to sign out?')) {
+        try {
+            // Clear user-specific data
+            if (currentUser && currentUser.id) {
+                localStorage.removeItem(`lexilog_daily_word_${currentUser.id}`);
+            }
+            
+            // Reset language
+            currentLanguage = 'en';
+            
+            // Sign out
+            signOut();
+        } catch (error) {
+            console.error('Logout error:', error);
+            showNotification('Error signing out', 'error');
+        }
     }
 }
+
+
 
 // Tab Navigation
 function initializeTabNavigation() {
@@ -529,8 +647,9 @@ async function saveWordToVocabulary(wordData) {
             timestamp: Date.now()
         };
         
-        // Save to localStorage
-        const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+        // Save to user-specific localStorage
+        const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
+        const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
         const existingIndex = vocabulary.findIndex(w => w.word.toLowerCase() === wordData.word.toLowerCase());
         
         if (existingIndex >= 0) {
@@ -539,7 +658,7 @@ async function saveWordToVocabulary(wordData) {
             vocabulary.push(wordDoc);
         }
         
-        localStorage.setItem('lexilog_vocabulary', JSON.stringify(vocabulary));
+        localStorage.setItem(storageKey, JSON.stringify(vocabulary));
         
         // Show success animation and notification
         elements.searchResults.classList.add('save-success');
@@ -562,7 +681,8 @@ async function saveWordToVocabulary(wordData) {
 
 async function loadUserVocabulary() {
     try {
-        const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+        const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
+        const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
         const words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
         displayVocabulary(words);
     } catch (error) {
@@ -626,9 +746,10 @@ function createWordCard(wordData) {
 async function deleteWord(word) {
     if (confirm(`Are you sure you want to remove "${word}" from your vocabulary?`)) {
         try {
-            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+            const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
+            const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
             const filteredVocabulary = vocabulary.filter(w => w.word.toLowerCase() !== word.toLowerCase());
-            localStorage.setItem('lexilog_vocabulary', JSON.stringify(filteredVocabulary));
+            localStorage.setItem(storageKey, JSON.stringify(filteredVocabulary));
             
             showNotification(`${word} has been removed from your LexiLog.`, 'success');
             loadUserVocabulary();
@@ -643,7 +764,7 @@ async function deleteWord(word) {
 async function fetchWordOfTheDay() {
     try {
         const today = new Date().toISOString().split('T')[0];
-        const userId = 'local_user'; // Demo version uses local user
+        const userId = currentUser ? currentUser.id : 'local_user';
         
         // Check localStorage for today's word for this user
         const dailyWordData = localStorage.getItem(`lexilog_daily_word_${userId}`);
@@ -788,13 +909,72 @@ async function saveDailyWord(wordData) {
 
 // Event Listeners
 function initializeEventListeners() {
-    // Onboarding form
-    elements.onboardingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = elements.userName.value.trim();
-        if (name) {
-            await saveUserProfile(name);
-            showMainApp(name);
+    // Login form
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = elements.loginEmail.value.trim();
+            const password = elements.loginPassword.value;
+            
+            if (email && password) {
+                elements.loginButton.disabled = true;
+                elements.loginButton.textContent = 'Signing In...';
+                
+                const success = signInWithEmail(email, password);
+                
+                elements.loginButton.disabled = false;
+                elements.loginButton.textContent = 'Sign In';
+                
+                if (!success) {
+                    // Error handling is done in signInWithEmail function
+                }
+            }
+        });
+    }
+    
+    // Signup form
+    if (elements.signupForm) {
+        elements.signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = elements.signupName.value.trim();
+            const email = elements.signupEmail.value.trim();
+            const password = elements.signupPassword.value;
+            
+            if (name && email && password) {
+                elements.signupButton.disabled = true;
+                elements.signupButton.textContent = 'Creating Account...';
+                
+                const success = signUpWithEmail(name, email, password);
+                
+                elements.signupButton.disabled = false;
+                elements.signupButton.textContent = 'Create Account';
+                
+                if (!success) {
+                    // Error handling is done in signUpWithEmail function
+                }
+            }
+        });
+    }
+    
+    // Show signup/login buttons
+    if (elements.showSignupBtn) {
+        elements.showSignupBtn.addEventListener('click', showSignup);
+    }
+    if (elements.showLoginBtn) {
+        elements.showLoginBtn.addEventListener('click', showLogin);
+    }
+    
+    // User profile dropdown
+    if (elements.userProfileButton) {
+        elements.userProfileButton.addEventListener('click', () => {
+            elements.userProfileDropdown.classList.toggle('hidden');
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (elements.userProfileButton && !elements.userProfileButton.contains(e.target)) {
+            elements.userProfileDropdown.classList.add('hidden');
         }
     });
     
