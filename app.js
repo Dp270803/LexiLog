@@ -92,7 +92,8 @@ const elements = {
     // Language Selection
     languageSelector: document.getElementById('languageSelector'),
     
-    // Tab Navigation
+    // Navigation
+    homeButton: document.getElementById('homeButton'),
     searchTab: document.getElementById('searchTab'),
     libraryTab: document.getElementById('libraryTab'),
     dailyTab: document.getElementById('dailyTab'),
@@ -389,7 +390,13 @@ function showMainApp(userProfile) {
     
     // Update user profile display
     const firstName = userProfile.name.split(' ')[0];
-    elements.greeting.textContent = `Hi ${firstName}, Here is your Pocket Dictionary`;
+    elements.greeting.innerHTML = `
+        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Hi ${firstName},
+        </span>
+        <br>
+        <span class="text-gray-800">Here is your Pocket Dictionary</span>
+    `;
     elements.userDisplayName.textContent = userProfile.name;
     elements.userDisplayEmail.textContent = userProfile.email;
     
@@ -1239,6 +1246,29 @@ function initializeEventListeners() {
             elements.userProfileDropdown.classList.add('hidden');
         }
     });
+    
+    // Home button functionality
+    if (elements.homeButton) {
+        elements.homeButton.addEventListener('click', () => {
+            // Switch to search/home tab
+            const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
+            const tabContents = ['searchView', 'libraryView', 'dailyView'];
+            
+            // Update active tab button
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            elements.searchTab.classList.add('active');
+            
+            // Update active content
+            tabContents.forEach(contentId => {
+                const content = document.getElementById(contentId);
+                if (contentId === 'searchView') {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        });
+    }
     
     // Language selector
     if (elements.languageSelector) {
