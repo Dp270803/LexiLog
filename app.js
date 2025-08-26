@@ -70,6 +70,65 @@ let isListening = false;
 // DOM Elements - will be initialized after DOM loads
 let elements = {};
 
+// Mobile Detection and Setup
+function setupMobileInterface() {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Add icons to mobile tabs
+        const tabIcons = {
+            searchTab: '🔍',
+            translateTab: '🌐', 
+            libraryTab: '📚',
+            dailyTab: '⭐'
+        };
+        
+        Object.keys(tabIcons).forEach(tabId => {
+            const tab = document.getElementById(tabId);
+            if (tab) {
+                const currentText = tab.textContent.trim();
+                tab.innerHTML = `
+                    <div class="text-lg mb-1">${tabIcons[tabId]}</div>
+                    <div class="text-xs">${currentText}</div>
+                `;
+            }
+        });
+        
+        // Add mobile-specific body class
+        document.body.classList.add('mobile-interface');
+        
+        // Create mobile user profile header
+        createMobileUserProfile();
+    }
+}
+
+// Create Mobile User Profile Header
+function createMobileUserProfile() {
+    // Create mobile profile header that will be shown after login
+    const mobileProfileHTML = `
+        <div id="mobileUserProfile" class="mobile-user-profile hidden">
+            <div class="flex items-center justify-between p-4 bg-white border-b">
+                <div class="flex items-center space-x-3">
+                    <div id="mobileUserInitials" class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm"></div>
+                    <div>
+                        <div id="mobileUserName" class="font-semibold text-gray-800"></div>
+                        <div id="mobileUserEmail" class="text-sm text-gray-500"></div>
+                    </div>
+                </div>
+                <button id="mobileLogoutBtn" class="text-red-600 hover:text-red-700 font-medium text-sm">
+                    Logout
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Insert at the beginning of main content
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+        mainElement.insertAdjacentHTML('afterbegin', mobileProfileHTML);
+    }
+}
+
 // Initialize DOM Elements
 function initializeElements() {
     console.log('Initializing DOM elements...');
@@ -78,7 +137,7 @@ function initializeElements() {
         // Authentication Views
         loginView: document.getElementById('loginView'),
         signupView: document.getElementById('signupView'),
-        mainApp: document.getElementById('mainApp'),
+    mainApp: document.getElementById('mainApp'),
         
         // Login Form
         loginForm: document.getElementById('loginForm'),
@@ -101,36 +160,36 @@ function initializeElements() {
         userInitials: document.getElementById('userInitials'),
         userDisplayName: document.getElementById('userDisplayName'),
         userDisplayEmail: document.getElementById('userDisplayEmail'),
-        greeting: document.getElementById('greeting'),
-        
+    greeting: document.getElementById('greeting'),
+    
         // Language Selection
         languageSelector: document.getElementById('languageSelector'),
         
         // Navigation
         homeButton: document.getElementById('homeButton'),
-        searchTab: document.getElementById('searchTab'),
+    searchTab: document.getElementById('searchTab'),
         translateTab: document.getElementById('translateTab'),
-        libraryTab: document.getElementById('libraryTab'),
-        dailyTab: document.getElementById('dailyTab'),
+    libraryTab: document.getElementById('libraryTab'),
+    dailyTab: document.getElementById('dailyTab'),
         logoutButton: document.getElementById('logoutButton'),
-        
-        // Search View
-        searchInput: document.getElementById('searchInput'),
-        searchButton: document.getElementById('searchButton'),
-        audioButton: document.getElementById('audioButton'),
-        searchResults: document.getElementById('searchResults'),
-        loadingState: document.getElementById('loadingState'),
-        errorState: document.getElementById('errorState'),
-        resultWord: document.getElementById('resultWord'),
-        resultPhonetic: document.getElementById('resultPhonetic'),
-        resultDefinitions: document.getElementById('resultDefinitions'),
-        playAudio: document.getElementById('playAudio'),
-        
-        // Library View
-        libraryContent: document.getElementById('libraryContent'),
-        emptyLibrary: document.getElementById('emptyLibrary'),
-        wordList: document.getElementById('wordList'),
-        
+    
+    // Search View
+    searchInput: document.getElementById('searchInput'),
+    searchButton: document.getElementById('searchButton'),
+    audioButton: document.getElementById('audioButton'),
+    searchResults: document.getElementById('searchResults'),
+    loadingState: document.getElementById('loadingState'),
+    errorState: document.getElementById('errorState'),
+    resultWord: document.getElementById('resultWord'),
+    resultPhonetic: document.getElementById('resultPhonetic'),
+    resultDefinitions: document.getElementById('resultDefinitions'),
+    playAudio: document.getElementById('playAudio'),
+    
+    // Library View
+    libraryContent: document.getElementById('libraryContent'),
+    emptyLibrary: document.getElementById('emptyLibrary'),
+    wordList: document.getElementById('wordList'),
+    
         // Views
         searchView: document.getElementById('searchView'),
         translateView: document.getElementById('translateView'),
@@ -138,15 +197,15 @@ function initializeElements() {
         dailyView: document.getElementById('dailyView'),
         
         // Daily Word
-        dailyWordContent: document.getElementById('dailyWordContent'),
-        dailyLoading: document.getElementById('dailyLoading'),
-        dailyWord: document.getElementById('dailyWord'),
-        dailyWordText: document.getElementById('dailyWordText'),
-        dailyPhonetic: document.getElementById('dailyPhonetic'),
-        dailyDefinitions: document.getElementById('dailyDefinitions'),
-        playDailyAudio: document.getElementById('playDailyAudio'),
-        saveDailyWord: document.getElementById('saveDailyWord')
-    };
+    dailyWordContent: document.getElementById('dailyWordContent'),
+    dailyLoading: document.getElementById('dailyLoading'),
+    dailyWord: document.getElementById('dailyWord'),
+    dailyWordText: document.getElementById('dailyWordText'),
+    dailyPhonetic: document.getElementById('dailyPhonetic'),
+    dailyDefinitions: document.getElementById('dailyDefinitions'),
+    playDailyAudio: document.getElementById('playDailyAudio'),
+    saveDailyWord: document.getElementById('saveDailyWord')
+};
     
     // Debug: Log missing elements
     const missingElements = [];
@@ -442,6 +501,25 @@ function showMainApp(userProfile) {
         .join('')
         .substring(0, 2);
     elements.userInitials.textContent = initials;
+    
+    // Update mobile profile if exists
+    const mobileProfile = document.getElementById('mobileUserProfile');
+    const mobileInitials = document.getElementById('mobileUserInitials');
+    const mobileName = document.getElementById('mobileUserName');
+    const mobileEmail = document.getElementById('mobileUserEmail');
+    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+    
+    if (mobileProfile && window.innerWidth <= 768) {
+        mobileProfile.classList.remove('hidden');
+        if (mobileInitials) mobileInitials.textContent = initials;
+        if (mobileName) mobileName.textContent = userProfile.name;
+        if (mobileEmail) mobileEmail.textContent = userProfile.email;
+        
+        // Add logout functionality to mobile button
+        if (mobileLogoutBtn) {
+            mobileLogoutBtn.addEventListener('click', logout);
+        }
+    }
     
     // Track user session
     trackUserActivity('session_start');
@@ -1003,7 +1081,7 @@ function displaySearchResults(wordData) {
             <div class="text-lg text-blue-600 mt-1">English: "${wordData.originalWord}"</div>
         `;
     } else {
-        elements.resultWord.textContent = wordData.word;
+    elements.resultWord.textContent = wordData.word;
     }
     
     // Enhanced phonetic and language display
@@ -1376,11 +1454,11 @@ function createWordCard(wordData) {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
-
+    
     card.innerHTML = `
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-800">${wordData.word}</h3>
+            <h3 class="text-xl font-bold text-gray-800">${wordData.word}</h3>
                 ${wordData.isWordOfDay ? `
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-sm">
                         🌟 Word of the Day - ${formatDate(wordData.wordOfDayDate)}
@@ -1461,7 +1539,7 @@ async function fetchWordOfTheDay() {
             const parsed = JSON.parse(dailyWordData);
             if (parsed.date === today) {
                 displayDailyWord(parsed);
-                return;
+            return;
             }
         }
         
@@ -1470,8 +1548,8 @@ async function fetchWordOfTheDay() {
         
         if (wordData) {
             const wordWithDate = {
-                ...wordData,
-                date: today,
+                    ...wordData,
+                    date: today,
                 timestamp: Date.now()
             };
             
@@ -1770,26 +1848,26 @@ function initializeEventListeners() {
     
     // Search functionality
     if (elements.searchButton && elements.searchInput) {
-        elements.searchButton.addEventListener('click', () => {
+    elements.searchButton.addEventListener('click', () => {
+        const word = elements.searchInput.value.trim();
+        if (word) {
+            searchWord(word);
+        }
+    });
+    
+    elements.searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
             const word = elements.searchInput.value.trim();
             if (word) {
                 searchWord(word);
             }
-        });
-        
-        elements.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const word = elements.searchInput.value.trim();
-                if (word) {
-                    searchWord(word);
-                }
-            }
-        });
+        }
+    });
     }
     
     // Audio search
     if (elements.audioButton) {
-        elements.audioButton.addEventListener('click', toggleAudioSearch);
+    elements.audioButton.addEventListener('click', toggleAudioSearch);
     }
     
     // Daily word save functionality
@@ -1815,11 +1893,15 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeElements();
         console.log('Elements initialized');
         
+        // Setup mobile interface
+        setupMobileInterface();
+        console.log('Mobile interface setup');
+        
         // Then initialize event listeners and auth
-        initializeEventListeners();
+    initializeEventListeners();
         console.log('Event listeners initialized');
         
-        initializeAuth();
+    initializeAuth();
         console.log('Auth initialized');
         
         console.log('LexiLog initialization complete');
