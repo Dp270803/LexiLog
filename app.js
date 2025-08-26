@@ -528,6 +528,9 @@ function showMainApp(userProfile) {
     initializeSpeechRecognition();
     loadUserVocabulary();
     fetchWordOfTheDay();
+    
+    // Initialize tab navigation and show default view
+    initializeTabNavigation();
 }
 
 // User Activity Tracking
@@ -597,35 +600,64 @@ async function logout() {
 
 // Tab Navigation
 function initializeTabNavigation() {
-    const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
-    const tabContents = ['searchView', 'libraryView', 'dailyView'];
+    const tabButtons = [elements.searchTab, elements.translateTab, elements.libraryTab, elements.dailyTab];
+    const tabContents = ['searchView', 'translateView', 'libraryView', 'dailyView'];
     
     tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetTab = button.dataset.tab;
-            
-            // Update active tab button
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Update active content
-            tabContents.forEach(contentId => {
-                const content = document.getElementById(contentId);
-                if (contentId === `${targetTab}View`) {
-                    content.classList.add('active');
-                } else {
-                    content.classList.remove('active');
+        if (button) {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
+                
+                // Update active tab button
+                tabButtons.forEach(btn => {
+                    if (btn) btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // Update active content
+                tabContents.forEach(contentId => {
+                    const content = document.getElementById(contentId);
+                    if (content) {
+                        if (contentId === `${targetTab}View`) {
+                            content.classList.add('active');
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.remove('active');
+                            content.classList.add('hidden');
+                        }
+                    }
+                });
+                
+                // Refresh data when switching tabs
+                if (targetTab === 'library') {
+                    loadUserVocabulary();
+                } else if (targetTab === 'daily') {
+                    fetchWordOfTheDay();
                 }
             });
-            
-            // Refresh data when switching tabs
-            if (targetTab === 'library') {
-                loadUserVocabulary();
-            } else if (targetTab === 'daily') {
-                fetchWordOfTheDay();
+        }
+    });
+    
+    // Set initial active tab (search/dictionary)
+    if (elements.searchTab) {
+        elements.searchTab.classList.add('active');
+        const searchView = document.getElementById('searchView');
+        if (searchView) {
+            searchView.classList.add('active');
+            searchView.classList.remove('hidden');
+        }
+        
+        // Hide other views initially
+        tabContents.forEach(contentId => {
+            if (contentId !== 'searchView') {
+                const content = document.getElementById(contentId);
+                if (content) {
+                    content.classList.remove('active');
+                    content.classList.add('hidden');
+                }
             }
         });
-    });
+    }
 }
 
 // Language Helper Functions
@@ -1813,8 +1845,8 @@ function initializeEventListeners() {
     if (elements.homeButton) {
         elements.homeButton.addEventListener('click', () => {
             // Switch to search/home tab
-            const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
-            const tabContents = ['searchView', 'libraryView', 'dailyView'];
+            const tabButtons = [elements.searchTab, elements.translateTab, elements.libraryTab, elements.dailyTab];
+            const tabContents = ['searchView', 'translateView', 'libraryView', 'dailyView'];
             
             // Update active tab button
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -1880,8 +1912,7 @@ function initializeEventListeners() {
         });
     }
     
-    // Tab navigation
-    initializeTabNavigation();
+    // Tab navigation is now handled in showMainApp
 }
 
 // Initialize App

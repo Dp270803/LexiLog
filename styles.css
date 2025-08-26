@@ -192,6 +192,22 @@ textarea:focus {
         padding-bottom: 80px !important; /* Space for bottom nav */
     }
     
+    /* Ensure content views are visible on mobile */
+    .mobile-interface #searchView,
+    .mobile-interface #translateView,
+    .mobile-interface #libraryView,
+    .mobile-interface #dailyView {
+        display: block !important;
+    }
+    
+    .mobile-interface .tab-content.hidden {
+        display: none !important;
+    }
+    
+    .mobile-interface .tab-content.active {
+        display: block !important;
+    }
+    
     /* Mobile Hero Sections */
     .min-h-screen {
         min-height: calc(100vh - 100px) !important;
@@ -375,6 +391,13 @@ textarea:focus {
     /* Adjust main content for mobile profile */
     .mobile-interface main {
         padding-top: 80px !important;
+        padding-bottom: 80px !important;
+    }
+    
+    /* Ensure mobile content is visible */
+    .mobile-interface .min-h-screen {
+        min-height: calc(100vh - 160px) !important;
+        padding-top: 0 !important;
     }
 }
 
