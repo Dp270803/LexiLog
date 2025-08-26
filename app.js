@@ -99,7 +99,47 @@ function setupMobileInterface() {
         
         // Create mobile user profile header
         createMobileUserProfile();
+        
+        // Force show search view on mobile
+        forceMobileContentVisibility();
     }
+}
+
+// Force Mobile Content Visibility
+function forceMobileContentVisibility() {
+    console.log('Forcing mobile content visibility...');
+    
+    // Force main element to be visible
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+        mainElement.style.display = 'block';
+        mainElement.style.visibility = 'visible';
+        mainElement.style.opacity = '1';
+        console.log('Main element forced visible');
+    }
+    
+    // Force search view to be visible
+    const searchView = document.getElementById('searchView');
+    if (searchView) {
+        searchView.style.display = 'block';
+        searchView.style.visibility = 'visible';
+        searchView.style.opacity = '1';
+        searchView.classList.add('active');
+        searchView.classList.remove('hidden');
+        console.log('Search view forced visible');
+    }
+    
+    // Force all sections to be visible
+    const sections = document.querySelectorAll('section');
+    sections.forEach(section => {
+        section.style.display = 'block';
+        section.style.visibility = 'visible';
+        section.style.opacity = '1';
+        section.style.minHeight = 'auto';
+        section.style.height = 'auto';
+    });
+    
+    console.log('Mobile content visibility forced for', sections.length, 'sections');
 }
 
 // Create Mobile User Profile Header
@@ -531,6 +571,11 @@ function showMainApp(userProfile) {
     
     // Initialize tab navigation and show default view
     initializeTabNavigation();
+    
+    // Force mobile content visibility after login
+    if (window.innerWidth <= 768) {
+        forceMobileContentVisibility();
+    }
 }
 
 // User Activity Tracking
@@ -605,24 +650,24 @@ function initializeTabNavigation() {
     
     tabButtons.forEach(button => {
         if (button) {
-            button.addEventListener('click', () => {
-                const targetTab = button.dataset.tab;
-                
-                // Update active tab button
+        button.addEventListener('click', () => {
+            const targetTab = button.dataset.tab;
+            
+            // Update active tab button
                 tabButtons.forEach(btn => {
                     if (btn) btn.classList.remove('active');
                 });
-                button.classList.add('active');
-                
-                // Update active content
-                tabContents.forEach(contentId => {
-                    const content = document.getElementById(contentId);
+            button.classList.add('active');
+            
+            // Update active content
+            tabContents.forEach(contentId => {
+                const content = document.getElementById(contentId);
                     if (content) {
-                        if (contentId === `${targetTab}View`) {
-                            content.classList.add('active');
+                if (contentId === `${targetTab}View`) {
+                    content.classList.add('active');
                             content.classList.remove('hidden');
-                        } else {
-                            content.classList.remove('active');
+                } else {
+                    content.classList.remove('active');
                             content.classList.add('hidden');
                         }
                     }

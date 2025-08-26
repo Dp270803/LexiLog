@@ -208,10 +208,31 @@ textarea:focus {
         display: block !important;
     }
     
-    /* Mobile Hero Sections */
-    .min-h-screen {
-        min-height: calc(100vh - 100px) !important;
+    /* Mobile Hero Sections - Simplified */
+    .mobile-interface .min-h-screen {
+        min-height: auto !important;
+        height: auto !important;
         padding: 1rem !important;
+        background: #f9fafb !important;
+        display: block !important;
+    }
+    
+    /* Mobile Search View - Force visible */
+    .mobile-interface #searchView {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        height: auto !important;
+        min-height: auto !important;
+    }
+    
+    /* Mobile content sections */
+    .mobile-interface section {
+        min-height: auto !important;
+        height: auto !important;
+        padding: 1rem !important;
+        background: #f9fafb !important;
     }
     
     /* Mobile Typography - Clean and simple */
@@ -392,12 +413,23 @@ textarea:focus {
     .mobile-interface main {
         padding-top: 80px !important;
         padding-bottom: 80px !important;
+        display: block !important;
+        visibility: visible !important;
+        height: auto !important;
+        min-height: calc(100vh - 160px) !important;
+        background: #f9fafb !important;
     }
     
-    /* Ensure mobile content is visible */
-    .mobile-interface .min-h-screen {
-        min-height: calc(100vh - 160px) !important;
-        padding-top: 0 !important;
+    /* Force mobile main content to show */
+    .mobile-interface main .tab-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+    }
+    
+    .mobile-interface main .tab-content.hidden {
+        display: none !important;
     }
 }
 
