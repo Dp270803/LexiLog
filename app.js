@@ -1238,6 +1238,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
         }
         
         // Step 4: Create comprehensive result
+        console.log('DEBUG: Creating wordData with actualRomanized =', actualRomanized);
         const wordData = {
             word: nativeWord || inputWord,
             romanized: romanizedWord && romanizedWord !== nativeWord ? romanizedWord : null,
@@ -1249,6 +1250,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             source: isGeminiAvailable && definition ? 'gemini' : 'translation',
             inputType: isNativeScript ? 'native-script' : 'romanized'
         };
+        console.log('DEBUG: Final wordData =', wordData);
         
         // Format definitions properly
         if (definition) {
@@ -1789,8 +1791,12 @@ function displaySearchResults(wordData) {
         let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}`;
         
         // Show romanized version in brackets if available
+        console.log('DEBUG: wordData.actualRomanized =', wordData.actualRomanized);
+        console.log('DEBUG: wordData.romanized =', wordData.romanized);
         if (wordData.actualRomanized) {
             wordHtml += ` (${wordData.actualRomanized})`;
+        } else {
+            console.log('DEBUG: No actualRomanized found!');
         }
         
         wordHtml += `</div>`;
