@@ -1127,62 +1127,125 @@ async function searchWord(word) {
     }
 }
 
-// Native Language Definition (Romanized input → Native script + definition)
+// Enhanced Native Language Definition (Romanized input → Native script + definition)
 async function getNativeLanguageDefinition(romanizedWord, targetLanguage) {
     try {
         const languageName = SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage;
+        console.log(`🔍 Searching for "${romanizedWord}" in ${languageName}...`);
         
-        // Step 1: Try to get native script version using Gemini
         let nativeWord = null;
         let definition = null;
+        let isGeminiAvailable = GEMINI_API_KEY !== 'your-gemini-api-key-here';
         
-        if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
+        // Step 1: Try Gemini AI for native definition (if API key is configured)
+        if (isGeminiAvailable) {
+            console.log('🤖 Trying Gemini AI for native definition...');
             const geminiResult = await getGeminiNativeDefinition(romanizedWord, targetLanguage);
-            if (geminiResult) {
+            if (geminiResult && geminiResult.isValid) {
                 nativeWord = geminiResult.nativeScript;
                 definition = geminiResult.definition;
+                console.log('✅ Gemini AI provided definition:', { nativeWord, definition });
+            }
+        } else {
+            console.log('⚠️ Gemini API not configured, using enhanced fallbacks...');
+            // Show one-time notification about Gemini API
+            if (!sessionStorage.getItem('gemini-notification-shown')) {
+                showNotification('💡 For better native language definitions, configure Gemini AI API in the code!', 'info', 5000);
+                sessionStorage.setItem('gemini-notification-shown', 'true');
             }
         }
         
-        // Step 2: Fallback - try translation services
+        // Step 2: Enhanced fallback - try multiple approaches
         if (!nativeWord) {
+            console.log('🔄 Trying translation fallback...');
+            // Try translation to get native script
             nativeWord = await translateText(romanizedWord, 'en', targetLanguage);
+            
+            // If translation fails, try reverse translation to validate
+            if (!nativeWord) {
+                // Try assuming it's already a valid word and translate to English for validation
+                const englishTranslation = await translateText(romanizedWord, targetLanguage, 'en');
+                if (englishTranslation && englishTranslation !== romanizedWord) {
+                    nativeWord = romanizedWord; // Assume it's valid native script
+                    definition = `Meaning in English: ${englishTranslation}`;
+                }
+            }
         }
         
-        // Step 3: Create comprehensive result
+        // Step 3: Get enhanced definition if we don't have one from Gemini
+        if (!definition && nativeWord) {
+            console.log('📚 Creating enhanced definition...');
+            
+            // Try to get English meaning for better context
+            const englishMeaning = await translateText(nativeWord, targetLanguage, 'en');
+            
+            if (englishMeaning && englishMeaning !== nativeWord) {
+                definition = `This ${languageName} word means "${englishMeaning}" in English.`;
+                
+                // Try to get more context from English definition
+                try {
+                    const englishDef = await getEnglishDefinition(englishMeaning);
+                    if (englishDef && englishDef.meanings && englishDef.meanings[0]) {
+                        const firstDef = englishDef.meanings[0].definitions[0];
+                        if (firstDef) {
+                            definition += ` ${firstDef.definition}`;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not enhance with English definition');
+                }
+            } else {
+                definition = `${languageName} word: "${romanizedWord}"${nativeWord !== romanizedWord ? ` (${nativeWord})` : ''}`;
+            }
+        }
+        
+        // Step 4: Create comprehensive result
         const wordData = {
             word: nativeWord || romanizedWord,
-            romanized: romanizedWord,
+            romanized: romanizedWord !== nativeWord ? romanizedWord : null,
             phonetic: '',
-            meanings: [],
+            definitions: [], // Use definitions instead of meanings for consistency
             language: targetLanguage,
-            isNativeLanguage: true
+            isNativeLanguage: true,
+            source: isGeminiAvailable && definition ? 'gemini' : 'translation'
         };
         
+        // Format definitions properly
         if (definition) {
-            // Use Gemini definition
-            wordData.meanings = [{
+            wordData.definitions = [{
                 partOfSpeech: 'word',
-                definitions: [{
-                    definition: definition,
-                    example: ''
-                }]
+                definition: definition,
+                example: ''
             }];
         } else {
-            // Fallback definition
-            wordData.meanings = [{
+            // Last resort fallback
+            wordData.definitions = [{
                 partOfSpeech: 'word',
-                definitions: [{
-                    definition: `${languageName} word "${romanizedWord}" ${nativeWord ? `(${nativeWord})` : ''}`,
-                    example: ''
-                }]
+                definition: `${languageName} word "${romanizedWord}"${nativeWord && nativeWord !== romanizedWord ? ` (native script: ${nativeWord})` : ''}. For better definitions, configure Gemini AI API.`,
+                example: ''
             }];
         }
         
+        console.log('✅ Native language result:', wordData);
         return wordData;
+        
     } catch (error) {
-        console.error('Native language definition error:', error);
-        return null;
+        console.error('❌ Native language definition error:', error);
+        
+        // Emergency fallback
+        return {
+            word: romanizedWord,
+            romanized: null,
+            phonetic: '',
+            definitions: [{
+                partOfSpeech: 'word',
+                definition: `${SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage} word: "${romanizedWord}". Unable to fetch detailed definition.`,
+                example: ''
+            }],
+            language: targetLanguage,
+            isNativeLanguage: true,
+            source: 'fallback'
+        };
     }
 }
 
@@ -1506,12 +1569,19 @@ function displaySearchResults(wordData) {
     }
     
     // Enhanced display for native language results
-    if (wordData.isNativeLanguage && wordData.romanized) {
-        // Show native script word with romanized version
-        elements.resultWord.innerHTML = `
-            <div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>
-            <div class="text-lg text-blue-600">Romanized: "${wordData.romanized}"</div>
-        `;
+    if (wordData.isNativeLanguage) {
+        let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>`;
+        
+        if (wordData.romanized) {
+            wordHtml += `<div class="text-lg text-blue-600 mb-1">Romanized: "${wordData.romanized}"</div>`;
+        }
+        
+        // Show source indicator
+        const sourceIcon = wordData.source === 'gemini' ? '🤖' : wordData.source === 'translation' ? '🔄' : '📚';
+        const sourceName = wordData.source === 'gemini' ? 'Gemini AI' : wordData.source === 'translation' ? 'Translation Service' : 'Dictionary';
+        wordHtml += `<div class="text-sm text-gray-500 mb-2">${sourceIcon} ${sourceName}</div>`;
+        
+        elements.resultWord.innerHTML = wordHtml;
     } else if (wordData.originalWord && wordData.originalWord !== wordData.word) {
         // Show both original English word and translation
         elements.resultWord.innerHTML = `
@@ -1543,8 +1613,10 @@ function displaySearchResults(wordData) {
     // Clear previous definitions
     elements.resultDefinitions.innerHTML = '';
     
-    // Display definitions with enhanced formatting
-    wordData.meanings.forEach((meaning, index) => {
+    // Display definitions with enhanced formatting (support both meanings and definitions structure)
+    const meaningsToDisplay = wordData.meanings || (wordData.definitions ? [{ partOfSpeech: 'definition', definitions: wordData.definitions }] : []);
+    
+    meaningsToDisplay.forEach((meaning, index) => {
         const meaningDiv = document.createElement('div');
         meaningDiv.className = 'definition-item hover-lift';
         
