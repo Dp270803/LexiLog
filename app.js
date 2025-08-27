@@ -97,49 +97,403 @@ function setupMobileInterface() {
         // Add mobile-specific body class
         document.body.classList.add('mobile-interface');
         
-        // Create mobile user profile header
-        createMobileUserProfile();
-        
-        // Force show search view on mobile
-        forceMobileContentVisibility();
+        // Create simple mobile interface that actually works
+        createSimpleMobileInterface();
     }
 }
 
-// Force Mobile Content Visibility
-function forceMobileContentVisibility() {
-    console.log('Forcing mobile content visibility...');
+// Create Simple Mobile Interface
+function createSimpleMobileInterface() {
+    console.log('Creating simple mobile interface...');
     
-    // Force main element to be visible
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-        mainElement.style.display = 'block';
-        mainElement.style.visibility = 'visible';
-        mainElement.style.opacity = '1';
-        console.log('Main element forced visible');
+    // Hide the complex desktop main app
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) {
+        mainApp.style.display = 'none';
     }
     
-    // Force search view to be visible
-    const searchView = document.getElementById('searchView');
-    if (searchView) {
-        searchView.style.display = 'block';
-        searchView.style.visibility = 'visible';
-        searchView.style.opacity = '1';
-        searchView.classList.add('active');
-        searchView.classList.remove('hidden');
-        console.log('Search view forced visible');
+    // Create simple mobile app structure
+    const simpleMobileHTML = `
+        <div id="simpleMobileApp" class="mobile-app">
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <div class="user-info">
+                    <div class="user-avatar" id="mobileAvatar">DP</div>
+                    <div class="user-details">
+                        <div class="user-name" id="mobileUserNameSimple">Dhruv parashar</div>
+                        <div class="user-email" id="mobileUserEmailSimple">parashardhruv27@gmail.com</div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="mobileLogoutSimple">Logout</button>
+            </div>
+            
+            <!-- Mobile Content -->
+            <div class="mobile-content">
+                <div class="welcome-text">
+                    <h1>Hi Dhruv, Here is your Pocket Dictionary</h1>
+                </div>
+                
+                <div class="language-selector-mobile">
+                    <select id="languageSelectorMobile">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                        <option value="kn">Kannada</option>
+                        <option value="te">Telugu</option>
+                        <option value="ta">Tamil</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="bn">Bengali</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="mr">Marathi</option>
+                        <option value="pa">Punjabi</option>
+                        <option value="ur">Urdu</option>
+                    </select>
+                </div>
+                
+                <div class="search-container-mobile">
+                    <input type="text" id="searchInputMobile" placeholder="✨ Type native words in English script..." />
+                    <button id="audioButtonMobile" class="audio-btn">🎤</button>
+                </div>
+                
+                <div id="searchResultsMobile" class="search-results-mobile"></div>
+            </div>
+            
+            <!-- Mobile Bottom Navigation -->
+            <div class="mobile-bottom-nav">
+                <button class="nav-btn active" data-view="dictionary">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Dictionary</span>
+                </button>
+                <button class="nav-btn" data-view="translate">
+                    <span class="nav-icon">🌐</span>
+                    <span class="nav-text">Translate</span>
+                </button>
+                <button class="nav-btn" data-view="library">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">Library</span>
+                </button>
+                <button class="nav-btn" data-view="daily">
+                    <span class="nav-icon">⭐</span>
+                    <span class="nav-text">Daily</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add CSS for simple mobile interface
+    const mobileCSS = `
+        <style>
+        .mobile-app {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f9fafb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-header {
+            background: white;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1f2937;
+        }
+        
+        .user-email {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #dc2626;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .logout-btn:hover {
+            background: #fef2f2;
+        }
+        
+        .mobile-content {
+            flex: 1;
+            padding: 80px 1rem 80px 1rem;
+            overflow-y: auto;
+        }
+        
+        .welcome-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .language-selector-mobile {
+            margin-bottom: 1rem;
+        }
+        
+        .language-selector-mobile select {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .search-container-mobile {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-container-mobile input {
+            width: 100%;
+            padding: 1rem;
+            padding-right: 3rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .search-container-mobile input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .audio-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+        }
+        
+        .audio-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .search-results-mobile {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-height: 200px;
+        }
+        
+        .mobile-bottom-nav {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            flex: 1;
+            color: #6b7280;
+        }
+        
+        .nav-btn.active {
+            color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .nav-icon {
+            font-size: 1.25rem;
+        }
+        
+        .nav-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        </style>
+    `;
+    
+    // Insert the mobile app
+    document.body.insertAdjacentHTML('beforeend', mobileCSS + simpleMobileHTML);
+    
+    // Add basic functionality
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInputMobile');
+        const searchResults = document.getElementById('searchResultsMobile');
+        const logoutBtn = document.getElementById('mobileLogoutSimple');
+        
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        searchResults.innerHTML = `<p>Searching for "${query}"...</p>`;
+                        // Use existing search function
+                        searchWord(query);
+                    }
+                }
+            });
+        }
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                logout();
+            });
+        }
+        
+        // Set initial message
+        if (searchResults) {
+            searchResults.innerHTML = `
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                    <p>👋 Welcome to your pocket dictionary!</p>
+                    <p>Type a word above and press Enter to search.</p>
+                </div>
+            `;
+        }
+        
+        console.log('Mobile functionality added!');
+    }, 100);
+    
+    console.log('Simple mobile interface created!');
+}
+
+// Display search results in mobile interface
+function displayMobileSearchResults(wordData, resultsContainer) {
+    console.log('Displaying mobile search results:', wordData);
+    
+    let html = `
+        <div class="mobile-word-result">
+            <div class="word-header">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">
+                    ${wordData.word}
+                </h2>
+    `;
+    
+    if (wordData.phonetic) {
+        html += `<div style="color: #6b7280; margin-bottom: 1rem;">${wordData.phonetic}</div>`;
     }
     
-    // Force all sections to be visible
-    const sections = document.querySelectorAll('section');
-    sections.forEach(section => {
-        section.style.display = 'block';
-        section.style.visibility = 'visible';
-        section.style.opacity = '1';
-        section.style.minHeight = 'auto';
-        section.style.height = 'auto';
-    });
+    html += `</div>`;
     
-    console.log('Mobile content visibility forced for', sections.length, 'sections');
+    // Definitions
+    if (wordData.definitions && wordData.definitions.length > 0) {
+        html += `<div class="definitions" style="margin-bottom: 1rem;">`;
+        wordData.definitions.forEach((def, index) => {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem;">
+                    <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                        ${def.partOfSpeech || 'Definition'}
+                    </div>
+                    <div style="color: #1f2937; line-height: 1.5;">
+                        ${def.definition}
+                    </div>
+                    ${def.example ? `<div style="color: #6b7280; font-style: italic; margin-top: 0.5rem;">Example: ${def.example}</div>` : ''}
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    
+    // Add to library button
+    html += `
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button onclick="saveMobileWord('${wordData.word.replace(/'/g, "\\'")}', '${JSON.stringify(wordData).replace(/'/g, "\\'")}', '${wordData.language || 'en'}')" 
+                    style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 500; cursor: pointer;">
+                💾 Add to My LexiLog
+            </button>
+        </div>
+    `;
+    
+    html += `</div>`;
+    
+    resultsContainer.innerHTML = html;
+}
+
+// Save word from mobile interface
+function saveMobileWord(word, wordDataStr, language) {
+    try {
+        const wordData = JSON.parse(wordDataStr.replace(/\\'/g, "'"));
+        saveWordToVocabulary(wordData, language);
+        
+        // Show success message
+        const resultsContainer = document.getElementById('searchResultsMobile');
+        if (resultsContainer) {
+            const successMsg = document.createElement('div');
+            successMsg.innerHTML = `
+                <div style="background: #d1fae5; color: #065f46; padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; text-align: center;">
+                    ✅ "${word}" added to your LexiLog!
+                </div>
+            `;
+            resultsContainer.appendChild(successMsg);
+            
+            setTimeout(() => successMsg.remove(), 3000);
+        }
+    } catch (error) {
+        console.error('Error saving mobile word:', error);
+    }
 }
 
 // Create Mobile User Profile Header
@@ -1143,6 +1497,13 @@ async function getWordDefinitionFromTranslation(word) {
 function displaySearchResults(wordData) {
     hideLoading();
     hideError();
+    
+    // Also display in mobile interface if it exists
+    const mobileResults = document.getElementById('searchResultsMobile');
+    if (mobileResults && window.innerWidth <= 768) {
+        displayMobileSearchResults(wordData, mobileResults);
+        return; // Use mobile display only
+    }
     
     // Enhanced display for native language results
     if (wordData.isNativeLanguage && wordData.romanized) {
