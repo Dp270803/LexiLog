@@ -1157,13 +1157,11 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
                 try {
                     if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
                         actualRomanized = await getGeminiRomanization(nativeWord, targetLanguage);
-                        console.log('DEBUG: Gemini romanization result:', actualRomanized);
                     }
                     
                     // Fallback to simple transliteration service if Gemini fails
                     if (!actualRomanized) {
                         actualRomanized = await getRomanizedVersion(nativeWord, targetLanguage);
-                        console.log('DEBUG: Fallback romanization result:', actualRomanized);
                     }
                 } catch (e) {
                     console.log('Could not get romanized version:', e);
@@ -1240,7 +1238,6 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
         }
         
         // Step 4: Create comprehensive result
-        console.log('DEBUG: Creating wordData with actualRomanized =', actualRomanized);
         const wordData = {
             word: nativeWord || inputWord,
             romanized: romanizedWord && romanizedWord !== nativeWord ? romanizedWord : null,
@@ -1252,7 +1249,6 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             source: isGeminiAvailable && definition ? 'gemini' : 'translation',
             inputType: isNativeScript ? 'native-script' : 'romanized'
         };
-        console.log('DEBUG: Final wordData =', wordData);
         
         // Format definitions properly
         if (definition) {
@@ -1790,20 +1786,9 @@ function displaySearchResults(wordData) {
     
     // Enhanced display for native language results
     if (wordData.isNativeLanguage) {
-        let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}`;
+        let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>`;
         
-        // Show romanized pronunciation in brackets - FIXED LOGIC
-        if (wordData.actualRomanized && wordData.actualRomanized !== wordData.word) {
-            // Use actualRomanized for pronunciation
-            wordHtml += ` (${wordData.actualRomanized})`;
-        } else if (wordData.romanized && wordData.romanized !== wordData.word && !/^[a-zA-Z\s]+$/.test(wordData.romanized)) {
-            // Fallback: use romanized if it's not English translation
-            wordHtml += ` (${wordData.romanized})`;
-        }
-        
-        wordHtml += `</div>`;
-        
-        // Show English translation SEPARATELY (not in brackets)
+        // Show English translation if available
         if (wordData.romanized && /^[a-zA-Z\s]+$/.test(wordData.romanized)) {
             wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
         }
