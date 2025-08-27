@@ -1151,8 +1151,8 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             if (englishTranslation && englishTranslation !== nativeWord) {
                 definition = `This ${languageName} word means "${englishTranslation}" in English.`;
                 
-                // Try to get romanized version
-                romanizedWord = await getRomanizedVersion(nativeWord, targetLanguage);
+                // Store English translation for display
+                romanizedWord = englishTranslation.toLowerCase();
                 
                 // Enhance with English definition if possible
                 try {
@@ -1656,7 +1656,11 @@ function displaySearchResults(wordData) {
         let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>`;
         
         if (wordData.romanized) {
-            wordHtml += `<div class="text-lg text-blue-600 mb-1">Romanized: "${wordData.romanized}"</div>`;
+            // Check if romanized text looks like English (for native script input)
+            const isEnglishTranslation = wordData.inputType === 'native-script' && 
+                                       /^[a-zA-Z\s]+$/.test(wordData.romanized);
+            const label = isEnglishTranslation ? 'English' : 'Romanized';
+            wordHtml += `<div class="text-lg text-blue-600 mb-1">${label}: "${wordData.romanized}"</div>`;
         }
         
         // Show source and input type indicators
