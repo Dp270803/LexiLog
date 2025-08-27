@@ -1109,9 +1109,7 @@ async function searchWord(word) {
             wordData = await getEnglishDefinition(searchTerm);
         } else {
             // For other languages: Detect if input is native script or romanized
-            console.log(`🔍 DEBUG: Using native language definition for "${currentLanguage}"`);
             wordData = await getNativeLanguageDefinition(searchTerm, currentLanguage);
-            console.log(`🔍 DEBUG: wordData result:`, wordData);
         }
         
         if (wordData) {
@@ -1132,22 +1130,17 @@ async function searchWord(word) {
 async function getNativeLanguageDefinition(inputWord, targetLanguage) {
     try {
         const languageName = SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage;
-        console.log(`🔍 DEBUG: Searching for "${inputWord}" in ${languageName}...`);
-        
-        // DEBUGGING: Simple test first
-        console.log(`🔍 DEBUG: Function called with inputWord="${inputWord}", targetLanguage="${targetLanguage}"`);
+        console.log(`🔍 Searching for "${inputWord}" in ${languageName}...`);
         
         // Step 1: Detect if input is native script or romanized English
         const isNativeScript = isNativeScriptDetected(inputWord, targetLanguage);
-        console.log(`📝 DEBUG: Input type detected: ${isNativeScript ? 'Native Script' : 'Romanized English'}`);
+        console.log(`📝 Input type detected: ${isNativeScript ? 'Native Script' : 'Romanized English'}`);
         
         let nativeWord = null;
         let romanizedWord = null;
         let definition = null;
         let actualRomanized = null;
         let isGeminiAvailable = GEMINI_API_KEY !== 'your-gemini-api-key-here';
-        
-        console.log(`🤖 DEBUG: Gemini available: ${isGeminiAvailable}`);
         
         if (isNativeScript) {
             // Input is already in native script (like "हाथ")
@@ -1272,17 +1265,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             }];
         }
         
-        console.log('✅ DEBUG: Native language result:', wordData);
-        
-        // DEBUGGING: Ensure we always return something
-        if (!wordData.definitions || wordData.definitions.length === 0) {
-            console.log('⚠️ DEBUG: No definitions found, adding emergency fallback');
-            wordData.definitions = [{
-                partOfSpeech: 'word',
-                definition: `DEBUG: ${languageName} word "${inputWord}". Function is working but no definition found.`,
-                example: ''
-            }];
-        }
+        console.log('✅ Native language result:', wordData);
         
         return wordData;
         
@@ -1364,12 +1347,29 @@ function generateRomanizedFromNative(nativeWord, language) {
         'te': {
             'ఇల్లు': 'illu',
             'నీరు': 'neeru',
-            'పుస్తకం': 'pustakam'
+            'పుస్తకం': 'pustakam',
+            'తిన్నాను': 'tinnaanu'
         },
         'ta': {
             'வீடு': 'veedu',
             'நீர்': 'neer',
-            'புத்தகம்': 'puthagam'
+            'புத்தகம்': 'puthagam',
+            'சாப்பிட்டேன்': 'sappitten'
+        },
+        'bn': {
+            'বাড়ি': 'bari',
+            'পানি': 'paani',
+            'খেয়েছি': 'kheyechi'
+        },
+        'ml': {
+            'വീട്': 'veedu',
+            'വെള্ളം': 'vellam',
+            'കഴിച്ചു': 'kazhichu'
+        },
+        'gu': {
+            'ઘર': 'ghar',
+            'પાણી': 'paani',
+            'ખાધું': 'khadhum'
         }
     };
     
@@ -1398,12 +1398,16 @@ async function getGeminiRomanization(nativeWord, language) {
     
     const prompt = `You are an expert in ${languageName} transliteration. Please provide the romanized (English script) version of this ${languageName} word: "${nativeWord}"
 
-Examples:
-- Hindi: हाथ → haath
-- Kannada: ಇಲ್ಲಿ → illi
-- Tamil: வீடு → veedu
+Examples for different languages:
+- Hindi: हाथ → haath, पानी → paani
+- Kannada: ಇಲ್ಲಿ → illi, ಮನೆ → mane
+- Tamil: வீடு → veedu, சாப்பிட்டேன் → sappitten
+- Telugu: ఇల్లు → illu, తిన్నాను → tinnaanu
+- Bengali: বাড়ি → bari, খেয়েছি → kheyechi
+- Malayalam: വീട് → veedu, കഴിച്ചു → kazhichu
+- Gujarati: ઘર → ghar, ખાધું → khadhum
 
-Please respond with ONLY the romanized version, no extra text or explanation.`;
+Please respond with ONLY the romanized version in lowercase, no extra text or explanation.`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
