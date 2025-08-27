@@ -1152,6 +1152,22 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
                 // Store English translation for display
                 romanizedWord = englishTranslation.toLowerCase();
                 
+                // Try to get romanized version too
+                let actualRomanized = null;
+                try {
+                    // Try to get romanized version from translation service
+                    const romanizedResult = await translateText(nativeWord, targetLanguage, 'en');
+                    if (romanizedResult && romanizedResult !== nativeWord) {
+                        // Try to get a proper romanized transliteration
+                        const romanizedAttempt = await getRomanizedVersion(nativeWord, targetLanguage);
+                        if (romanizedAttempt && romanizedAttempt !== romanizedResult) {
+                            actualRomanized = romanizedAttempt;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not get romanized version');
+                }
+                
                 // Get proper English definition instead of just translation
                 try {
                     const englishDef = await getEnglishDefinition(englishTranslation);
@@ -1305,6 +1321,46 @@ function isNativeScriptDetected(inputWord, language) {
     
     // Fallback: if contains non-ASCII characters, likely native script
     return /[^\x00-\x7F]/.test(inputWord);
+}
+
+function generateRomanizedFromNative(nativeWord, language) {
+    // Simple romanization mapping for common words
+    const romanizationMaps = {
+        'hi': {
+            'हाथ': 'haath',
+            'पानी': 'paani',
+            'घर': 'ghar',
+            'किताब': 'kitaab',
+            'स्कूल': 'school',
+            'दोस्त': 'dost',
+            'खाना': 'khaana',
+            'समय': 'samay'
+        },
+        'kn': {
+            'ಇಲ್ಲಿ': 'illi',
+            'ಇದಿರಾ': 'idira',
+            'ಮನೆ': 'mane',
+            'ಪುಸ್ತಕ': 'pustaka',
+            'ನೀರು': 'neeru'
+        },
+        'te': {
+            'ఇల్లు': 'illu',
+            'నీరు': 'neeru',
+            'పుస్తకం': 'pustakam'
+        },
+        'ta': {
+            'வீடு': 'veedu',
+            'நீர்': 'neer',
+            'புத்தகம்': 'puthagam'
+        }
+    };
+    
+    const map = romanizationMaps[language];
+    if (map && map[nativeWord]) {
+        return map[nativeWord];
+    }
+    
+    return null;
 }
 
 // Helper function to get romanized version of native script
@@ -1662,8 +1718,18 @@ function displaySearchResults(wordData) {
             // Check if romanized text looks like English (for native script input)
             const isEnglishTranslation = wordData.inputType === 'native-script' && 
                                        /^[a-zA-Z\s]+$/.test(wordData.romanized);
-            const label = isEnglishTranslation ? 'English' : 'Romanized';
-            wordHtml += `<div class="text-lg text-blue-600 mb-1">${label}: "${wordData.romanized}"</div>`;
+            
+            if (isEnglishTranslation) {
+                // For native script input, show both romanized and English
+                // Try to generate romanized version from the word itself
+                const possibleRomanized = generateRomanizedFromNative(wordData.word, wordData.language);
+                if (possibleRomanized && possibleRomanized !== wordData.romanized) {
+                    wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${possibleRomanized})</div>`;
+                }
+                wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
+            } else {
+                wordHtml += `<div class="text-lg text-blue-600 mb-1">Romanized: "${wordData.romanized}"</div>`;
+            }
         }
         
         // Show source and input type indicators
