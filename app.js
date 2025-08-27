@@ -1139,6 +1139,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
         let nativeWord = null;
         let romanizedWord = null;
         let definition = null;
+        let actualRomanized = null;
         let isGeminiAvailable = GEMINI_API_KEY !== 'your-gemini-api-key-here';
         
         if (isNativeScript) {
@@ -1153,7 +1154,6 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
                 romanizedWord = englishTranslation.toLowerCase();
                 
                 // Try to get romanized version using Gemini AI
-                let actualRomanized = null;
                 try {
                     if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
                         actualRomanized = await getGeminiRomanization(nativeWord, targetLanguage);
