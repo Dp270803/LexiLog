@@ -1157,11 +1157,13 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
                 try {
                     if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
                         actualRomanized = await getGeminiRomanization(nativeWord, targetLanguage);
+                        console.log('DEBUG: Gemini romanization result:', actualRomanized);
                     }
                     
                     // Fallback to simple transliteration service if Gemini fails
                     if (!actualRomanized) {
                         actualRomanized = await getRomanizedVersion(nativeWord, targetLanguage);
+                        console.log('DEBUG: Fallback romanization result:', actualRomanized);
                     }
                 } catch (e) {
                     console.log('Could not get romanized version:', e);
@@ -1790,18 +1792,18 @@ function displaySearchResults(wordData) {
     if (wordData.isNativeLanguage) {
         let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}`;
         
-        // Show romanized version in brackets if available
-        console.log('DEBUG: wordData.actualRomanized =', wordData.actualRomanized);
-        console.log('DEBUG: wordData.romanized =', wordData.romanized);
-        if (wordData.actualRomanized) {
+        // Show romanized pronunciation in brackets - FIXED LOGIC
+        if (wordData.actualRomanized && wordData.actualRomanized !== wordData.word) {
+            // Use actualRomanized for pronunciation
             wordHtml += ` (${wordData.actualRomanized})`;
-        } else {
-            console.log('DEBUG: No actualRomanized found!');
+        } else if (wordData.romanized && wordData.romanized !== wordData.word && !/^[a-zA-Z\s]+$/.test(wordData.romanized)) {
+            // Fallback: use romanized if it's not English translation
+            wordHtml += ` (${wordData.romanized})`;
         }
         
         wordHtml += `</div>`;
         
-        // Show English translation if available
+        // Show English translation SEPARATELY (not in brackets)
         if (wordData.romanized && /^[a-zA-Z\s]+$/.test(wordData.romanized)) {
             wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
         }
