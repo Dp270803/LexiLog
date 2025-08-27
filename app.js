@@ -1109,7 +1109,7 @@ async function searchWord(word) {
             // For English: Try multiple sources for better definitions
             wordData = await getEnglishDefinition(searchTerm);
         } else {
-            // For other languages: Treat input as romanized/transliterated native word
+            // For other languages: Detect if input is native script or romanized
             wordData = await getNativeLanguageDefinition(searchTerm, currentLanguage);
         }
         
@@ -1127,87 +1127,97 @@ async function searchWord(word) {
     }
 }
 
-// Enhanced Native Language Definition (Romanized input → Native script + definition)
-async function getNativeLanguageDefinition(romanizedWord, targetLanguage) {
+// Smart Native Language Definition (Handles both native script and romanized input)
+async function getNativeLanguageDefinition(inputWord, targetLanguage) {
     try {
         const languageName = SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage;
-        console.log(`🔍 Searching for "${romanizedWord}" in ${languageName}...`);
+        console.log(`🔍 Searching for "${inputWord}" in ${languageName}...`);
+        
+        // Step 1: Detect if input is native script or romanized English
+        const isNativeScript = isNativeScriptDetected(inputWord, targetLanguage);
+        console.log(`📝 Input type detected: ${isNativeScript ? 'Native Script' : 'Romanized English'}`);
         
         let nativeWord = null;
+        let romanizedWord = null;
         let definition = null;
         let isGeminiAvailable = GEMINI_API_KEY !== 'your-gemini-api-key-here';
         
-        // Step 1: Try Gemini AI for native definition (if API key is configured)
-        if (isGeminiAvailable) {
-            console.log('🤖 Trying Gemini AI for native definition...');
-            const geminiResult = await getGeminiNativeDefinition(romanizedWord, targetLanguage);
-            if (geminiResult && geminiResult.isValid) {
-                nativeWord = geminiResult.nativeScript;
-                definition = geminiResult.definition;
-                console.log('✅ Gemini AI provided definition:', { nativeWord, definition });
-            }
-        } else {
-            console.log('⚠️ Gemini API not configured, using enhanced fallbacks...');
-            // Show one-time notification about Gemini API
-            if (!sessionStorage.getItem('gemini-notification-shown')) {
-                showNotification('💡 For better native language definitions, configure Gemini AI API in the code!', 'info', 5000);
-                sessionStorage.setItem('gemini-notification-shown', 'true');
-            }
-        }
-        
-        // Step 2: Enhanced fallback - try multiple approaches
-        if (!nativeWord) {
-            console.log('🔄 Trying translation fallback...');
-            // Try translation to get native script
-            nativeWord = await translateText(romanizedWord, 'en', targetLanguage);
+        if (isNativeScript) {
+            // Input is already in native script (like "हाथ")
+            nativeWord = inputWord;
+            console.log(`✅ Using native script input: "${nativeWord}"`);
             
-            // If translation fails, try reverse translation to validate
-            if (!nativeWord) {
-                // Try assuming it's already a valid word and translate to English for validation
-                const englishTranslation = await translateText(romanizedWord, targetLanguage, 'en');
-                if (englishTranslation && englishTranslation !== romanizedWord) {
-                    nativeWord = romanizedWord; // Assume it's valid native script
-                    definition = `Meaning in English: ${englishTranslation}`;
-                }
-            }
-        }
-        
-        // Step 3: Get enhanced definition if we don't have one from Gemini
-        if (!definition && nativeWord) {
-            console.log('📚 Creating enhanced definition...');
-            
-            // Try to get English meaning for better context
-            const englishMeaning = await translateText(nativeWord, targetLanguage, 'en');
-            
-            if (englishMeaning && englishMeaning !== nativeWord) {
-                definition = `This ${languageName} word means "${englishMeaning}" in English.`;
+            // Try to get English meaning for definition
+            const englishTranslation = await translateText(nativeWord, targetLanguage, 'en');
+            if (englishTranslation && englishTranslation !== nativeWord) {
+                definition = `This ${languageName} word means "${englishTranslation}" in English.`;
                 
-                // Try to get more context from English definition
+                // Try to get romanized version
+                romanizedWord = await getRomanizedVersion(nativeWord, targetLanguage);
+                
+                // Enhance with English definition if possible
                 try {
-                    const englishDef = await getEnglishDefinition(englishMeaning);
+                    const englishDef = await getEnglishDefinition(englishTranslation);
                     if (englishDef && englishDef.meanings && englishDef.meanings[0]) {
                         const firstDef = englishDef.meanings[0].definitions[0];
                         if (firstDef) {
-                            definition += ` ${firstDef.definition}`;
+                            definition += ` Definition: ${firstDef.definition}`;
                         }
                     }
                 } catch (e) {
                     console.log('Could not enhance with English definition');
                 }
             } else {
-                definition = `${languageName} word: "${romanizedWord}"${nativeWord !== romanizedWord ? ` (${nativeWord})` : ''}`;
+                definition = `${languageName} word: "${nativeWord}".`;
+            }
+        } else {
+            // Input is romanized English (like "haath")
+            romanizedWord = inputWord;
+            console.log(`✅ Using romanized input: "${romanizedWord}"`);
+            
+            // Step 2: Try Gemini AI for native definition (if API key is configured)
+            if (isGeminiAvailable) {
+                console.log('🤖 Trying Gemini AI for native definition...');
+                const geminiResult = await getGeminiNativeDefinition(romanizedWord, targetLanguage);
+                if (geminiResult && geminiResult.isValid) {
+                    nativeWord = geminiResult.nativeScript;
+                    definition = geminiResult.definition;
+                    console.log('✅ Gemini AI provided definition:', { nativeWord, definition });
+                }
+            } else {
+                console.log('⚠️ Gemini API not configured, using enhanced fallbacks...');
+                // Show one-time notification about Gemini API
+                if (!sessionStorage.getItem('gemini-notification-shown')) {
+                    showNotification('💡 For better native language definitions, configure Gemini AI API in the code!', 'info', 5000);
+                    sessionStorage.setItem('gemini-notification-shown', 'true');
+                }
+            }
+            
+            // Step 3: Fallback - try translation from English to native script
+            if (!nativeWord) {
+                console.log('🔄 Trying translation fallback...');
+                nativeWord = await translateText(romanizedWord, 'en', targetLanguage);
+                
+                if (nativeWord && nativeWord !== romanizedWord) {
+                    // Get English meaning for better context
+                    const englishMeaning = await translateText(nativeWord, targetLanguage, 'en');
+                    if (englishMeaning) {
+                        definition = `This ${languageName} word means "${englishMeaning}" in English.`;
+                    }
+                }
             }
         }
         
         // Step 4: Create comprehensive result
         const wordData = {
-            word: nativeWord || romanizedWord,
-            romanized: romanizedWord !== nativeWord ? romanizedWord : null,
+            word: nativeWord || inputWord,
+            romanized: romanizedWord && romanizedWord !== nativeWord ? romanizedWord : null,
             phonetic: '',
-            definitions: [], // Use definitions instead of meanings for consistency
+            definitions: [],
             language: targetLanguage,
             isNativeLanguage: true,
-            source: isGeminiAvailable && definition ? 'gemini' : 'translation'
+            source: isGeminiAvailable && definition ? 'gemini' : 'translation',
+            inputType: isNativeScript ? 'native-script' : 'romanized'
         };
         
         // Format definitions properly
@@ -1221,7 +1231,7 @@ async function getNativeLanguageDefinition(romanizedWord, targetLanguage) {
             // Last resort fallback
             wordData.definitions = [{
                 partOfSpeech: 'word',
-                definition: `${languageName} word "${romanizedWord}"${nativeWord && nativeWord !== romanizedWord ? ` (native script: ${nativeWord})` : ''}. For better definitions, configure Gemini AI API.`,
+                definition: `${languageName} word "${inputWord}". For better definitions, configure Gemini AI API.`,
                 example: ''
             }];
         }
@@ -1232,20 +1242,75 @@ async function getNativeLanguageDefinition(romanizedWord, targetLanguage) {
     } catch (error) {
         console.error('❌ Native language definition error:', error);
         
-        // Emergency fallback
+        // Emergency fallback - preserve original input
         return {
-            word: romanizedWord,
+            word: inputWord,
             romanized: null,
             phonetic: '',
             definitions: [{
                 partOfSpeech: 'word',
-                definition: `${SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage} word: "${romanizedWord}". Unable to fetch detailed definition.`,
+                definition: `${SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage} word: "${inputWord}". Unable to fetch detailed definition.`,
                 example: ''
             }],
             language: targetLanguage,
             isNativeLanguage: true,
             source: 'fallback'
         };
+    }
+}
+
+// Helper function to detect if input is native script or romanized English
+function isNativeScriptDetected(inputWord, language) {
+    // Simple detection based on Unicode ranges for common languages
+    const unicodeRanges = {
+        'hi': /[\u0900-\u097F]/, // Devanagari (Hindi)
+        'kn': /[\u0C80-\u0CFF]/, // Kannada
+        'ta': /[\u0B80-\u0BFF]/, // Tamil
+        'te': /[\u0C00-\u0C7F]/, // Telugu
+        'ml': /[\u0D00-\u0D7F]/, // Malayalam
+        'bn': /[\u0980-\u09FF]/, // Bengali
+        'gu': /[\u0A80-\u0AFF]/, // Gujarati
+        'mr': /[\u0900-\u097F]/, // Marathi (uses Devanagari)
+        'pa': /[\u0A00-\u0A7F]/, // Punjabi (Gurmukhi)
+        'ur': /[\u0600-\u06FF]/, // Urdu (Arabic script)
+        'ar': /[\u0600-\u06FF]/, // Arabic
+        'zh': /[\u4E00-\u9FFF]/, // Chinese
+        'ja': /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/, // Japanese (Hiragana, Katakana, Kanji)
+        'ko': /[\uAC00-\uD7AF]/, // Korean
+        'ru': /[\u0400-\u04FF]/, // Cyrillic (Russian)
+        'fr': /[àâäèéêëïîôöùûüÿç]/, // French accented characters
+        'de': /[äöüß]/, // German special characters
+        'es': /[ñáéíóúü]/, // Spanish accented characters
+        'it': /[àèéìíîòóù]/, // Italian accented characters
+        'pt': /[ãáâàéêíóôõú]/ // Portuguese accented characters
+    };
+    
+    const range = unicodeRanges[language];
+    if (range) {
+        return range.test(inputWord);
+    }
+    
+    // Fallback: if contains non-ASCII characters, likely native script
+    return /[^\x00-\x7F]/.test(inputWord);
+}
+
+// Helper function to get romanized version of native script
+async function getRomanizedVersion(nativeWord, language) {
+    try {
+        // For now, we'll use a simple approach - try translating to English and back
+        // This is not perfect but provides some romanization
+        const englishTranslation = await translateText(nativeWord, language, 'en');
+        if (englishTranslation && englishTranslation !== nativeWord) {
+            // Try to get a romanized version by translating back
+            const romanized = await translateText(englishTranslation, 'en', language);
+            if (romanized && romanized !== nativeWord) {
+                return englishTranslation.toLowerCase(); // Use English word as romanized
+            }
+        }
+        return null;
+    } catch (error) {
+        console.log('Could not get romanized version:', error);
+        return null;
     }
 }
 
@@ -1576,10 +1641,12 @@ function displaySearchResults(wordData) {
             wordHtml += `<div class="text-lg text-blue-600 mb-1">Romanized: "${wordData.romanized}"</div>`;
         }
         
-        // Show source indicator
+        // Show source and input type indicators
         const sourceIcon = wordData.source === 'gemini' ? '🤖' : wordData.source === 'translation' ? '🔄' : '📚';
         const sourceName = wordData.source === 'gemini' ? 'Gemini AI' : wordData.source === 'translation' ? 'Translation Service' : 'Dictionary';
-        wordHtml += `<div class="text-sm text-gray-500 mb-2">${sourceIcon} ${sourceName}</div>`;
+        const inputTypeIcon = wordData.inputType === 'native-script' ? '📝' : '🔤';
+        const inputTypeName = wordData.inputType === 'native-script' ? 'Native Script' : 'Romanized';
+        wordHtml += `<div class="text-sm text-gray-500 mb-2">${sourceIcon} ${sourceName} • ${inputTypeIcon} ${inputTypeName}</div>`;
         
         elements.resultWord.innerHTML = wordHtml;
     } else if (wordData.originalWord && wordData.originalWord !== wordData.word) {
