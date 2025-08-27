@@ -1149,22 +1149,25 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             // Try to get English meaning for definition
             const englishTranslation = await translateText(nativeWord, targetLanguage, 'en');
             if (englishTranslation && englishTranslation !== nativeWord) {
-                definition = `This ${languageName} word means "${englishTranslation}" in English.`;
-                
                 // Store English translation for display
                 romanizedWord = englishTranslation.toLowerCase();
                 
-                // Enhance with English definition if possible
+                // Get proper English definition instead of just translation
                 try {
                     const englishDef = await getEnglishDefinition(englishTranslation);
                     if (englishDef && englishDef.meanings && englishDef.meanings[0]) {
                         const firstDef = englishDef.meanings[0].definitions[0];
                         if (firstDef) {
-                            definition += ` Definition: ${firstDef.definition}`;
+                            definition = firstDef.definition;
+                        } else {
+                            definition = `This ${languageName} word means "${englishTranslation}" in English.`;
                         }
+                    } else {
+                        definition = `This ${languageName} word means "${englishTranslation}" in English.`;
                     }
                 } catch (e) {
-                    console.log('Could not enhance with English definition');
+                    console.log('Could not get English definition, using translation');
+                    definition = `This ${languageName} word means "${englishTranslation}" in English.`;
                 }
             } else {
                 definition = `${languageName} word: "${nativeWord}".`;
@@ -2190,20 +2193,20 @@ function displayDailyWord(wordData) {
     
     if (meaningsToDisplay.length > 0) {
         meaningsToDisplay.forEach(meaning => {
-            const meaningDiv = document.createElement('div');
+        const meaningDiv = document.createElement('div');
             meaningDiv.className = 'definition-item mb-4';
             
             const definitions = meaning.definitions || [];
             const firstDef = definitions[0] || { definition: 'Definition not available' };
-            
-            meaningDiv.innerHTML = `
+        
+        meaningDiv.innerHTML = `
                 <div class="text-sm text-purple-600 uppercase tracking-wide mb-2">${meaning.partOfSpeech || 'Word'}</div>
                 <div class="text-gray-700 mb-2">${firstDef.definition}</div>
                 ${firstDef.example ? `<div class="text-gray-600 italic">"${firstDef.example}"</div>` : ''}
-            `;
-            
-            elements.dailyDefinitions.appendChild(meaningDiv);
-        });
+        `;
+        
+        elements.dailyDefinitions.appendChild(meaningDiv);
+    });
     } else {
         // Fallback if no definitions available
         const fallbackDiv = document.createElement('div');
