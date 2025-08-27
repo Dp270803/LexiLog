@@ -29,8 +29,8 @@ const COLLINS_API_BASE = 'https://api.collinsdictionary.com/api/v1/dictionaries/
 const RANDOM_WORDS_API = 'https://api.wordnik.com/v4/words.json/randomWord';
 const WORDS_API_BASE = 'https://wordsapiv1.mashape.com/words/';
 
-// Gemini AI Configuration (you'll need to add your API key)
-const GEMINI_API_KEY = 'your-gemini-api-key-here'; // Replace with your actual API key
+// Gemini AI Configuration
+const GEMINI_API_KEY = 'AIzaSyAJowjMGOnrBN2g3TgbYJ0pJRQEz8164yc'; // Configured with user's API key
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
 // Supported Languages
@@ -1179,18 +1179,29 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             if (isGeminiAvailable) {
                 console.log('🤖 Trying Gemini AI for native definition...');
                 const geminiResult = await getGeminiNativeDefinition(romanizedWord, targetLanguage);
-                if (geminiResult && geminiResult.isValid) {
-                    nativeWord = geminiResult.nativeScript;
-                    definition = geminiResult.definition;
-                    console.log('✅ Gemini AI provided definition:', { nativeWord, definition });
+                            if (geminiResult && geminiResult.isValid) {
+                nativeWord = geminiResult.nativeScript;
+                
+                // Create rich definition with cultural context
+                let richDefinition = geminiResult.definition;
+                if (geminiResult.partOfSpeech) {
+                    richDefinition = `(${geminiResult.partOfSpeech}) ${richDefinition}`;
                 }
+                if (geminiResult.culturalNote) {
+                    richDefinition += ` • Cultural note: ${geminiResult.culturalNote}`;
+                }
+                
+                definition = richDefinition;
+                console.log('✅ Gemini AI provided enhanced definition:', { nativeWord, definition, partOfSpeech: geminiResult.partOfSpeech });
+                
+                // Show success notification for Gemini AI (one-time)
+                if (!sessionStorage.getItem('gemini-success-shown')) {
+                    showNotification('🤖 Gemini AI activated! You now get premium native language definitions with cultural context!', 'success', 4000);
+                    sessionStorage.setItem('gemini-success-shown', 'true');
+                }
+            }
             } else {
                 console.log('⚠️ Gemini API not configured, using enhanced fallbacks...');
-                // Show one-time notification about Gemini API
-                if (!sessionStorage.getItem('gemini-notification-shown')) {
-                    showNotification('💡 For better native language definitions, configure Gemini AI API in the code!', 'info', 5000);
-                    sessionStorage.setItem('gemini-notification-shown', 'true');
-                }
             }
             
             // Step 3: Fallback - try translation from English to native script
@@ -1323,18 +1334,26 @@ async function getGeminiNativeDefinition(romanizedWord, language) {
     
     try {
         const languageName = SUPPORTED_LANGUAGES[language]?.name || language;
-        const prompt = `You are a ${languageName} dictionary. The user typed "${romanizedWord}" in English script (romanized/transliterated). 
-        
+        const prompt = `You are an expert ${languageName} dictionary and language assistant. The user typed "${romanizedWord}" in English script (romanized/transliterated).
+
 Please provide:
 1. The correct native script version of this word in ${languageName}
-2. The meaning/definition of this word in ${languageName}
+2. A comprehensive definition/meaning of this word in English (for better understanding)
+3. Cultural context or usage notes if relevant
+4. Part of speech (noun, verb, adjective, etc.)
 
 Respond in JSON format:
 {
   "nativeScript": "word in native script",
-  "definition": "definition in ${languageName}",
+  "definition": "comprehensive definition in English with cultural context",
+  "partOfSpeech": "noun/verb/adjective/etc",
+  "culturalNote": "cultural context or usage note (optional)",
   "isValid": true/false
 }
+
+Examples:
+- If input is "namaste" → {"nativeScript": "नमस्ते", "definition": "A respectful greeting meaning 'I bow to you', used when meeting or parting", "partOfSpeech": "interjection", "culturalNote": "Traditional Hindu greeting with hands pressed together", "isValid": true}
+- If input is "haath" → {"nativeScript": "हाथ", "definition": "Hand - the part of the body at the end of the arm", "partOfSpeech": "noun", "isValid": true}
 
 If "${romanizedWord}" is not a valid ${languageName} word, set isValid to false.`;
         
