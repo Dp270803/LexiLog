@@ -78,7 +78,6 @@ function setupMobileInterface() {
         // Add icons to mobile tabs
         const tabIcons = {
             searchTab: '🔍',
-            translateTab: '🌐', 
             libraryTab: '📚',
             dailyTab: '⭐'
         };
@@ -562,7 +561,7 @@ function initializeElements() {
         // Navigation
         homeButton: document.getElementById('homeButton'),
     searchTab: document.getElementById('searchTab'),
-        translateTab: document.getElementById('translateTab'),
+
     libraryTab: document.getElementById('libraryTab'),
     dailyTab: document.getElementById('dailyTab'),
         logoutButton: document.getElementById('logoutButton'),
@@ -999,8 +998,8 @@ async function logout() {
 
 // Tab Navigation
 function initializeTabNavigation() {
-    const tabButtons = [elements.searchTab, elements.translateTab, elements.libraryTab, elements.dailyTab];
-    const tabContents = ['searchView', 'translateView', 'libraryView', 'dailyView'];
+    const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
+    const tabContents = ['searchView', 'libraryView', 'dailyView'];
     
     tabButtons.forEach(button => {
         if (button) {
@@ -1898,10 +1897,14 @@ async function saveWordToVocabulary(wordData) {
         const wordDoc = {
             word: wordData.word,
             phonetic: wordData.phonetic || '',
-            meanings: wordData.meanings,
+            meanings: wordData.meanings || (wordData.definitions ? [{ partOfSpeech: 'definition', definitions: wordData.definitions }] : []),
             audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
             savedAt: new Date().toISOString(),
             timestamp: Date.now(),
+            language: wordData.language || 'en',
+            isNativeLanguage: wordData.isNativeLanguage || false,
+            romanized: wordData.romanized || null,
+            source: wordData.source || 'dictionary',
             // Add Word of the Day tag if applicable
             isWordOfDay: wordData.isWordOfDay || false,
             wordOfDayDate: wordData.isWordOfDay ? wordData.date : null
@@ -1952,10 +1955,14 @@ async function saveWordToVocabulary(wordData) {
             const wordDoc = {
                 word: wordData.word,
                 phonetic: wordData.phonetic || '',
-                meanings: wordData.meanings,
+                meanings: wordData.meanings || (wordData.definitions ? [{ partOfSpeech: 'definition', definitions: wordData.definitions }] : []),
                 audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
                 savedAt: new Date().toISOString(),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                language: wordData.language || 'en',
+                isNativeLanguage: wordData.isNativeLanguage || false,
+                romanized: wordData.romanized || null,
+                source: wordData.source || 'dictionary'
             };
             
             const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
@@ -2174,19 +2181,35 @@ function displayDailyWord(wordData) {
     // Clear previous definitions
     elements.dailyDefinitions.innerHTML = '';
     
-    // Display definitions
-    wordData.meanings.forEach(meaning => {
-        const meaningDiv = document.createElement('div');
-        meaningDiv.className = 'definition-item mb-4';
-        
-        meaningDiv.innerHTML = `
-            <div class="text-sm text-purple-600 uppercase tracking-wide mb-2">${meaning.partOfSpeech}</div>
-            <div class="text-gray-700 mb-2">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="text-gray-600 italic">"${meaning.definitions[0].example}"</div>` : ''}
+    // Display definitions (handle both meanings and definitions structure)
+    const meaningsToDisplay = wordData.meanings || (wordData.definitions ? [{ partOfSpeech: 'definition', definitions: wordData.definitions }] : []);
+    
+    if (meaningsToDisplay.length > 0) {
+        meaningsToDisplay.forEach(meaning => {
+            const meaningDiv = document.createElement('div');
+            meaningDiv.className = 'definition-item mb-4';
+            
+            const definitions = meaning.definitions || [];
+            const firstDef = definitions[0] || { definition: 'Definition not available' };
+            
+            meaningDiv.innerHTML = `
+                <div class="text-sm text-purple-600 uppercase tracking-wide mb-2">${meaning.partOfSpeech || 'Word'}</div>
+                <div class="text-gray-700 mb-2">${firstDef.definition}</div>
+                ${firstDef.example ? `<div class="text-gray-600 italic">"${firstDef.example}"</div>` : ''}
+            `;
+            
+            elements.dailyDefinitions.appendChild(meaningDiv);
+        });
+    } else {
+        // Fallback if no definitions available
+        const fallbackDiv = document.createElement('div');
+        fallbackDiv.className = 'definition-item mb-4';
+        fallbackDiv.innerHTML = `
+            <div class="text-gray-700">Word of the day: <strong>${wordData.word}</strong></div>
+            <div class="text-gray-600 mt-2">Definition loading...</div>
         `;
-        
-        elements.dailyDefinitions.appendChild(meaningDiv);
-    });
+        elements.dailyDefinitions.appendChild(fallbackDiv);
+    }
     
     // Store current word for saving
     window.currentDailyWord = wordData;
@@ -2276,41 +2299,7 @@ async function fetchRandomWord() {
     };
 }
 
-function displayDailyWord(wordData) {
-    elements.dailyLoading.classList.add('hidden');
-    elements.dailyWord.classList.remove('hidden');
-    
-    elements.dailyWordText.textContent = wordData.word;
-    elements.dailyPhonetic.textContent = wordData.phonetic || '';
-    
-    // Clear previous definitions
-    elements.dailyDefinitions.innerHTML = '';
-    
-    // Display definitions
-    wordData.meanings.forEach(meaning => {
-        const meaningDiv = document.createElement('div');
-        meaningDiv.className = 'definition-item';
-        
-        meaningDiv.innerHTML = `
-            <div class="part-of-speech">${meaning.partOfSpeech}</div>
-            <div class="definition-text">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
-        `;
-        
-        elements.dailyDefinitions.appendChild(meaningDiv);
-    });
-    
-    // Store audio URL if available
-    if (wordData.phonetics && wordData.phonetics.length > 0) {
-        const audioUrl = wordData.phonetics.find(p => p.audio)?.audio;
-        if (audioUrl) {
-            elements.playDailyAudio.onclick = () => playAudio(audioUrl);
-        }
-    }
-    
-    // Store word data for saving
-    elements.saveDailyWord.onclick = () => saveDailyWord(wordData);
-}
+// Duplicate function removed - using the main displayDailyWord function above
 
 async function saveDailyWord(wordData) {
     try {
@@ -2409,8 +2398,8 @@ function initializeEventListeners() {
     if (elements.homeButton) {
         elements.homeButton.addEventListener('click', () => {
             // Switch to search/home tab
-            const tabButtons = [elements.searchTab, elements.translateTab, elements.libraryTab, elements.dailyTab];
-            const tabContents = ['searchView', 'translateView', 'libraryView', 'dailyView'];
+            const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
+            const tabContents = ['searchView', 'libraryView', 'dailyView'];
             
             // Update active tab button
             tabButtons.forEach(btn => btn.classList.remove('active'));
