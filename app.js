@@ -1152,20 +1152,19 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
                 // Store English translation for display
                 romanizedWord = englishTranslation.toLowerCase();
                 
-                // Try to get romanized version too
+                // Try to get romanized version using Gemini AI
                 let actualRomanized = null;
                 try {
-                    // Try to get romanized version from translation service
-                    const romanizedResult = await translateText(nativeWord, targetLanguage, 'en');
-                    if (romanizedResult && romanizedResult !== nativeWord) {
-                        // Try to get a proper romanized transliteration
-                        const romanizedAttempt = await getRomanizedVersion(nativeWord, targetLanguage);
-                        if (romanizedAttempt && romanizedAttempt !== romanizedResult) {
-                            actualRomanized = romanizedAttempt;
-                        }
+                    if (GEMINI_API_KEY !== 'your-gemini-api-key-here') {
+                        actualRomanized = await getGeminiRomanization(nativeWord, targetLanguage);
+                    }
+                    
+                    // Fallback to simple transliteration service if Gemini fails
+                    if (!actualRomanized) {
+                        actualRomanized = await getRomanizedVersion(nativeWord, targetLanguage);
                     }
                 } catch (e) {
-                    console.log('Could not get romanized version');
+                    console.log('Could not get romanized version:', e);
                 }
                 
                 // Get proper English definition instead of just translation
@@ -1241,6 +1240,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
         const wordData = {
             word: nativeWord || inputWord,
             romanized: romanizedWord && romanizedWord !== nativeWord ? romanizedWord : null,
+            actualRomanized: actualRomanized,
             phonetic: '',
             definitions: [],
             language: targetLanguage,
@@ -1358,6 +1358,57 @@ function generateRomanizedFromNative(nativeWord, language) {
     const map = romanizationMaps[language];
     if (map && map[nativeWord]) {
         return map[nativeWord];
+    }
+    
+    return null;
+}
+
+async function getGeminiRomanization(nativeWord, language) {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your-gemini-api-key-here') {
+        return null;
+    }
+    
+    const languageNames = {
+        'hi': 'Hindi', 'kn': 'Kannada', 'te': 'Telugu', 'ta': 'Tamil',
+        'ml': 'Malayalam', 'gu': 'Gujarati', 'pa': 'Punjabi', 'bn': 'Bengali',
+        'mr': 'Marathi', 'or': 'Odia', 'ur': 'Urdu', 'ar': 'Arabic',
+        'ja': 'Japanese', 'ko': 'Korean', 'zh': 'Chinese', 'ru': 'Russian',
+        'es': 'Spanish', 'fr': 'French', 'de': 'German', 'it': 'Italian', 'pt': 'Portuguese'
+    };
+    
+    const languageName = languageNames[language] || language;
+    
+    const prompt = `You are an expert in ${languageName} transliteration. Please provide the romanized (English script) version of this ${languageName} word: "${nativeWord}"
+
+Examples:
+- Hindi: हाथ → haath
+- Kannada: ಇಲ್ಲಿ → illi
+- Tamil: வீடு → veedu
+
+Please respond with ONLY the romanized version, no extra text or explanation.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Gemini romanization API error:', response.status);
+            return null;
+        }
+
+        const data = await response.json();
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+            const romanized = data.candidates[0].content.parts[0].text.trim().toLowerCase();
+            console.log(`✅ Gemini romanization: ${nativeWord} → ${romanized}`);
+            return romanized;
+        }
+    } catch (error) {
+        console.error('Error getting Gemini romanization:', error);
     }
     
     return null;
@@ -1721,10 +1772,15 @@ function displaySearchResults(wordData) {
             
             if (isEnglishTranslation) {
                 // For native script input, show both romanized and English
-                // Try to generate romanized version from the word itself
-                const possibleRomanized = generateRomanizedFromNative(wordData.word, wordData.language);
-                if (possibleRomanized && possibleRomanized !== wordData.romanized) {
-                    wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${possibleRomanized})</div>`;
+                // Check if we have romanized data from the backend
+                if (wordData.actualRomanized && wordData.actualRomanized !== wordData.romanized) {
+                    wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${wordData.actualRomanized})</div>`;
+                } else {
+                    // Try to generate romanized version from the word itself
+                    const possibleRomanized = generateRomanizedFromNative(wordData.word, wordData.language);
+                    if (possibleRomanized && possibleRomanized !== wordData.romanized) {
+                        wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${possibleRomanized})</div>`;
+                    }
                 }
                 wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
             } else {
