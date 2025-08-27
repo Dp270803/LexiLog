@@ -1109,7 +1109,9 @@ async function searchWord(word) {
             wordData = await getEnglishDefinition(searchTerm);
         } else {
             // For other languages: Detect if input is native script or romanized
+            console.log(`🔍 DEBUG: Using native language definition for "${currentLanguage}"`);
             wordData = await getNativeLanguageDefinition(searchTerm, currentLanguage);
+            console.log(`🔍 DEBUG: wordData result:`, wordData);
         }
         
         if (wordData) {
@@ -1130,17 +1132,22 @@ async function searchWord(word) {
 async function getNativeLanguageDefinition(inputWord, targetLanguage) {
     try {
         const languageName = SUPPORTED_LANGUAGES[targetLanguage]?.name || targetLanguage;
-        console.log(`🔍 Searching for "${inputWord}" in ${languageName}...`);
+        console.log(`🔍 DEBUG: Searching for "${inputWord}" in ${languageName}...`);
+        
+        // DEBUGGING: Simple test first
+        console.log(`🔍 DEBUG: Function called with inputWord="${inputWord}", targetLanguage="${targetLanguage}"`);
         
         // Step 1: Detect if input is native script or romanized English
         const isNativeScript = isNativeScriptDetected(inputWord, targetLanguage);
-        console.log(`📝 Input type detected: ${isNativeScript ? 'Native Script' : 'Romanized English'}`);
+        console.log(`📝 DEBUG: Input type detected: ${isNativeScript ? 'Native Script' : 'Romanized English'}`);
         
         let nativeWord = null;
         let romanizedWord = null;
         let definition = null;
         let actualRomanized = null;
         let isGeminiAvailable = GEMINI_API_KEY !== 'your-gemini-api-key-here';
+        
+        console.log(`🤖 DEBUG: Gemini available: ${isGeminiAvailable}`);
         
         if (isNativeScript) {
             // Input is already in native script (like "हाथ")
@@ -1265,7 +1272,18 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             }];
         }
         
-        console.log('✅ Native language result:', wordData);
+        console.log('✅ DEBUG: Native language result:', wordData);
+        
+        // DEBUGGING: Ensure we always return something
+        if (!wordData.definitions || wordData.definitions.length === 0) {
+            console.log('⚠️ DEBUG: No definitions found, adding emergency fallback');
+            wordData.definitions = [{
+                partOfSpeech: 'word',
+                definition: `DEBUG: ${languageName} word "${inputWord}". Function is working but no definition found.`,
+                example: ''
+            }];
+        }
+        
         return wordData;
         
     } catch (error) {
