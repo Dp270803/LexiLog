@@ -1785,29 +1785,18 @@ function displaySearchResults(wordData) {
     
     // Enhanced display for native language results
     if (wordData.isNativeLanguage) {
-        let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}</div>`;
+        let wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word}`;
         
-        if (wordData.romanized) {
-            // Check if romanized text looks like English (for native script input)
-            const isEnglishTranslation = wordData.inputType === 'native-script' && 
-                                       /^[a-zA-Z\s]+$/.test(wordData.romanized);
-            
-            if (isEnglishTranslation) {
-                // For native script input, show both romanized and English
-                // Check if we have romanized data from the backend
-                if (wordData.actualRomanized && wordData.actualRomanized !== wordData.romanized) {
-                    wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${wordData.actualRomanized})</div>`;
-                } else {
-                    // Try to generate romanized version from the word itself
-                    const possibleRomanized = generateRomanizedFromNative(wordData.word, wordData.language);
-                    if (possibleRomanized && possibleRomanized !== wordData.romanized) {
-                        wordHtml = `<div class="text-3xl font-bold text-gray-800 mb-2">${wordData.word} (${possibleRomanized})</div>`;
-                    }
-                }
-                wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
-            } else {
-                wordHtml += `<div class="text-lg text-blue-600 mb-1">Romanized: "${wordData.romanized}"</div>`;
-            }
+        // Show romanized version in brackets if available
+        if (wordData.actualRomanized) {
+            wordHtml += ` (${wordData.actualRomanized})`;
+        }
+        
+        wordHtml += `</div>`;
+        
+        // Show English translation if available
+        if (wordData.romanized && /^[a-zA-Z\s]+$/.test(wordData.romanized)) {
+            wordHtml += `<div class="text-lg text-blue-600 mb-1">English: "${wordData.romanized}"</div>`;
         }
         
         // Show source and input type indicators
