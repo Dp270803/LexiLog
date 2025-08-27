@@ -1150,7 +1150,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
             // Try to get English meaning for definition
             const englishTranslation = await translateText(nativeWord, targetLanguage, 'en');
             if (englishTranslation && englishTranslation !== nativeWord) {
-                // Store English translation for display
+                // Store English translation separately (NOT as romanized)
                 romanizedWord = englishTranslation.toLowerCase();
                 
                 // Try to get romanized version using Gemini AI
@@ -1190,6 +1190,7 @@ async function getNativeLanguageDefinition(inputWord, targetLanguage) {
         } else {
             // Input is romanized English (like "haath")
             romanizedWord = inputWord;
+            actualRomanized = inputWord; // For romanized input, this IS the romanized pronunciation
             console.log(`✅ Using romanized input: "${romanizedWord}"`);
             
             // Step 2: Try Gemini AI for native definition (if API key is configured)
