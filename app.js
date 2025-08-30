@@ -19,290 +19,39 @@ const db = firebase.firestore();
 
 // App Configuration
 const APP_ID = 'lexilog-vocabulary-builder';
-
-// Dictionary APIs
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/';
-const GOOGLE_TRANSLATE_API = 'https://translate.googleapis.com/translate_a/single';
-
-// Supported Languages
-const SUPPORTED_LANGUAGES = {
-    'en': { name: 'English', code: 'en' },
-    'hi': { name: 'Hindi', code: 'hi' },
-    'kn': { name: 'Kannada', code: 'kn' },
-    'ta': { name: 'Tamil', code: 'ta' },
-    'te': { name: 'Telugu', code: 'te' },
-    'ml': { name: 'Malayalam', code: 'ml' },
-    'bn': { name: 'Bengali', code: 'bn' },
-    'gu': { name: 'Gujarati', code: 'gu' },
-    'mr': { name: 'Marathi', code: 'mr' },
-    'pa': { name: 'Punjabi', code: 'pa' },
-    'ur': { name: 'Urdu', code: 'ur' },
-    'es': { name: 'Spanish', code: 'es' },
-    'fr': { name: 'French', code: 'fr' },
-    'de': { name: 'German', code: 'de' },
-    'it': { name: 'Italian', code: 'it' },
-    'pt': { name: 'Portuguese', code: 'pt' },
-    'ru': { name: 'Russian', code: 'ru' },
-    'ja': { name: 'Japanese', code: 'ja' },
-    'ko': { name: 'Korean', code: 'ko' },
-    'zh': { name: 'Chinese', code: 'zh' },
-    'ar': { name: 'Arabic', code: 'ar' }
-};
 
 // Global Variables
 let currentUser = null;
 let currentUserId = null;
-let currentLanguage = 'en';
-let speechRecognition = null;
-let isListening = false;
-
-// DOM Elements - will be initialized after DOM loads
 let elements = {};
 
+// Initialize DOM Elements
 function initializeElements() {
     elements = {
-        // Authentication Views
         loginView: document.getElementById('loginView'),
         signupView: document.getElementById('signupView'),
         mainApp: document.getElementById('mainApp'),
-        
-        // Navigation
+        loginForm: document.getElementById('loginForm'),
+        signupForm: document.getElementById('signupForm'),
+        searchInput: document.getElementById('searchInput'),
+        searchButton: document.getElementById('searchButton'),
+        searchResults: document.getElementById('searchResults'),
+        resultWord: document.getElementById('resultWord'),
+        resultDefinitions: document.getElementById('resultDefinitions'),
+        greeting: document.getElementById('greeting'),
+        homeView: document.getElementById('homeView'),
+        dictionaryView: document.getElementById('dictionaryView'),
         navigationRibbon: document.getElementById('navigationRibbon'),
         homeButton: document.getElementById('homeButton'),
         dictionaryTab: document.getElementById('dictionaryTab'),
-        languagesTab: document.getElementById('languagesTab'),
-        libraryTab: document.getElementById('libraryTab'),
-        dailyTab: document.getElementById('dailyTab'),
-        
-        // Login Form
-        loginForm: document.getElementById('loginForm'),
-        loginEmail: document.getElementById('loginEmail'),
-        loginPassword: document.getElementById('loginPassword'),
-        loginButton: document.getElementById('loginButton'),
-        showSignupBtn: document.getElementById('showSignupBtn'),
-        
-        // Signup Form
-        signupForm: document.getElementById('signupForm'),
-        signupName: document.getElementById('signupName'),
-        signupEmail: document.getElementById('signupEmail'),
-        signupPassword: document.getElementById('signupPassword'),
         signupQuestion: document.getElementById('signupQuestion'),
         signupOtherGoal: document.getElementById('signupOtherGoal'),
-        otherGoalField: document.getElementById('otherGoalField'),
-        signupButton: document.getElementById('signupButton'),
-        showLoginBtn: document.getElementById('showLoginBtn'),
-        
-        // User Profile
-        userProfileButton: document.getElementById('userProfileButton'),
-        userProfileDropdown: document.getElementById('userProfileDropdown'),
-        userInitials: document.getElementById('userInitials'),
-        userDisplayName: document.getElementById('userDisplayName'),
-        userDisplayEmail: document.getElementById('userDisplayEmail'),
-        greeting: document.getElementById('greeting'),
-        logoutButton: document.getElementById('logoutButton'),
-        
-        // Views
-        homeView: document.getElementById('homeView'),
-        dictionaryView: document.getElementById('dictionaryView'),
-        languagesView: document.getElementById('languagesView'),
-        libraryView: document.getElementById('libraryView'),
-        dailyView: document.getElementById('dailyView'),
-        
-        // Dictionary Search (English)
-        searchInput: document.getElementById('searchInput'),
-        searchButton: document.getElementById('searchButton'),
-        audioButton: document.getElementById('audioButton'),
-        cameraButton: document.getElementById('cameraButton'),
-        photoInput: document.getElementById('photoInput'),
-        searchResults: document.getElementById('searchResults'),
-        loadingState: document.getElementById('loadingState'),
-        errorState: document.getElementById('errorState'),
-        resultWord: document.getElementById('resultWord'),
-        resultPhonetic: document.getElementById('resultPhonetic'),
-        resultDefinitions: document.getElementById('resultDefinitions'),
-        playAudio: document.getElementById('playAudio'),
-        
-        // Language Search (Other Languages)
-        languageSelector: document.getElementById('languageSelector'),
-        languageSearchInput: document.getElementById('languageSearchInput'),
-        languageSearchButton: document.getElementById('languageSearchButton'),
-        languageAudioButton: document.getElementById('languageAudioButton'),
-        languageSearchResults: document.getElementById('languageSearchResults'),
-        languageResultWord: document.getElementById('languageResultWord'),
-        languageResultPhonetic: document.getElementById('languageResultPhonetic'),
-        languageResultDefinitions: document.getElementById('languageResultDefinitions'),
-        playLanguageAudio: document.getElementById('playLanguageAudio'),
-        
-        // Library View
-        libraryContent: document.getElementById('libraryContent'),
-        emptyLibrary: document.getElementById('emptyLibrary'),
-        wordList: document.getElementById('wordList'),
-        
-        // Daily Word View
-        dailyWordContent: document.getElementById('dailyWordContent'),
-        dailyLoading: document.getElementById('dailyLoading'),
-        dailyWord: document.getElementById('dailyWord'),
-        dailyWordText: document.getElementById('dailyWordText'),
-        dailyPhonetic: document.getElementById('dailyPhonetic'),
-        dailyDefinitions: document.getElementById('dailyDefinitions'),
-        playDailyAudio: document.getElementById('playDailyAudio'),
-        saveDailyWord: document.getElementById('saveDailyWord')
+        otherGoalField: document.getElementById('otherGoalField')
     };
 }
 
-// Firebase Authentication Functions
-function initializeAuth() {
-    // Listen for authentication state changes
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            currentUser = user;
-            currentUserId = user.uid;
-            
-            // Get user profile from Firestore
-            const profile = await getUserProfile();
-            if (profile && profile.name && profile.email) {
-                showMainApp(profile);
-            } else {
-                // User exists but no profile, this shouldn't happen with our flow
-                // But handle it gracefully
-                await signOut();
-            }
-        } else {
-            // No user signed in
-            currentUser = null;
-            currentUserId = null;
-            showLogin();
-        }
-    });
-}
-
-// Sign up with Firebase
-async function signUpWithEmail(name, email, password, goal = '', otherGoal = '') {
-    try {
-        // Create user account
-        const result = await auth.createUserWithEmailAndPassword(email, password);
-        currentUser = result.user;
-        currentUserId = result.user.uid;
-        
-        // Save user profile with goal information
-        await saveUserProfile(name, email, goal, otherGoal);
-        
-        showNotification('Account created successfully! Welcome to LexiLog!', 'success');
-        return true;
-    } catch (error) {
-        console.error('Sign up error:', error);
-        let errorMessage = 'Failed to create account. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                errorMessage = 'This email is already registered. Please sign in instead.';
-                break;
-            case 'auth/invalid-email':
-                errorMessage = 'Please enter a valid email address.';
-                break;
-            case 'auth/weak-password':
-                errorMessage = 'Password should be at least 6 characters long.';
-                break;
-            case 'auth/network-request-failed':
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        showNotification(errorMessage, 'error');
-        return false;
-    }
-}
-
-// Sign in with Firebase
-async function signInWithEmail(email, password) {
-    try {
-        const result = await auth.signInWithEmailAndPassword(email, password);
-        currentUser = result.user;
-        currentUserId = result.user.uid;
-        
-        showNotification('Welcome back!', 'success');
-        return true;
-    } catch (error) {
-        console.error('Sign in error:', error);
-        let errorMessage = 'Failed to sign in. Please check your credentials.';
-        
-        switch (error.code) {
-            case 'auth/user-not-found':
-                errorMessage = 'No account found with this email. Please sign up first.';
-                break;
-            case 'auth/wrong-password':
-                errorMessage = 'Incorrect password. Please try again.';
-                break;
-            case 'auth/invalid-email':
-                errorMessage = 'Please enter a valid email address.';
-                break;
-            case 'auth/user-disabled':
-                errorMessage = 'This account has been disabled. Please contact support.';
-                break;
-            case 'auth/network-request-failed':
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        showNotification(errorMessage, 'error');
-        return false;
-    }
-}
-
-// Sign out
-async function signOut() {
-    try {
-        await auth.signOut();
-        currentUser = null;
-        currentUserId = null;
-        showNotification('Signed out successfully', 'info');
-    } catch (error) {
-        console.error('Sign out error:', error);
-        showNotification('Error signing out', 'error');
-    }
-}
-
-// Get user profile from Firestore
-async function getUserProfile() {
-    try {
-        const doc = await db.collection('artifacts').doc(APP_ID)
-            .collection('users').doc(currentUserId)
-            .collection('profile').doc('data').get();
-        
-        return doc.exists ? doc.data() : null;
-    } catch (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
-    }
-}
-
-// Save user profile to Firestore
-async function saveUserProfile(name, email, goal = '', otherGoal = '') {
-    try {
-        const profileData = {
-            name: name,
-            email: email,
-            goal: goal,
-            otherGoal: otherGoal,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-            totalWordsSearched: 0,
-            totalWordsSaved: 0
-        };
-        
-        await db.collection('artifacts').doc(APP_ID)
-            .collection('users').doc(currentUserId)
-            .collection('profile').doc('data').set(profileData);
-        
-        return true;
-    } catch (error) {
-        console.error('Error saving user profile:', error);
-        throw error;
-    }
-}
-
-// UI Functions
+// Basic UI Functions
 function showLogin() {
     elements.loginView.classList.remove('hidden');
     elements.signupView.classList.add('hidden');
@@ -320,500 +69,180 @@ function showMainApp(userProfile) {
     elements.signupView.classList.add('hidden');
     elements.mainApp.classList.remove('hidden');
     
-    // Update user profile display
-    const firstName = userProfile.name.split(' ')[0];
-    elements.greeting.innerHTML = `
-        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Welcome to LexiLog, ${firstName}!
-        </span>
-    `;
-    elements.userDisplayName.textContent = userProfile.name;
-    elements.userDisplayEmail.textContent = userProfile.email;
+    if (elements.greeting && userProfile) {
+        const firstName = userProfile.name.split(' ')[0];
+        elements.greeting.innerHTML = `<span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to LexiLog, ${firstName}!</span>`;
+    }
     
-    // Update user initials
-    const initials = userProfile.name.split(' ')
-        .map(name => name.charAt(0).toUpperCase())
-        .join('')
-        .substring(0, 2);
-    elements.userInitials.textContent = initials;
-    
-    // Show homepage initially, hide navigation ribbon
     navigateToView('home');
-    
-    // Initialize features
-    initializeSpeechRecognition();
-    initializePhotoRecognition();
-    loadUserVocabulary();
-    fetchWordOfTheDay();
 }
 
-// Navigation Functions
+// Navigation
 function navigateToView(viewName) {
-    const views = ['home', 'dictionary', 'languages', 'library', 'daily'];
-    const tabButtons = [elements.dictionaryTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
-    
-    // Hide all views
+    const views = ['home', 'dictionary'];
     views.forEach(view => {
         const viewElement = elements[`${view}View`];
         if (viewElement) {
-            viewElement.classList.remove('active');
             viewElement.classList.add('hidden');
         }
     });
     
-    // Show target view
     const targetView = elements[`${viewName}View`];
     if (targetView) {
-        targetView.classList.add('active');
         targetView.classList.remove('hidden');
     }
     
-    // Update navigation ribbon visibility
     if (viewName === 'home') {
-        elements.navigationRibbon.classList.add('hidden');
-        document.body.style.paddingTop = '0';
+        if (elements.navigationRibbon) elements.navigationRibbon.classList.add('hidden');
     } else {
-        elements.navigationRibbon.classList.remove('hidden');
-        document.body.style.paddingTop = '80px';
-    }
-    
-    // Update active tab button
-    tabButtons.forEach(btn => {
-        if (btn) btn.classList.remove('active');
-    });
-    
-    const activeTab = elements[`${viewName}Tab`];
-    if (activeTab) {
-        activeTab.classList.add('active');
-    }
-    
-    // Refresh data when switching to certain views
-    if (viewName === 'library') {
-        loadUserVocabulary();
-    } else if (viewName === 'daily') {
-        fetchWordOfTheDay();
+        if (elements.navigationRibbon) elements.navigationRibbon.classList.remove('hidden');
     }
 }
 
-// Initialize Navigation
-function initializeNavigation() {
-    // Home button
-    if (elements.homeButton) {
-        elements.homeButton.addEventListener('click', () => navigateToView('home'));
-    }
-    
-    // Tab navigation
-    const tabButtons = [
-        { element: elements.dictionaryTab, view: 'dictionary' },
-        { element: elements.languagesTab, view: 'languages' },
-        { element: elements.libraryTab, view: 'library' },
-        { element: elements.dailyTab, view: 'daily' }
-    ];
-    
-    tabButtons.forEach(({ element, view }) => {
-        if (element) {
-            element.addEventListener('click', () => navigateToView(view));
-        }
-    });
-    
-    // Feature card navigation
-    const featureCards = document.querySelectorAll('.feature-card[data-navigate]');
-    featureCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const targetView = card.getAttribute('data-navigate');
-            navigateToView(targetView);
-        });
-    });
-}
-
-// Global navigation function for onclick handlers
-window.navigateToView = navigateToView;
-
-// English Dictionary Search (Dictionary View)
+// Search Function
 async function searchEnglishWord(word) {
     if (!word.trim()) return;
     
-    showLoading();
-    hideResults();
-    hideError();
-    
     try {
-        let wordData = null;
-        
-        // For English dictionary, always use English API
         const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
         if (response.ok) {
             const data = await response.json();
             if (data && data.length > 0) {
-                wordData = data[0];
+                displaySearchResults(data[0]);
+            } else {
+                showError('Word not found');
             }
-        }
-        
-        if (wordData) {
-            displaySearchResults(wordData);
-            await saveWordToVocabulary(wordData);
         } else {
-            throw new Error('Word not found');
+            showError('Word not found');
         }
     } catch (error) {
         console.error('Search error:', error);
-        showError();
+        showError('Search failed');
     }
 }
 
-// Language Search (Languages View)
-async function searchLanguageWord(word, language) {
-    if (!word.trim()) return;
+function displaySearchResults(wordData) {
+    if (elements.resultWord) {
+        elements.resultWord.textContent = wordData.word;
+    }
     
-    showLanguageLoading();
-    hideLanguageResults();
-    hideLanguageError();
+    if (elements.resultDefinitions) {
+        elements.resultDefinitions.innerHTML = '';
+        wordData.meanings.forEach(meaning => {
+            const meaningDiv = document.createElement('div');
+            meaningDiv.className = 'mb-4 p-4 bg-white rounded-lg shadow';
+            meaningDiv.innerHTML = `
+                <div class="text-sm text-blue-600 font-semibold mb-2">${meaning.partOfSpeech}</div>
+                <div class="text-gray-800">${meaning.definitions[0].definition}</div>
+                ${meaning.definitions[0].example ? `<div class="text-gray-600 italic mt-2">"${meaning.definitions[0].example}"</div>` : ''}
+            `;
+            elements.resultDefinitions.appendChild(meaningDiv);
+        });
+    }
     
-    try {
-        const wordData = await getWordDefinitionFromTranslation(word.trim(), language);
-        
-        if (wordData) {
-            displayLanguageSearchResults(wordData);
-            await saveWordToVocabulary(wordData);
-        } else {
-            throw new Error('Word not found');
-        }
-    } catch (error) {
-        console.error('Language search error:', error);
-        showLanguageError();
+    if (elements.searchResults) {
+        elements.searchResults.classList.remove('hidden');
     }
 }
 
-async function getWordDefinitionFromTranslation(word, language = currentLanguage) {
-    try {
-        // Get translation to English for better definition
-        const translateUrl = `${GOOGLE_TRANSLATE_API}?client=gtx&sl=${language}&tl=en&dt=t&q=${encodeURIComponent(word)}`;
-        const translateResponse = await fetch(translateUrl);
-        const translateData = await translateResponse.json();
-        
-        if (translateData && translateData[0] && translateData[0][0]) {
-            const englishWord = translateData[0][0][0];
-            
-            // Get English definition
-            const definitionResponse = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(englishWord)}`);
-            if (definitionResponse.ok) {
-                const definitionData = await definitionResponse.json();
-                if (definitionData && definitionData.length > 0) {
-                    // Create a custom word data object
-                    return {
-                        word: word,
-                        phonetic: '',
-                        meanings: definitionData[0].meanings,
-                        phonetics: definitionData[0].phonetics,
-                        translation: englishWord,
-                        originalLanguage: language
-                    };
-                }
+function showError(message) {
+    if (elements.searchResults) {
+        elements.searchResults.innerHTML = `<div class="text-red-600 text-center p-4">${message}</div>`;
+        elements.searchResults.classList.remove('hidden');
+    }
+}
+
+// Authentication
+function initializeAuth() {
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user;
+            currentUserId = user.uid;
+            const profile = await getUserProfile();
+            if (profile) {
+                showMainApp(profile);
+            } else {
+                await signOut();
             }
+        } else {
+            currentUser = null;
+            currentUserId = null;
+            showLogin();
         }
-        
-        // Fallback: create basic definition
-        return {
-            word: word,
-            phonetic: '',
-            meanings: [{
-                partOfSpeech: 'noun',
-                definitions: [{
-                    definition: `Translation: ${translateData[0]?.[0]?.[0] || word}`,
-                    example: ''
-                }]
-            }],
-            phonetics: [],
-            originalLanguage: language
-        };
+    });
+}
+
+async function signUpWithEmail(name, email, password, goal = '', otherGoal = '') {
+    try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
+        await saveUserProfile(name, email, goal, otherGoal);
+        alert('Account created successfully! Welcome to LexiLog!');
+        return true;
     } catch (error) {
-        console.error('Translation error:', error);
+        console.error('Sign up error:', error);
+        alert('Failed to create account. Please try again.');
+        return false;
+    }
+}
+
+async function signInWithEmail(email, password) {
+    try {
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
+        alert('Welcome back!');
+        return true;
+    } catch (error) {
+        console.error('Sign in error:', error);
+        alert('Failed to sign in. Please check your credentials.');
+        return false;
+    }
+}
+
+async function signOut() {
+    try {
+        await auth.signOut();
+        currentUser = null;
+        currentUserId = null;
+        alert('Signed out successfully');
+    } catch (error) {
+        console.error('Sign out error:', error);
+        alert('Error signing out');
+    }
+}
+
+async function getUserProfile() {
+    try {
+        const doc = await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('profile').doc('data').get();
+        return doc.exists ? doc.data() : null;
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
         return null;
     }
 }
 
-// Display Functions
-function displaySearchResults(wordData) {
-    hideLoading();
-    hideError();
-    
-    elements.resultWord.textContent = wordData.word;
-    
-    // Show translation if available
-    if (wordData.translation && wordData.originalLanguage !== 'en') {
-        elements.resultPhonetic.innerHTML = `
-            <div class="text-blue-600 font-medium">Translation: ${wordData.translation}</div>
-            ${wordData.phonetic ? `<div class="text-gray-600">${wordData.phonetic}</div>` : ''}
-        `;
-    } else {
-        elements.resultPhonetic.textContent = wordData.phonetic || '';
-    }
-    
-    // Clear previous definitions
-    elements.resultDefinitions.innerHTML = '';
-    
-    // Display definitions
-    wordData.meanings.forEach(meaning => {
-        const meaningDiv = document.createElement('div');
-        meaningDiv.className = 'definition-item';
-        
-        meaningDiv.innerHTML = `
-            <div class="part-of-speech">${meaning.partOfSpeech}</div>
-            <div class="definition-text">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
-        `;
-        
-        elements.resultDefinitions.appendChild(meaningDiv);
-    });
-    
-    // Store audio URL if available
-    if (wordData.phonetics && wordData.phonetics.length > 0) {
-        const audioUrl = wordData.phonetics.find(p => p.audio)?.audio;
-        if (audioUrl) {
-            elements.playAudio.onclick = () => playAudio(audioUrl);
-        }
-    }
-    
-    elements.searchResults.classList.remove('hidden');
-}
-
-function displayLanguageSearchResults(wordData) {
-    if (!elements.languageSearchResults) return;
-    
-    hideLanguageResults();
-    
-    elements.languageResultWord.textContent = wordData.word;
-    
-    // Show translation if available
-    if (wordData.translation && wordData.originalLanguage !== 'en') {
-        elements.languageResultPhonetic.innerHTML = `
-            <div class="text-purple-600 font-medium">English Translation: ${wordData.translation}</div>
-            ${wordData.phonetic ? `<div class="text-gray-600">${wordData.phonetic}</div>` : ''}
-        `;
-    } else {
-        elements.languageResultPhonetic.textContent = wordData.phonetic || '';
-    }
-    
-    // Clear previous definitions
-    elements.languageResultDefinitions.innerHTML = '';
-    
-    // Display definitions
-    wordData.meanings.forEach((meaning, index) => {
-        const meaningDiv = document.createElement('div');
-        meaningDiv.className = 'definition-item hover-lift';
-        
-        meaningDiv.innerHTML = `
-            <div class="part-of-speech bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs uppercase tracking-wide inline-block mb-3">${meaning.partOfSpeech}</div>
-            <div class="definition-text text-gray-800 text-lg leading-relaxed mb-3">${meaning.definitions[0].definition}</div>
-            ${meaning.definitions[0].example ? `<div class="example-text bg-gray-50 border-l-4 border-purple-500 pl-4 py-2 italic text-gray-700 rounded">"${meaning.definitions[0].example}"</div>` : ''}
-        `;
-        
-        meaningDiv.style.animationDelay = `${index * 0.1}s`;
-        meaningDiv.classList.add('animate-fade-in-up');
-        
-        elements.languageResultDefinitions.appendChild(meaningDiv);
-    });
-    
-    elements.languageSearchResults.classList.remove('hidden');
-}
-
-function showLoading() {
-    elements.loadingState.classList.remove('hidden');
-}
-
-function hideLoading() {
-    elements.loadingState.classList.add('hidden');
-}
-
-function showError() {
-    elements.errorState.classList.remove('hidden');
-}
-
-function hideError() {
-    elements.errorState.classList.add('hidden');
-}
-
-function hideResults() {
-    elements.searchResults.classList.add('hidden');
-}
-
-function showLanguageLoading() {
-    console.log('Language search loading...');
-}
-
-function hideLanguageResults() {
-    if (elements.languageSearchResults) {
-        elements.languageSearchResults.classList.add('hidden');
-    }
-}
-
-function hideLanguageError() {
-    // Add error handling for language search if needed
-}
-
-function showLanguageError() {
-    console.log('Language search error');
-}
-
-// Notification Functions
-function showNotification(message, type = 'info') {
-    // Remove existing notifications
-    const existingNotifications = document.querySelectorAll('.notification');
-    existingNotifications.forEach(notification => notification.remove());
-    
-    // Check if mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification fixed z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
-    
-    // Mobile-friendly positioning
-    if (isMobile) {
-        notification.className += ' top-4 left-4 right-4 mx-4';
-    } else {
-        notification.className += ' top-4 right-4';
-    }
-    
-    // Set notification content based on type
-    if (type === 'success') {
-        notification.className += ' bg-green-500 text-white';
-        notification.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span class="text-sm">${message}</span>
-            </div>
-        `;
-    } else if (type === 'error') {
-        notification.className += ' bg-red-500 text-white';
-        notification.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                <span class="text-sm">${message}</span>
-            </div>
-        `;
-    } else {
-        notification.className += ' bg-blue-500 text-white';
-        notification.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="text-sm">${message}</span>
-            </div>
-        `;
-    }
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.classList.remove('translate-x-full');
-    }, 100);
-    
-    // Auto remove after 4 seconds on mobile, 3 on desktop
-    const autoRemoveTime = isMobile ? 4000 : 3000;
-    setTimeout(() => {
-        notification.classList.add('translate-x-full');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, autoRemoveTime);
-}
-
-// Audio Functions
-function playAudio(audioUrl) {
-    const audio = new Audio(audioUrl);
-    audio.play().catch(error => {
-        console.error('Audio playback error:', error);
-    });
-}
-
-// Vocabulary Management with Firebase and localStorage fallback
-async function saveWordToVocabulary(wordData) {
+async function saveUserProfile(name, email, goal = '', otherGoal = '') {
     try {
-        const wordDoc = {
-            word: wordData.word,
-            phonetic: wordData.phonetic || '',
-            meanings: wordData.meanings,
-            audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
-            savedAt: new Date().toISOString(),
-            timestamp: Date.now()
+        const profileData = {
+            name: name,
+            email: email,
+            goal: goal,
+            otherGoal: otherGoal,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         
-        // Try Firebase first
-        if (currentUserId) {
-            await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary').doc(wordData.word.toLowerCase())
-                .set(wordDoc);
-        }
-        
-        // Always save to localStorage as fallback
-        const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-        const existingIndex = vocabulary.findIndex(w => w.word.toLowerCase() === wordData.word.toLowerCase());
-        
-        if (existingIndex >= 0) {
-            vocabulary[existingIndex] = wordDoc;
-        } else {
-            vocabulary.push(wordDoc);
-        }
-        
-        localStorage.setItem('lexilog_vocabulary', JSON.stringify(vocabulary));
-        
-        // Show success animation and notification
-        elements.searchResults.classList.add('save-success');
-        showNotification(`${wordData.word} has been added to your LexiLog!`, 'success');
-        
-        // Immediately refresh the vocabulary list if we're on the library tab
-        if (elements.libraryTab.classList.contains('active')) {
-            loadUserVocabulary();
-        }
-        
-        setTimeout(() => {
-            elements.searchResults.classList.remove('save-success');
-        }, 300);
-        
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('profile').doc('data').set(profileData);
+        return true;
     } catch (error) {
-        console.error('Error saving word:', error);
-        // Fallback to localStorage only
-        try {
-            const wordDoc = {
-                word: wordData.word,
-                phonetic: wordData.phonetic || '',
-                meanings: wordData.meanings,
-                audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
-                savedAt: new Date().toISOString(),
-                timestamp: Date.now()
-            };
-            
-            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-            const existingIndex = vocabulary.findIndex(w => w.word.toLowerCase() === wordData.word.toLowerCase());
-            
-            if (existingIndex >= 0) {
-                vocabulary[existingIndex] = wordDoc;
-            } else {
-                vocabulary.push(wordDoc);
-            }
-            
-            localStorage.setItem('lexilog_vocabulary', JSON.stringify(vocabulary));
-            
-            // Show success animation and notification
-            elements.searchResults.classList.add('save-success');
-            showNotification(`${wordData.word} has been added to your LexiLog!`, 'success');
-            setTimeout(() => {
-                elements.searchResults.classList.remove('save-success');
-            }, 300);
-        } catch (localError) {
-            console.error('Error saving to localStorage:', localError);
-                    showNotification('Failed to save word. Please try again.', 'error');
+        console.error('Error saving user profile:', error);
+        throw error;
     }
 }
 
@@ -823,21 +252,11 @@ function initializeEventListeners() {
     if (elements.loginForm) {
         elements.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = elements.loginEmail.value.trim();
-            const password = elements.loginPassword.value;
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
             
             if (email && password) {
-                elements.loginButton.disabled = true;
-                elements.loginButton.textContent = 'Signing In...';
-                
-                const success = await signInWithEmail(email, password);
-                
-                elements.loginButton.disabled = false;
-                elements.loginButton.textContent = 'Sign In';
-                
-                if (!success) {
-                    // Error handling is done in signInWithEmail function
-                }
+                await signInWithEmail(email, password);
             }
         });
     }
@@ -846,84 +265,19 @@ function initializeEventListeners() {
     if (elements.signupForm) {
         elements.signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = elements.signupName.value.trim();
-            const email = elements.signupEmail.value.trim();
-            const password = elements.signupPassword.value;
-            const goal = elements.signupQuestion.value;
-            const otherGoal = elements.signupOtherGoal.value.trim();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const goal = elements.signupQuestion ? elements.signupQuestion.value : '';
+            const otherGoal = elements.signupOtherGoal ? elements.signupOtherGoal.value.trim() : '';
             
-            if (name && email && password && goal) {
-                elements.signupButton.disabled = true;
-                elements.signupButton.textContent = 'Creating Account...';
-                
-                const success = await signUpWithEmail(name, email, password, goal, otherGoal);
-                
-                elements.signupButton.disabled = false;
-                elements.signupButton.textContent = 'Create Account';
-                
-                if (!success) {
-                    // Error handling is done in signUpWithEmail function
-                }
-            } else {
-                showNotification('Please fill in all required fields including your learning goal.', 'error');
+            if (name && email && password) {
+                await signUpWithEmail(name, email, password, goal, otherGoal);
             }
         });
     }
     
-    // Show signup/login buttons
-    if (elements.showSignupBtn) {
-        elements.showSignupBtn.addEventListener('click', showSignup);
-    }
-    if (elements.showLoginBtn) {
-        elements.showLoginBtn.addEventListener('click', showLogin);
-    }
-    
-    // User profile dropdown
-    if (elements.userProfileButton) {
-        elements.userProfileButton.addEventListener('click', () => {
-            elements.userProfileDropdown.classList.toggle('hidden');
-        });
-    }
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (elements.userProfileButton && !elements.userProfileButton.contains(e.target)) {
-            elements.userProfileDropdown.classList.add('hidden');
-        }
-    });
-    
-    // Language selector
-    if (elements.languageSelector) {
-        elements.languageSelector.addEventListener('change', (e) => {
-            currentLanguage = e.target.value;
-            showNotification(`Language changed to ${SUPPORTED_LANGUAGES[currentLanguage].name}`, 'info');
-        });
-    }
-    
-    // Goal selector for signup
-    if (elements.signupQuestion) {
-        elements.signupQuestion.addEventListener('change', (e) => {
-            if (e.target.value === 'other') {
-                elements.otherGoalField.classList.remove('hidden');
-                elements.signupOtherGoal.required = true;
-            } else {
-                elements.otherGoalField.classList.add('hidden');
-                elements.signupOtherGoal.required = false;
-                elements.signupOtherGoal.value = '';
-            }
-        });
-    }
-    
-    // Logout functionality
-    if (elements.logoutButton) {
-        elements.logoutButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to sign out?')) {
-                signOut();
-            }
-        });
-    }
-    
-    // English Dictionary Search (Dictionary View)
+    // Search functionality
     if (elements.searchButton && elements.searchInput) {
         elements.searchButton.addEventListener('click', () => {
             const word = elements.searchInput.value.trim();
@@ -942,35 +296,50 @@ function initializeEventListeners() {
         });
     }
     
-    // Language Search (Languages View)
-    if (elements.languageSearchButton && elements.languageSearchInput) {
-        elements.languageSearchButton.addEventListener('click', () => {
-            const word = elements.languageSearchInput.value.trim();
-            if (word) {
-                searchLanguageWord(word, currentLanguage);
-            }
-        });
-        
-        elements.languageSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const word = elements.languageSearchInput.value.trim();
-                if (word) {
-                    searchLanguageWord(word, currentLanguage);
+    // Navigation
+    if (elements.homeButton) {
+        elements.homeButton.addEventListener('click', () => navigateToView('home'));
+    }
+    
+    if (elements.dictionaryTab) {
+        elements.dictionaryTab.addEventListener('click', () => navigateToView('dictionary'));
+    }
+    
+    // Show signup/login buttons
+    const showSignupBtn = document.getElementById('showSignupBtn');
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    
+    if (showSignupBtn) {
+        showSignupBtn.addEventListener('click', showSignup);
+    }
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', showLogin);
+    }
+    
+    // Goal selector for signup
+    if (elements.signupQuestion) {
+        elements.signupQuestion.addEventListener('change', (e) => {
+            if (e.target.value === 'other') {
+                if (elements.otherGoalField) elements.otherGoalField.classList.remove('hidden');
+                if (elements.signupOtherGoal) elements.signupOtherGoal.required = true;
+            } else {
+                if (elements.otherGoalField) elements.otherGoalField.classList.add('hidden');
+                if (elements.signupOtherGoal) {
+                    elements.signupOtherGoal.required = false;
+                    elements.signupOtherGoal.value = '';
                 }
             }
         });
     }
     
-    // Audio search
-    if (elements.audioButton) {
-        elements.audioButton.addEventListener('click', toggleAudioSearch);
-    }
-    if (elements.languageAudioButton) {
-        elements.languageAudioButton.addEventListener('click', toggleAudioSearch);
-    }
-    
-    // Initialize navigation
-    initializeNavigation();
+    // Feature card navigation
+    const featureCards = document.querySelectorAll('.feature-card[data-navigate]');
+    featureCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const targetView = card.getAttribute('data-navigate');
+            navigateToView(targetView);
+        });
+    });
 }
 
 // Initialize App
@@ -980,132 +349,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
 });
 
-// Make functions globally available for onclick handlers
-window.playAudio = playAudio;
-window.deleteWord = deleteWord;
-}
-
-async function loadUserVocabulary() {
-    try {
-        let words = [];
-        
-        // Try Firebase first
-        if (currentUserId) {
-            const snapshot = await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary')
-                .orderBy('timestamp', 'desc')
-                .get();
-            
-            snapshot.forEach(doc => {
-                words.push({ id: doc.id, ...doc.data() });
-            });
-        }
-        
-        // If no words from Firebase, try localStorage
-        if (words.length === 0) {
-            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-            words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
-        }
-        
-        displayVocabulary(words);
-    } catch (error) {
-        console.error('Error loading vocabulary:', error);
-        // Fallback to localStorage
-        try {
-            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-            const words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
-            displayVocabulary(words);
-        } catch (localError) {
-            console.error('Error loading from localStorage:', localError);
-            displayVocabulary([]);
-        }
-    }
-}
-
-function displayVocabulary(words) {
-    if (words.length === 0) {
-        elements.emptyLibrary.classList.remove('hidden');
-        elements.wordList.classList.add('hidden');
-        return;
-    }
-    
-    elements.emptyLibrary.classList.add('hidden');
-    elements.wordList.classList.remove('hidden');
-    
-    elements.wordList.innerHTML = '';
-    
-    words.forEach(wordData => {
-        const wordCard = createWordCard(wordData);
-        elements.wordList.appendChild(wordCard);
-    });
-}
-
-function createWordCard(wordData) {
-    const card = document.createElement('div');
-    card.className = 'word-card bg-white rounded-lg shadow-md p-6';
-    
-    const primaryMeaning = wordData.meanings[0];
-    const primaryDefinition = primaryMeaning.definitions[0];
-    
-    card.innerHTML = `
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-xl font-bold text-gray-800">${wordData.word}</h3>
-            <div class="flex space-x-2">
-                ${wordData.audioUrl ? `
-                    <button class="audio-button text-blue-600 hover:text-blue-800" onclick="playAudio('${wordData.audioUrl}')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                        </svg>
-                    </button>
-                ` : ''}
-                <button class="text-red-600 hover:text-red-800" onclick="deleteWord('${wordData.word}')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="text-gray-600 mb-2">${wordData.phonetic || ''}</div>
-        <div class="text-sm text-gray-500 uppercase tracking-wide mb-2">${primaryMeaning.partOfSpeech}</div>
-        <div class="text-gray-700 mb-2">${primaryDefinition.definition}</div>
-        ${primaryDefinition.example ? `<div class="text-gray-600 italic">"${primaryDefinition.example}"</div>` : ''}
-    `;
-    
-    return card;
-}
-
-async function deleteWord(word) {
-    if (confirm(`Are you sure you want to remove "${word}" from your vocabulary?`)) {
-        try {
-            // Try Firebase first
-            if (currentUserId) {
-                await db.collection('artifacts').doc(APP_ID)
-                    .collection('users').doc(currentUserId)
-                    .collection('vocabulary').doc(word.toLowerCase())
-                    .delete();
-            }
-            
-            // Always remove from localStorage
-            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-            const filteredVocabulary = vocabulary.filter(w => w.word.toLowerCase() !== word.toLowerCase());
-            localStorage.setItem('lexilog_vocabulary', JSON.stringify(filteredVocabulary));
-            
-            showNotification(`${word} has been removed from your LexiLog.`, 'success');
-            loadUserVocabulary();
-        } catch (error) {
-            console.error('Error deleting word:', error);
-            // Fallback to localStorage only
-            try {
-                const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
-                const filteredVocabulary = vocabulary.filter(w => w.word.toLowerCase() !== word.toLowerCase());
-                localStorage.setItem('lexilog_vocabulary', JSON.stringify(filteredVocabulary));
-                showNotification(`${word} has been removed from your LexiLog.`, 'success');
-                loadUserVocabulary();
-            } catch (localError) {
-                console.error('Error deleting from localStorage:', localError);
-                showNotification('Failed to delete word. Please try again.', 'error');
-            }
-        }
-    }
-}
+// Global functions
+window.navigateToView = navigateToView;
