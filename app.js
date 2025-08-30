@@ -781,13 +781,29 @@ function hideResults() {
 }
 
 // Photo Recognition Functions
+// Mobile Detection
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Initialize Photo Recognition
 function initializePhotoRecognition() {
     if (elements.cameraButton && elements.photoInput) {
         elements.cameraButton.addEventListener('click', () => {
+            // Check if mobile and show appropriate message
+            if (isMobileDevice()) {
+                showNotification('📱 Camera feature coming soon! For now, please type the word manually.', 'info');
+                return;
+            }
             elements.photoInput.click();
         });
         
         elements.photoInput.addEventListener('change', handlePhotoCapture);
+        
+        // Hide camera button on mobile for now
+        if (isMobileDevice()) {
+            elements.cameraButton.style.display = 'none';
+        }
     }
 }
 
@@ -799,6 +815,14 @@ async function handlePhotoCapture(event) {
         showLoading();
         hideResults();
         hideError();
+        
+        // Check file size (max 5MB for mobile)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            showError();
+            showNotification('Image too large. Please use a smaller image.', 'error');
+            return;
+        }
         
         // Show photo preview
         const reader = new FileReader();
@@ -818,14 +842,28 @@ async function handlePhotoCapture(event) {
                 // Search for the word
                 await searchEnglishWord(cleanText);
             } else {
+                hideLoading();
                 showError();
-                showNotification('No text found in the image. Please try a clearer photo.', 'error');
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                    showNotification('📱 No text detected. Please type the word manually or try a clearer photo.', 'info');
+                } else {
+                    showNotification('No text found in the image. Please try a clearer photo.', 'error');
+                }
             }
         };
+        
+        reader.onerror = () => {
+            hideLoading();
+            showError();
+            showNotification('Error reading image file. Please try again.', 'error');
+        };
+        
         reader.readAsDataURL(file);
         
     } catch (error) {
         console.error('Photo recognition error:', error);
+        hideLoading();
         showError();
         showNotification('Error processing image. Please try again.', 'error');
     }
@@ -833,30 +871,40 @@ async function handlePhotoCapture(event) {
 
 async function extractTextFromImage(imageData) {
     try {
-        // Use Tesseract.js for OCR
-        if (typeof Tesseract !== 'undefined') {
-            const worker = await Tesseract.createWorker('eng');
-            const { data: { text } } = await worker.recognize(imageData);
-            await worker.terminate();
-            
-            return text;
-        } else {
-            // Fallback if Tesseract is not loaded
-            return await fallbackOCR(imageData);
+        // Check if we're on mobile and Tesseract is available
+        if (typeof Tesseract !== 'undefined' && Tesseract.createWorker) {
+            try {
+                const worker = await Tesseract.createWorker('eng');
+                const { data: { text } } = await worker.recognize(imageData);
+                await worker.terminate();
+                
+                if (text && text.trim()) {
+                    return text;
+                }
+            } catch (tesseractError) {
+                console.error('Tesseract error:', tesseractError);
+            }
         }
+        
+        // Fallback for mobile or when Tesseract fails
+        return await fallbackOCR(imageData);
     } catch (error) {
         console.error('OCR error:', error);
-        
-        // Fallback: Try using a simpler OCR approach or API
         return await fallbackOCR(imageData);
     }
 }
 
 async function fallbackOCR(imageData) {
     try {
-        // Simple fallback - you can replace this with a different OCR service
-        // For now, we'll show a message asking user to type manually
-        showNotification('OCR processing failed. Please type the word manually.', 'info');
+        // For mobile, show a user-friendly message
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            showNotification('📱 Take a clear photo of the word and type it manually for now. OCR will be improved soon!', 'info');
+        } else {
+            showNotification('OCR processing failed. Please type the word manually.', 'info');
+        }
+        
         return null;
     } catch (error) {
         console.error('Fallback OCR error:', error);
@@ -896,39 +944,49 @@ function showNotification(message, type = 'info') {
     const existingNotifications = document.querySelectorAll('.notification');
     existingNotifications.forEach(notification => notification.remove());
     
+    // Check if mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+    notification.className = `notification fixed z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+    
+    // Mobile-friendly positioning
+    if (isMobile) {
+        notification.className += ' top-4 left-4 right-4 mx-4';
+    } else {
+        notification.className += ' top-4 right-4';
+    }
     
     // Set notification content based on type
     if (type === 'success') {
         notification.className += ' bg-green-500 text-white';
         notification.innerHTML = `
             <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>${message}</span>
+                <span class="text-sm">${message}</span>
             </div>
         `;
     } else if (type === 'error') {
         notification.className += ' bg-red-500 text-white';
         notification.innerHTML = `
             <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
-                <span>${message}</span>
+                <span class="text-sm">${message}</span>
             </div>
         `;
     } else {
         notification.className += ' bg-blue-500 text-white';
         notification.innerHTML = `
             <div class="flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>${message}</span>
+                <span class="text-sm">${message}</span>
             </div>
         `;
     }
@@ -941,7 +999,8 @@ function showNotification(message, type = 'info') {
         notification.classList.remove('translate-x-full');
     }, 100);
     
-    // Auto remove after 3 seconds
+    // Auto remove after 4 seconds on mobile, 3 on desktop
+    const autoRemoveTime = isMobile ? 4000 : 3000;
     setTimeout(() => {
         notification.classList.add('translate-x-full');
         setTimeout(() => {
@@ -949,7 +1008,7 @@ function showNotification(message, type = 'info') {
                 notification.parentNode.removeChild(notification);
             }
         }, 300);
-    }, 3000);
+    }, autoRemoveTime);
 }
 
 // Vocabulary Management with Firebase and localStorage fallback
