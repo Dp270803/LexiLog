@@ -217,7 +217,7 @@
 <body class="bg-gray-50 min-h-screen">
     <!-- Authentication Views -->
     <!-- Login View -->
-    <div id="loginView" class="view-container fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+    <div id="loginView" class="view-container fixed inset-0 bg-gray-50 z-50 flex items-center justify-center" style="display: flex !important;">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -251,7 +251,7 @@
     </div>
 
     <!-- Signup View -->
-    <div id="signupView" class="view-container hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+    <div id="signupView" class="view-container hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center" style="display: none !important;">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -538,31 +538,37 @@
         // Authentication functions - Fixed navigation logic
         function showLogin() {
             console.log('Showing login view');
-            // Hide all views first
-            document.querySelectorAll('.view-container').forEach(view => {
-                view.classList.add('hidden');
-            });
-            // Show login view
+            // Hide all views
+            elements.loginView.style.display = 'flex';
+            elements.signupView.style.display = 'none';
+            elements.mainApp.style.display = 'none';
+            
             elements.loginView.classList.remove('hidden');
+            elements.signupView.classList.add('hidden');
+            elements.mainApp.classList.add('hidden');
         }
 
         function showSignup() {
             console.log('Showing signup view');
-            // Hide all views first
-            document.querySelectorAll('.view-container').forEach(view => {
-                view.classList.add('hidden');
-            });
-            // Show signup view
+            // Show signup, hide others
+            elements.loginView.style.display = 'none';
+            elements.signupView.style.display = 'flex';
+            elements.mainApp.style.display = 'none';
+            
+            elements.loginView.classList.add('hidden');
             elements.signupView.classList.remove('hidden');
+            elements.mainApp.classList.add('hidden');
         }
 
         function showMainApp(userProfile) {
             console.log('Showing main app');
-            // Hide all views first
-            document.querySelectorAll('.view-container').forEach(view => {
-                view.classList.add('hidden');
-            });
-            // Show main app
+            // Hide auth views, show main app
+            elements.loginView.style.display = 'none';
+            elements.signupView.style.display = 'none';
+            elements.mainApp.style.display = 'block';
+            
+            elements.loginView.classList.add('hidden');
+            elements.signupView.classList.add('hidden');
             elements.mainApp.classList.remove('hidden');
             
             if (userProfile && userProfile.name && elements.greeting) {
@@ -639,8 +645,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Page loaded, initializing...');
             
-            // Ensure we start with login view visible
-            showLogin();
+            // Ensure we start with login view visible - FORCE LOGIN VIEW
+            console.log('Forcing login view to show...');
+            elements.loginView.classList.remove('hidden');
+            elements.signupView.classList.add('hidden');
+            elements.mainApp.classList.add('hidden');
             
             // Auth state listener
             auth.onAuthStateChanged(async (user) => {
@@ -675,14 +684,29 @@
             });
 
             // Event listeners
-            document.getElementById('showSignupBtn').addEventListener('click', () => {
-                console.log('Show signup button clicked');
-                showSignup();
-            });
-            document.getElementById('showLoginBtn').addEventListener('click', () => {
-                console.log('Show login button clicked');
-                showLogin();
-            });
+            console.log('Setting up event listeners...');
+            
+            const signupBtn = document.getElementById('showSignupBtn');
+            const loginBtn = document.getElementById('showLoginBtn');
+            
+            console.log('Signup button found:', !!signupBtn);
+            console.log('Login button found:', !!loginBtn);
+            
+            if (signupBtn) {
+                signupBtn.addEventListener('click', () => {
+                    console.log('Show signup button clicked');
+                    showSignup();
+                });
+            }
+            
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    console.log('Show login button clicked');
+                    showLogin();
+                });
+            } else {
+                console.error('Login button not found!');
+            }
 
             // Login form
             elements.loginForm.addEventListener('submit', async (e) => {
