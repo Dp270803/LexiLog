@@ -110,19 +110,94 @@
             .grid-cols-2 { grid-template-columns: 1fr; }
             .max-w-md { max-width: 90%; }
             .p-8 { padding: 1.5rem; }
-            .text-3xl { font-size: 1.5rem; line-height: 2rem; }
-            .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .text-3xl { font-size: 1.75rem; line-height: 2.25rem; }
+            .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+            .text-4xl { font-size: 2rem; line-height: 2.5rem; }
+        }
+        
+        /* Enhanced mobile styling */
+        @media (max-width: 480px) {
+            .max-w-md { max-width: 95%; margin: 0 auto; }
+            .p-8 { padding: 1.25rem; }
+            .gap-6 { gap: 1rem; }
+            .feature-card { padding: 1.25rem; }
+            .text-4xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .text-xl { font-size: 1.125rem; line-height: 1.75rem; }
         }
         
         /* Additional styles for better mobile experience */
         .feature-card {
             cursor: pointer;
             transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--card-from), var(--card-to));
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
         }
         
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+        }
+        
+        .feature-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+        
+        /* Enhanced button styling */
+        button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Improved form styling */
+        input, select {
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Smooth page transitions */
+        .view-container {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .view-container.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
         }
     </style>
     
@@ -142,7 +217,7 @@
 <body class="bg-gray-50 min-h-screen">
     <!-- Authentication Views -->
     <!-- Login View -->
-    <div id="loginView" class="fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+    <div id="loginView" class="view-container fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -176,7 +251,7 @@
     </div>
 
     <!-- Signup View -->
-    <div id="signupView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+    <div id="signupView" class="view-container hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -276,25 +351,25 @@
                 </div>
                 
                 <div class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
-                    <div class="feature-card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" data-navigate="dictionary">
+                    <div class="feature-card text-white p-6 rounded-xl shadow-lg" style="--card-from: #3B82F6; --card-to: #1D4ED8;" data-navigate="dictionary">
                         <div class="text-4xl mb-3">📚</div>
                         <h3 class="text-xl font-semibold mb-2">Smart Dictionary</h3>
                         <p class="opacity-90">Search English words with definitions, phonetics, and audio</p>
                     </div>
                     
-                    <div class="feature-card bg-gradient-to-br from-green-500 to-emerald-600 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" data-navigate="library">
+                    <div class="feature-card text-white p-6 rounded-xl shadow-lg" style="--card-from: #10B981; --card-to: #059669;" data-navigate="library">
                         <div class="text-4xl mb-3">📖</div>
                         <h3 class="text-xl font-semibold mb-2">My LexiLog</h3>
                         <p class="opacity-90">Access your saved vocabulary and track progress</p>
                     </div>
                     
-                    <div class="feature-card bg-gradient-to-br from-purple-500 to-pink-500 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" data-navigate="languages">
+                    <div class="feature-card text-white p-6 rounded-xl shadow-lg" style="--card-from: #8B5CF6; --card-to: #EC4899;" data-navigate="languages">
                         <div class="text-4xl mb-3">🌍</div>
                         <h3 class="text-xl font-semibold mb-2">Multi-Language</h3>
                         <p class="opacity-90">Search words in 20+ languages with translations</p>
                     </div>
                     
-                    <div class="feature-card bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" data-navigate="daily">
+                    <div class="feature-card text-white p-6 rounded-xl shadow-lg" style="--card-from: #F97316; --card-to: #EF4444;" data-navigate="daily">
                         <div class="text-4xl mb-3">⭐</div>
                         <h3 class="text-xl font-semibold mb-2">Word of the Day</h3>
                         <p class="opacity-90">Discover and learn a new word every day</p>
@@ -306,6 +381,18 @@
         <!-- Dictionary View -->
         <div id="dictionaryView" class="hidden min-h-screen bg-gray-50 p-8">
             <div class="max-w-2xl mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="navigateToView('home')" class="flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Home
+                    </button>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        Logout
+                    </button>
+                </div>
+                
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-gray-800 mb-2">📚 Smart Dictionary</h2>
                     <p class="text-gray-600">Search for English words with detailed definitions</p>
@@ -448,24 +535,34 @@
             }
         }
 
-        // Authentication functions
+        // Authentication functions - Fixed navigation logic
         function showLogin() {
             console.log('Showing login view');
+            // Hide all views first
+            document.querySelectorAll('.view-container').forEach(view => {
+                view.classList.add('hidden');
+            });
+            // Show login view
             elements.loginView.classList.remove('hidden');
-            elements.signupView.classList.add('hidden');
-            elements.mainApp.classList.add('hidden');
         }
 
         function showSignup() {
             console.log('Showing signup view');
+            // Hide all views first
+            document.querySelectorAll('.view-container').forEach(view => {
+                view.classList.add('hidden');
+            });
+            // Show signup view
             elements.signupView.classList.remove('hidden');
-            elements.loginView.classList.add('hidden');
-            elements.mainApp.classList.add('hidden');
         }
 
         function showMainApp(userProfile) {
-            elements.loginView.classList.add('hidden');
-            elements.signupView.classList.add('hidden');
+            console.log('Showing main app');
+            // Hide all views first
+            document.querySelectorAll('.view-container').forEach(view => {
+                view.classList.add('hidden');
+            });
+            // Show main app
             elements.mainApp.classList.remove('hidden');
             
             if (userProfile && userProfile.name && elements.greeting) {
