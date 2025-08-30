@@ -2,22 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LexiLog - Personal Vocabulary Builder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLog - Personal Vocabulary Builder (Demo)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Authentication Views -->
     <!-- Login View -->
-    <div id="loginView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center mobile-safe">
-        <div class="max-w-md w-full mx-4 p-6 md:p-8 bg-white rounded-lg shadow-lg">
+    <div id="loginView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
                 <p class="text-gray-600">Sign in to your LexiLog account</p>
+                <div class="mt-2 text-sm text-blue-600">Demo Version - Data stored locally</div>
             </div>
             <form id="loginForm" class="space-y-6">
                 <div>
@@ -49,7 +47,7 @@
                 <button 
                     type="submit"
                     id="loginButton"
-                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium no-focus-outline btn-mobile"
+                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                     Sign In
                 </button>
@@ -57,18 +55,19 @@
             <div class="mt-6 text-center">
                 <p class="text-gray-600">
                     Don't have an account? 
-                    <button id="showSignupBtn" class="text-blue-600 hover:text-blue-700 font-medium no-focus-outline">Sign up</button>
+                    <button id="showSignupBtn" class="text-blue-600 hover:text-blue-700 font-medium">Sign up</button>
                 </p>
             </div>
         </div>
     </div>
 
     <!-- Signup View -->
-    <div id="signupView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center mobile-safe">
-        <div class="max-w-md w-full mx-4 p-6 md:p-8 bg-white rounded-lg shadow-lg">
+    <div id="signupView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
                 <p class="text-gray-600">Join LexiLog and start building your vocabulary</p>
+                <div class="mt-2 text-sm text-blue-600">Demo Version - Data stored locally</div>
             </div>
             <form id="signupForm" class="space-y-6">
                 <div>
@@ -111,46 +110,10 @@
                         placeholder="Create a password (min. 6 characters)"
                     >
                 </div>
-                <div>
-                    <label for="examGoal" class="block text-sm font-medium text-gray-700 mb-2">
-                        What brings you here? 🎯
-                    </label>
-                    <select 
-                        id="examGoal" 
-                        name="examGoal" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                    >
-                        <option value="">Select your goal...</option>
-                        <option value="gre">GRE (Graduate Record Examination)</option>
-                        <option value="gmat">GMAT (Graduate Management Admission Test)</option>
-                        <option value="sat">SAT (Scholastic Assessment Test)</option>
-                        <option value="toefl">TOEFL (Test of English as a Foreign Language)</option>
-                        <option value="ielts">IELTS (International English Language Testing System)</option>
-                        <option value="cat">CAT (Common Admission Test)</option>
-                        <option value="clat">CLAT (Common Law Admission Test)</option>
-                        <option value="upsc">UPSC (Union Public Service Commission)</option>
-                        <option value="banking">Banking Exams (SBI PO, IBPS, etc.)</option>
-                        <option value="vocabulary">To improve my vocabulary in general</option>
-                        <option value="other">Other (please specify)</option>
-                    </select>
-                </div>
-                <div id="otherExamContainer" class="hidden">
-                    <label for="otherExam" class="block text-sm font-medium text-gray-700 mb-2">
-                        Please specify your exam/goal
-                    </label>
-                    <input 
-                        type="text" 
-                        id="otherExam" 
-                        name="otherExam" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your specific exam or goal"
-                    >
-                </div>
                 <button 
                     type="submit"
                     id="signupButton"
-                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium no-focus-outline btn-mobile"
+                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
                 >
                     Create Account
                 </button>
@@ -158,7 +121,7 @@
             <div class="mt-6 text-center">
                 <p class="text-gray-600">
                     Already have an account? 
-                    <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium no-focus-outline">Sign in</button>
+                    <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium">Sign in</button>
                 </p>
             </div>
         </div>
@@ -167,56 +130,39 @@
     <!-- Main App -->
     <div id="mainApp" class="hidden">
         <!-- Navigation -->
-        <nav class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/50 fixed top-0 left-0 right-0 z-40 transition-all duration-300">
-            <div class="max-w-6xl mx-auto px-4 py-4">
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-4xl mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
-                    <button id="homeButton" class="text-2xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300 cursor-pointer group no-focus-outline">
-                        <span class="group-hover:scale-110 inline-block transition-transform duration-300">LexiLog</span>
-                    </button>
+                    <h1 class="text-2xl font-bold text-gray-800">LexiLog</h1>
                     <div class="flex items-center space-x-4">
-                                                <!-- Navigation will be hidden on homepage, shown on other pages -->
-                        <div id="navigationRibbon" class="hidden flex flex-wrap gap-1 md:space-x-1 bg-gray-100 rounded-lg p-1">
+                        <div class="flex space-x-1 bg-gray-100 rounded-lg p-1">
                             <button 
-                                id="navHome" 
-                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-blue-100"
-                                data-navigate="home"
+                                id="searchTab" 
+                                class="tab-button active px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                                data-tab="search"
                             >
-                                🏠 Home
+                                Search
                             </button>
                             <button 
-                                id="navDictionary" 
-                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-blue-100"
-                                data-navigate="dictionary"
+                                id="libraryTab" 
+                                class="tab-button px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                                data-tab="library"
                             >
-                                📖 Dictionary
+                                My LexiLog
                             </button>
-                        <button 
-                                id="navLanguages" 
-                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-purple-100"
-                                data-navigate="languages"
+                            <button 
+                                id="dailyTab" 
+                                class="tab-button px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                                data-tab="daily"
                             >
-                                🌐 Languages
-                        </button>
-                        <button 
-                                id="navLibrary" 
-                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-green-100"
-                                data-navigate="library"
-                            >
-                                📚 My LexiLog
-                        </button>
-                        <button 
-                                id="navDaily" 
-                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-orange-100"
-                                data-navigate="daily"
-                            >
-                                ⭐ Word of Day
+                                Word of the Day
                             </button>
                         </div>
                         <!-- User Profile Dropdown -->
                         <div class="relative">
-                        <button 
+                            <button 
                                 id="userProfileButton" 
-                                class="text-gray-700 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 no-focus-outline"
+                                class="text-gray-700 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2"
                             >
                                 <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                                     <span id="userInitials" class="text-white font-medium text-sm">U</span>
@@ -228,20 +174,20 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                        </button>
+                            </button>
                             
                             <!-- Dropdown Menu -->
                             <div id="userProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
                                 <div class="py-1">
-                        <button 
+                                    <button 
                                         id="logoutButton" 
-                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 no-focus-outline"
-                        >
+                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                    >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                         </svg>
                                         <span>Sign Out</span>
-                        </button>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -251,176 +197,78 @@
         </nav>
 
         <!-- Content Area -->
-        <main class="pt-20">
-            <!-- Homepage View -->
-            <div id="homeView" class="tab-content active">
-                <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center">
-                    <!-- Animated Background Elements -->
-                    <div class="absolute inset-0 overflow-hidden">
-                        <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full"></div>
-                        <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-purple-200/30 rounded-full" style="animation-delay: 1s;"></div>
-                        <div class="floating-element absolute bottom-40 left-20 w-12 h-12 bg-green-200/30 rounded-full" style="animation-delay: 2s;"></div>
-                        <div class="floating-element absolute bottom-20 right-40 w-24 h-24 bg-pink-200/30 rounded-full" style="animation-delay: 0.5s;"></div>
-                    </div>
-                    
-                    <div class="relative z-10 max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-16 animate-fade-in-up">
-                            <h1 id="personalizedGreeting" class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    Welcome to LexiLog
-                                </span>
-                            </h1>
-                            <p id="personalizedTagline" class="text-xl text-gray-600 max-w-3xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
-                                Master English vocabulary for GRE, GMAT, and competitive exams. Build your personal word library and excel in your goals.
-                            </p>
-                        </div>
-
-                        <!-- Feature Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                            <!-- English Dictionary Card -->
-                            <div class="feature-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer animate-fade-in-up" style="animation-delay: 0.4s;" data-navigate="dictionary">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <span class="text-2xl text-white">📖</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">Smart Dictionary</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Comprehensive English dictionary with definitions, examples, and pronunciation for competitive exam preparation.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- My LexiLog Card -->
-                            <div class="feature-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer animate-fade-in-up" style="animation-delay: 0.5s;" data-navigate="library">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <span class="text-2xl text-white">📚</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">My LexiLog</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Your personal vocabulary collection. Track, review, and master words you've learned for better retention.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Other Languages Card -->
-                            <div class="feature-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer animate-fade-in-up" style="animation-delay: 0.6s;" data-navigate="languages">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <span class="text-2xl text-white">🌐</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">Multi-Language</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Explore vocabulary in Hindi, Tamil, Spanish, French, and 15+ other languages with AI-powered definitions.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Word of the Day Card -->
-                            <div class="feature-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200/50 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer animate-fade-in-up" style="animation-delay: 0.7s;" data-navigate="daily">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <span class="text-2xl text-white">⭐</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">Word of the Day</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Discover a new challenging word daily. Perfect for building advanced vocabulary for competitive exams.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Dictionary View -->
-            <div id="dictionaryView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center">
-                    <!-- Animated Background Elements -->
-                    <div class="absolute inset-0 overflow-hidden">
-                        <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full"></div>
-                        <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-purple-200/30 rounded-full" style="animation-delay: 1s;"></div>
-                        <div class="floating-element absolute bottom-40 left-20 w-12 h-12 bg-green-200/30 rounded-full" style="animation-delay: 2s;"></div>
-                        <div class="floating-element absolute bottom-20 right-40 w-24 h-24 bg-pink-200/30 rounded-full" style="animation-delay: 0.5s;"></div>
-                    </div>
-                    
-                    <div class="relative z-10 max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    Smart Dictionary
-                                </span>
-                            </h1>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
-                                Master English vocabulary for competitive exams. Search for any word and automatically save it to your personal library.
-                            </p>
+        <main class="max-w-4xl mx-auto px-4 py-8">
+            <!-- Search View -->
+            <div id="searchView" class="tab-content active">
+                <div class="text-center mb-8">
+                    <h2 id="greeting" class="text-2xl font-bold text-gray-800 mb-2">Hi there, Here is your Pocket Dictionary</h2>
+                    <p class="text-gray-600">Search for words to automatically save them to your personal library</p>
                 </div>
 
-                        <!-- Search Section -->
-                        <div class="max-w-4xl mx-auto px-4">
+                <!-- Language Selector -->
+                <div class="max-w-2xl mx-auto mb-4">
+                    <label for="languageSelector" class="block text-sm font-medium text-gray-700 mb-2">
+                        Select Language
+                    </label>
+                    <select 
+                        id="languageSelector" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="kn">Kannada</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="bn">Bengali</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="mr">Marathi</option>
+                        <option value="pa">Punjabi</option>
+                        <option value="ur">Urdu</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                    </select>
+                </div>
+
                 <!-- Search Bar -->
-                            <div class="mb-8 md:mb-12 animate-fade-in-up" style="animation-delay: 0.4s;">
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-4 md:p-8 shadow-2xl border border-gray-200/50 hover:shadow-3xl transition-all duration-500 search-container">
+                <div class="max-w-2xl mx-auto mb-8">
                     <div class="relative">
                         <input 
                             type="text" 
                             id="searchInput" 
-                                            placeholder="Search for any English word..." 
-                                            class="w-full px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl bg-transparent border-0 focus:outline-none text-gray-800 placeholder-gray-500"
-                                            autocomplete="off"
+                            placeholder="Type a word to search..."
+                            class="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-20"
                         >
-                                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
                         <button 
-                                                id="voiceSearch" 
-                                                class="p-3 text-gray-400 hover:text-blue-600 transition-colors duration-300 rounded-full hover:bg-blue-50 no-focus-outline"
-                                                title="Voice Search"
+                            id="audioButton" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Audio Search"
                         >
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
                             </svg>
                         </button>
+                    </div>
                     <button 
                         id="searchButton" 
-                                                class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl no-focus-outline"
+                        class="w-full mt-4 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                </svg>
+                        Search
                     </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                 </div>
 
                 <!-- Search Results -->
-                        <div id="searchResults" class="max-w-4xl mx-auto px-4 hidden animate-fade-in-up">
-                            <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 id="resultWord" class="text-2xl font-bold text-gray-800"></h3>
-                                    <button id="playAudio" class="text-blue-600 hover:text-blue-800">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div id="resultPhonetic" class="text-gray-600 mb-4"></div>
-                                <div id="resultDefinitions" class="space-y-4"></div>
-                                <div class="mt-6 pt-6 border-t border-gray-200">
-                                    <button id="saveWord" class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-                                        💾 Add to My LexiLog
-                    </button>
-                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Languages View -->
-                <div id="searchResults" class="max-w-4xl mx-auto px-4 hidden animate-fade-in-up">
-                    <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
-                        <div class="flex items-center justify-between mb-6">
+                <div id="searchResults" class="max-w-2xl mx-auto hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center justify-between mb-4">
                             <h3 id="resultWord" class="text-2xl font-bold text-gray-800"></h3>
                             <button id="playAudio" class="text-blue-600 hover:text-blue-800">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,137 +297,11 @@
                 </div>
             </div>
 
-            <!-- Languages View -->
-            <div id="languagesView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-blue-50 min-h-screen flex items-center">
-                    <div class="max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                    Other Languages
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-                                Explore vocabulary in multiple languages with smart translation and native definitions.
-                            </p>
-                        </div>
-
-                        <!-- Language Selector -->
-                        <div class="max-w-4xl mx-auto px-4">
-                            <div class="mb-6 md:mb-8 animate-fade-in-up" style="animation-delay: 0.4s;">
-                                <div class="flex justify-center">
-                                    <div class="bg-gradient-to-r from-white to-gray-50 rounded-2xl p-6 shadow-xl border border-gray-100 w-full max-w-md language-selector-container transform hover:scale-105 transition-all duration-300">
-                                        <div class="text-center mb-4">
-                                            <div class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-3">
-                                                <span class="text-2xl">🌐</span>
-                                            </div>
-                                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Choose Your Language</h3>
-                                            <p class="text-sm text-gray-600">
-                                                💡 <span class="font-medium">Dictionary:</span> Type native words in English script<br>
-                                                🔄 <span class="font-medium">Smart AI:</span> Powered by Gemini AI
-                                            </p>
-                                        </div>
-                                        <select 
-                                            id="languageSelector" 
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-800 font-medium shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-                                        >
-                                            <option value="hi">🇮🇳 Hindi</option>
-                                            <option value="kn">🇮🇳 Kannada</option>
-                                            <option value="ta">🇮🇳 Tamil</option>
-                                            <option value="te">🇮🇳 Telugu</option>
-                                            <option value="ml">🇮🇳 Malayalam</option>
-                                            <option value="bn">🇧🇩 Bengali</option>
-                                            <option value="gu">🇮🇳 Gujarati</option>
-                                            <option value="mr">🇮🇳 Marathi</option>
-                                            <option value="pa">🇮🇳 Punjabi</option>
-                                            <option value="ur">🇵🇰 Urdu</option>
-                                            <option value="es">🇪🇸 Spanish</option>
-                                            <option value="fr">🇫🇷 French</option>
-                                            <option value="de">🇩🇪 German</option>
-                                            <option value="it">🇮🇹 Italian</option>
-                                            <option value="pt">🇵🇹 Portuguese</option>
-                                            <option value="ru">🇷🇺 Russian</option>
-                                            <option value="ja">🇯🇵 Japanese</option>
-                                            <option value="ko">🇰🇷 Korean</option>
-                                            <option value="zh">🇨🇳 Chinese</option>
-                                            <option value="ar">🇸🇦 Arabic</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Search Bar -->
-                            <div class="mb-8 md:mb-12 animate-fade-in-up" style="animation-delay: 0.6s;">
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-4 md:p-8 shadow-2xl border border-gray-200/50 hover:shadow-3xl transition-all duration-500 search-container">
-                                    <div class="relative">
-                                        <input 
-                                            type="text" 
-                                            id="searchInput" 
-                                            placeholder="Search for any word in the selected language..." 
-                                            class="w-full px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl bg-transparent border-0 focus:outline-none text-gray-800 placeholder-gray-500"
-                                            autocomplete="off"
-                                        >
-                                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                                            <button 
-                                                id="voiceSearch" 
-                                                class="p-3 text-gray-400 hover:text-blue-600 transition-colors duration-300 rounded-full hover:bg-blue-50 no-focus-outline"
-                                                title="Voice Search"
-                                            >
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                                                </svg>
-                                            </button>
-                                            <button 
-                                                id="searchButton" 
-                                                class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl no-focus-outline"
-                                            >
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Search Results -->
-                        <div id="languageSearchResults" class="max-w-4xl mx-auto px-4 hidden animate-fade-in-up">
-                            <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 id="languageResultWord" class="text-2xl font-bold text-gray-800"></h3>
-                                    <button id="playLanguageAudio" class="text-purple-600 hover:text-purple-800">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div id="languageResultPhonetic" class="text-gray-600 mb-4"></div>
-                                <div id="languageResultDefinitions" class="space-y-4"></div>
-                                <div class="mt-6 pt-6 border-t border-gray-200">
-                                    <button id="saveLanguageWord" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-                                        💾 Add to My LexiLog
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
             <!-- Library View -->
             <div id="libraryView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-blue-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    📚 My LexiLog
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Your personal vocabulary collection - every word you've discovered and saved
-                            </p>
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">My LexiLog</h2>
+                    <p class="text-gray-600">Your personal vocabulary collection</p>
                 </div>
 
                 <div id="libraryContent">
@@ -596,26 +318,14 @@
                 </div>
             </div>
 
-
-
-            <!-- Translate View Removed -->
-
             <!-- Word of the Day View -->
             <div id="dailyView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-pink-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    🌟 Word of the Day
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Discover a beautiful new word every day and expand your vocabulary
-                            </p>
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Word of the Day</h2>
+                    <p class="text-gray-600">Discover a new word every day</p>
                 </div>
 
-                        <div id="dailyWordContent" class="max-w-2xl mx-auto px-4 daily-word-container">
+                <div id="dailyWordContent" class="max-w-2xl mx-auto">
                     <div id="dailyLoading" class="bg-white rounded-lg shadow-md p-6 text-center">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                         <p class="text-gray-600">Loading word of the day...</p>
@@ -639,8 +349,6 @@
                         </button>
                     </div>
                 </div>
-                    </div>
-                </section>
             </div>
         </main>
     </div>
