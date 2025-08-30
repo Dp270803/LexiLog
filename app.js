@@ -115,6 +115,8 @@ function initializeElements() {
         searchInput: document.getElementById('searchInput'),
         searchButton: document.getElementById('searchButton'),
         audioButton: document.getElementById('audioButton'),
+        cameraButton: document.getElementById('cameraButton'),
+        photoInput: document.getElementById('photoInput'),
         searchResults: document.getElementById('searchResults'),
         loadingState: document.getElementById('loadingState'),
         errorState: document.getElementById('errorState'),
@@ -442,6 +444,7 @@ function showMainApp(userProfile) {
     
     // Initialize features
     initializeSpeechRecognition();
+    initializePhotoRecognition();
     loadUserVocabulary();
     fetchWordOfTheDay();
 }
@@ -775,6 +778,90 @@ function hideError() {
 
 function hideResults() {
     elements.searchResults.classList.add('hidden');
+}
+
+// Photo Recognition Functions
+function initializePhotoRecognition() {
+    if (elements.cameraButton && elements.photoInput) {
+        elements.cameraButton.addEventListener('click', () => {
+            elements.photoInput.click();
+        });
+        
+        elements.photoInput.addEventListener('change', handlePhotoCapture);
+    }
+}
+
+async function handlePhotoCapture(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+        showLoading();
+        hideResults();
+        hideError();
+        
+        // Show photo preview
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const imageData = e.target.result;
+            
+            // Extract text from image using OCR
+            const extractedText = await extractTextFromImage(imageData);
+            
+            if (extractedText) {
+                // Clean the extracted text (remove extra spaces, newlines, etc.)
+                const cleanText = extractedText.trim().replace(/\s+/g, ' ');
+                
+                // Set the extracted text in the search input
+                elements.searchInput.value = cleanText;
+                
+                // Search for the word
+                await searchEnglishWord(cleanText);
+            } else {
+                showError();
+                showNotification('No text found in the image. Please try a clearer photo.', 'error');
+            }
+        };
+        reader.readAsDataURL(file);
+        
+    } catch (error) {
+        console.error('Photo recognition error:', error);
+        showError();
+        showNotification('Error processing image. Please try again.', 'error');
+    }
+}
+
+async function extractTextFromImage(imageData) {
+    try {
+        // Use Tesseract.js for OCR
+        if (typeof Tesseract !== 'undefined') {
+            const worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(imageData);
+            await worker.terminate();
+            
+            return text;
+        } else {
+            // Fallback if Tesseract is not loaded
+            return await fallbackOCR(imageData);
+        }
+    } catch (error) {
+        console.error('OCR error:', error);
+        
+        // Fallback: Try using a simpler OCR approach or API
+        return await fallbackOCR(imageData);
+    }
+}
+
+async function fallbackOCR(imageData) {
+    try {
+        // Simple fallback - you can replace this with a different OCR service
+        // For now, we'll show a message asking user to type manually
+        showNotification('OCR processing failed. Please type the word manually.', 'info');
+        return null;
+    } catch (error) {
+        console.error('Fallback OCR error:', error);
+        return null;
+    }
 }
 
 // Audio Functions

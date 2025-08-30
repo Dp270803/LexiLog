@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/tesseract.js@v4.1.1/dist/tesseract.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -113,7 +114,7 @@
                 </div>
                 <div>
                     <label for="signupQuestion" class="block text-sm font-medium text-gray-700 mb-2">
-                        What's your primary goal for learning vocabulary?
+                        What are you preparing for?
                     </label>
                     <select 
                         id="signupQuestion" 
@@ -121,14 +122,26 @@
                         required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="">Select your goal</option>
-                        <option value="competitive-exams">📚 Competitive Exams (UPSC, CAT, GRE, etc.)</option>
-                        <option value="academic-studies">🎓 Academic Studies & Research</option>
+                        <option value="">Select your preparation goal</option>
+                        <option value="cat">🐯 CAT (Common Admission Test)</option>
+                        <option value="gre">🎓 GRE (Graduate Record Examination)</option>
+                        <option value="gmat">📊 GMAT (Graduate Management Admission Test)</option>
+                        <option value="upsc">🏛️ UPSC Civil Services</option>
+                        <option value="banking">🏦 Banking Exams (IBPS, SBI PO/Clerk)</option>
+                        <option value="ssc">📋 SSC Exams (CGL, CHSL, MTS)</option>
+                        <option value="gate">⚙️ GATE (Graduate Aptitude Test in Engineering)</option>
+                        <option value="ielts">🌍 IELTS (International English Language Testing System)</option>
+                        <option value="toefl">🇺🇸 TOEFL (Test of English as a Foreign Language)</option>
+                        <option value="sat">📚 SAT (Scholastic Assessment Test)</option>
+                        <option value="act">📝 ACT (American College Testing)</option>
+                        <option value="clat">⚖️ CLAT (Common Law Admission Test)</option>
+                        <option value="neet">🏥 NEET (National Eligibility cum Entrance Test)</option>
+                        <option value="jee">🔬 JEE (Joint Entrance Examination)</option>
+                        <option value="academic-research">🔬 Academic Research & PhD</option>
                         <option value="professional-career">💼 Professional Career Growth</option>
-                        <option value="personal-development">🌟 Personal Development & Communication</option>
-                        <option value="language-learning">🌍 Language Learning & Travel</option>
                         <option value="creative-writing">✍️ Creative Writing & Literature</option>
-                        <option value="other">🎯 Other (Please specify)</option>
+                        <option value="personal-enrichment">🌟 Personal Enrichment & Communication</option>
+                        <option value="other">🎯 Other Exam/Goal (Please specify)</option>
                     </select>
                 </div>
                 <div id="otherGoalField" class="hidden">
@@ -350,6 +363,16 @@
                                             class="w-full px-8 py-6 text-xl border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 hover:bg-white pr-20 placeholder-gray-400"
                                         >
                                         <button 
+                                            id="cameraButton" 
+                                            class="absolute right-16 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-blue-50"
+                                            title="📷 Photo Search"
+                                        >
+                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        </button>
+                                        <button 
                                             id="audioButton" 
                                             class="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-blue-50"
                                             title="🎤 Voice Search"
@@ -365,6 +388,14 @@
                                     >
                                         🔍 Search & Learn
                                     </button>
+                                    <!-- Hidden file input for photo capture -->
+                                    <input 
+                                        type="file" 
+                                        id="photoInput" 
+                                        accept="image/*" 
+                                        capture="environment"
+                                        class="hidden"
+                                    >
                                 </div>
                             </div>
 
