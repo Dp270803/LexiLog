@@ -89,6 +89,9 @@ function initializeElements() {
         signupName: document.getElementById('signupName'),
         signupEmail: document.getElementById('signupEmail'),
         signupPassword: document.getElementById('signupPassword'),
+        signupQuestion: document.getElementById('signupQuestion'),
+        signupOtherGoal: document.getElementById('signupOtherGoal'),
+        otherGoalField: document.getElementById('otherGoalField'),
         signupButton: document.getElementById('signupButton'),
         showLoginBtn: document.getElementById('showLoginBtn'),
         
@@ -274,15 +277,15 @@ function initializeAuth() {
 }
 
 // Sign up with Firebase
-async function signUpWithEmail(name, email, password) {
+async function signUpWithEmail(name, email, password, goal = '', otherGoal = '') {
     try {
         // Create user account
         const result = await auth.createUserWithEmailAndPassword(email, password);
         currentUser = result.user;
         currentUserId = result.user.uid;
         
-        // Save user profile
-        await saveUserProfile(name, email);
+        // Save user profile with goal information
+        await saveUserProfile(name, email, goal, otherGoal);
         
         showNotification('Account created successfully! Welcome to LexiLog!', 'success');
         return true;
@@ -374,11 +377,13 @@ async function getUserProfile() {
 }
 
 // Save user profile to Firestore
-async function saveUserProfile(name, email) {
+async function saveUserProfile(name, email, goal = '', otherGoal = '') {
     try {
         const profileData = {
             name: name,
             email: email,
+            goal: goal,
+            otherGoal: otherGoal,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             lastActive: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1246,12 +1251,14 @@ function initializeEventListeners() {
             const name = elements.signupName.value.trim();
             const email = elements.signupEmail.value.trim();
             const password = elements.signupPassword.value;
+            const goal = elements.signupQuestion.value;
+            const otherGoal = elements.signupOtherGoal.value.trim();
             
-            if (name && email && password) {
+            if (name && email && password && goal) {
                 elements.signupButton.disabled = true;
                 elements.signupButton.textContent = 'Creating Account...';
                 
-                const success = await signUpWithEmail(name, email, password);
+                const success = await signUpWithEmail(name, email, password, goal, otherGoal);
                 
                 elements.signupButton.disabled = false;
                 elements.signupButton.textContent = 'Create Account';
@@ -1259,6 +1266,8 @@ function initializeEventListeners() {
                 if (!success) {
                     // Error handling is done in signUpWithEmail function
                 }
+            } else {
+                showNotification('Please fill in all required fields including your learning goal.', 'error');
             }
         });
     }
@@ -1291,6 +1300,20 @@ function initializeEventListeners() {
             currentLanguage = e.target.value;
             updateSpeechRecognitionLanguage();
             showNotification(`Language changed to ${SUPPORTED_LANGUAGES[currentLanguage].name}`, 'info');
+        });
+    }
+    
+    // Goal selector for signup
+    if (elements.signupQuestion) {
+        elements.signupQuestion.addEventListener('change', (e) => {
+            if (e.target.value === 'other') {
+                elements.otherGoalField.classList.remove('hidden');
+                elements.signupOtherGoal.required = true;
+            } else {
+                elements.otherGoalField.classList.add('hidden');
+                elements.signupOtherGoal.required = false;
+                elements.signupOtherGoal.value = '';
+            }
         });
     }
     
