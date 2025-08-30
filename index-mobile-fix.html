@@ -262,6 +262,11 @@
         <div id="homeView" class="min-h-screen bg-gray-50 flex items-center justify-center p-8">
             <div class="max-w-4xl w-full text-center">
                 <div class="mb-8">
+                    <div class="flex justify-end mb-4">
+                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            🚪 Logout
+                        </button>
+                    </div>
                     <h1 id="greeting" class="text-4xl font-bold mb-3">
                         <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Welcome to LexiLog!
@@ -461,12 +466,27 @@
             elements.signupView.classList.add('hidden');
             elements.mainApp.classList.remove('hidden');
             
-            if (userProfile && elements.greeting) {
+            if (userProfile && userProfile.name && elements.greeting) {
                 const firstName = userProfile.name.split(' ')[0];
                 elements.greeting.innerHTML = `<span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to LexiLog, ${firstName}!</span>`;
+            } else if (currentUser && elements.greeting) {
+                // Fallback to email if name not available
+                const emailName = currentUser.email.split('@')[0];
+                elements.greeting.innerHTML = `<span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome to LexiLog, ${emailName}!</span>`;
             }
             
             navigateToView('home');
+        }
+
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                currentUser = null;
+                currentUserId = null;
+                showLogin();
+            }).catch((error) => {
+                console.error('Logout error:', error);
+            });
         }
 
         // Search function
@@ -520,24 +540,32 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Auth state listener
             auth.onAuthStateChanged(async (user) => {
+                console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
+                
                 if (user) {
                     currentUser = user;
                     currentUserId = user.uid;
+                    console.log('User ID:', currentUserId);
                     
                     try {
+                        console.log('Fetching user profile...');
                         const doc = await db.collection('artifacts').doc('lexilog-vocabulary-builder')
                             .collection('users').doc(currentUserId)
                             .collection('profile').doc('data').get();
                         
                         if (doc.exists) {
+                            console.log('Profile found:', doc.data());
                             showMainApp(doc.data());
                         } else {
+                            console.log('No profile found, using email fallback');
                             showMainApp({ name: user.email || 'User' });
                         }
                     } catch (error) {
+                        console.error('Error fetching profile:', error);
                         showMainApp({ name: user.email || 'User' });
                     }
                 } else {
+                    console.log('No user, showing login');
                     showLogin();
                 }
             });
@@ -552,9 +580,19 @@
                 const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
                 
+                if (!email || !password) {
+                    alert('Please enter both email and password.');
+                    return;
+                }
+                
+                console.log('Attempting login for:', email);
+                
                 try {
-                    await auth.signInWithEmailAndPassword(email, password);
+                    const result = await auth.signInWithEmailAndPassword(email, password);
+                    console.log('Login successful:', result.user.uid);
+                    // The auth state listener will handle the rest
                 } catch (error) {
+                    console.error('Login error:', error);
                     alert('Login failed: ' + error.message);
                 }
             });
@@ -568,10 +606,16 @@
                 const goal = elements.signupQuestion.value;
                 const otherGoal = elements.signupOtherGoal.value.trim();
                 
+                if (!name || !email || !password || !goal) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                
                 try {
+                    // Create user account
                     const result = await auth.createUserWithEmailAndPassword(email, password);
                     
-                    // Save profile
+                    // Save user profile to Firestore
                     await db.collection('artifacts').doc('lexilog-vocabulary-builder')
                         .collection('users').doc(result.user.uid)
                         .collection('profile').doc('data').set({
@@ -579,11 +623,15 @@
                             email: email,
                             goal: goal,
                             otherGoal: otherGoal,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        
-                    alert('Account created successfully!');
+                    
+                    console.log('Account created and profile saved successfully');
+                    // The auth state listener will automatically show the main app
+                    
                 } catch (error) {
+                    console.error('Signup error:', error);
                     alert('Signup failed: ' + error.message);
                 }
             });
