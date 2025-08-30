@@ -282,7 +282,7 @@ function signInWithEmail(email, password) {
         
         showNotification('Welcome back!', 'success');
         showMainApp(currentUser);
-        return true;
+    return true;
     } catch (error) {
         console.error('Sign in error:', error);
         showNotification('Failed to sign in. Please try again.', 'error');
@@ -496,7 +496,7 @@ function displaySearchResults(wordData) {
             ${wordData.phonetic ? `<div class="text-gray-600">${wordData.phonetic}</div>` : ''}
         `;
     } else {
-        elements.resultPhonetic.textContent = wordData.phonetic || '';
+    elements.resultPhonetic.textContent = wordData.phonetic || '';
     }
     
     // Clear previous definitions
@@ -565,7 +565,7 @@ function toggleAudioSearch() {
         speechRecognition.stop();
     } else {
         try {
-            speechRecognition.start();
+        speechRecognition.start();
         } catch (error) {
             console.error('Error starting speech recognition:', error);
             alert('Unable to start voice search. Please check your microphone permissions and try again.');
@@ -772,7 +772,7 @@ async function fetchWordOfTheDay() {
             const parsed = JSON.parse(dailyWordData);
             if (parsed.date === today) {
                 displayDailyWord(parsed);
-                return;
+            return;
             }
         }
         
@@ -935,7 +935,7 @@ function initializeEventListeners() {
     // Signup form
     if (elements.signupForm) {
         elements.signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        e.preventDefault();
             const name = elements.signupName.value.trim();
             const email = elements.signupEmail.value.trim();
             const password = elements.signupPassword.value;

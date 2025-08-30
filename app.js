@@ -692,14 +692,24 @@ async function initializeAuth() {
                 currentUser = user;
                 currentUserId = user.uid;
                 
-                // Get user profile from Firestore
-                const profile = await getUserProfile();
+                // Get user profile from Firestore with retry logic
+                let profile = await getUserProfile();
+                let retries = 0;
+                
+                // If profile not found, wait and retry (for new signups)
+                while (!profile && retries < 3) {
+                    console.log(`Profile not found, retrying... (${retries + 1}/3)`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    profile = await getUserProfile();
+                    retries++;
+                }
+                
                 if (profile && profile.name && profile.email) {
                     showMainApp(profile);
-        } else {
-                    // User exists but no profile, this shouldn't happen with our flow
-                    // But handle it gracefully
-                    await signOut();
+                } else {
+                    console.warn('User exists but no profile found after retries');
+                    // Don't sign out immediately, show a message instead
+                    showNotification('Profile loading issue. Please refresh the page.', 'error');
                 }
         } else {
                 // No user signed in
@@ -725,12 +735,7 @@ async function signUpWithEmail(name, email, password, examGoal, otherExam) {
         // Save user profile with exam goal
         await saveUserProfile(name, email, examGoal, otherExam);
         
-        // Get the saved profile and show main app
-        const profile = await getUserProfile();
-        if (profile) {
-            showMainApp(profile);
-        }
-        
+        // Auth state listener will handle showing main app
         showNotification('Account created successfully! Welcome to LexiLog!', 'success');
         return true;
     } catch (error) {
@@ -2614,6 +2619,8 @@ function initializeEventListeners() {
             if (!success) {
                 // Error handling is done in signUpWithEmail function
             }
+        } else {
+            showNotification('Please fill in all required fields', 'error');
         }
     });
     }
