@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLog V2 - Personal Vocabulary Builder</title>
+    
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .link-btn {
+            background: none;
+            color: #667eea;
+            text-decoration: underline;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .link-btn:hover {
+            background: none;
+            color: #764ba2;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .view {
+            display: none;
+        }
+        
+        .view.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            color: white;
+            padding: 25px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.05);
+        }
+        
+        .feature-card:active {
+            transform: translateY(-4px) scale(1.02);
+        }
+        
+        .feature-card.dictionary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .feature-card.dictionary:hover {
+            box-shadow: 0 20px 40px rgba(79, 172, 254, 0.4);
+        }
+        
+        .feature-card.vocabulary {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
+        }
+        
+        .feature-card.vocabulary:hover {
+            box-shadow: 0 20px 40px rgba(67, 233, 123, 0.4);
+        }
+        
+        .feature-card.languages {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            box-shadow: 0 10px 20px rgba(250, 112, 154, 0.3);
+        }
+        
+        .feature-card.languages:hover {
+            box-shadow: 0 20px 40px rgba(250, 112, 154, 0.4);
+        }
+        
+        .feature-card.daily {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            box-shadow: 0 10px 20px rgba(252, 182, 159, 0.3);
+            color: #333;
+        }
+        
+        .feature-card.daily:hover {
+            box-shadow: 0 20px 40px rgba(252, 182, 159, 0.4);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .back-btn, .logout-btn {
+            position: absolute;
+            top: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn {
+            left: 20px;
+        }
+        
+        .logout-btn {
+            right: 20px;
+            background: #ff4757;
+            color: white;
+        }
+        
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .search-container {
+            position: relative;
+            margin: 30px 0;
+        }
+        
+        .search-result {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .word-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .definition {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Vocabulary list styles */
+        .vocabulary-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .vocab-item {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .vocab-word {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .vocab-definition {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            padding-right: 80px;
+        }
+        
+        .vocab-date {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #ff3742;
+            transform: scale(1.05);
+        }
+        
+        /* Daily word card */
+        .daily-word-card {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            padding: 30px 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            color: #333;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .daily-word {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .daily-pronunciation {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .daily-definition {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .daily-example {
+            font-style: italic;
+            background: rgba(255,255,255,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .loading-message, .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            .container { 
+                padding: 30px 20px; 
+                max-width: 95%;
+                margin: 0 auto;
+            }
+            .home-grid { 
+                grid-template-columns: 1fr; 
+                gap: 12px;
+            }
+            .logo { 
+                font-size: 2rem; 
+            }
+            .feature-card {
+                padding: 20px 15px;
+            }
+            .back-btn, .logout-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+    
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Login View -->
+        <div id="loginView" class="view active">
+            <div class="logo">🔑 LexiLog V2</div>
+            <div class="subtitle">Beautiful & Complete</div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    <span class="btn-text">Sign In</span>
+                </button>
+            </form>
+            
+            <button class="btn link-btn" onclick="showView('signup')">
+                Don't have an account? Sign up
+            </button>
+        </div>
+
+        <!-- Signup View -->
+        <div id="signupView" class="view">
+            <div class="logo">📝 Join LexiLog</div>
+            <div class="subtitle">Create your beautiful account</div>
+            
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupGoal">What are you preparing for?</label>
+                    <select id="signupGoal" required>
+                        <option value="">Select your goal</option>
+                        <option value="cat">🐯 CAT (Common Admission Test)</option>
+                        <option value="gre">🎓 GRE (Graduate Record Examination)</option>
+                        <option value="gmat">📊 GMAT (Graduate Management Admission Test)</option>
+                        <option value="upsc">🏛️ UPSC Civil Services</option>
+                        <option value="banking">🏦 Banking Exams</option>
+                        <option value="ssc">📝 SSC Exams</option>
+                        <option value="ielts">🌍 IELTS</option>
+                        <option value="toefl">🇺🇸 TOEFL</option>
+                        <option value="vocabulary-building">📖 Just Building My Vocabulary</option>
+                        <option value="other">✏️ Other</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn" id="signupBtn">
+                    <span class="btn-text">Create Account</span>
+                </button>
+            </form>
+            
+            <button class="btn link-btn" onclick="showView('login')">
+                Already have an account? Sign in
+            </button>
+        </div>
+
+        <!-- Home View -->
+        <div id="homeView" class="view">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="logo">🏠 Welcome!</div>
+            <div class="subtitle" id="greeting">Your Beautiful Vocabulary Builder</div>
+            
+            <div class="home-grid">
+                <div class="feature-card dictionary" onclick="showView('dictionary')">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-title">Smart Dictionary</div>
+                    <div class="feature-desc">Search English words with definitions</div>
+                </div>
+                
+                <div class="feature-card vocabulary" onclick="showView('vocabulary')">
+                    <div class="feature-icon">📖</div>
+                    <div class="feature-title">My LexiLog</div>
+                    <div class="feature-desc">Your saved vocabulary collection</div>
+                </div>
+                
+                <div class="feature-card languages" onclick="showView('languages')">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">Languages</div>
+                    <div class="feature-desc">Multi-language translation</div>
+                </div>
+                
+                <div class="feature-card daily" onclick="showView('daily')">
+                    <div class="feature-icon">⭐</div>
+                    <div class="feature-title">Word of the Day</div>
+                    <div class="feature-desc">Daily vocabulary boost</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dictionary View -->
+        <div id="dictionaryView" class="view">
+            <button class="back-btn" onclick="showView('home')">← Back</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="logo">📚 Dictionary</div>
+            <div class="subtitle">Search English words</div>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Enter a word..." onkeypress="if(event.key==='Enter') searchWord()">
+                <button class="btn" onclick="searchWord()" id="searchBtn">
+                    <span class="btn-text">Search</span>
+                </button>
+            </div>
+            
+            <div id="searchResult" class="search-result">
+                <div class="word-title" id="resultWord"></div>
+                <div class="definition" id="resultDefinition"></div>
+                <button class="btn" onclick="saveWord()" id="saveWordBtn" style="display: none; margin-top: 15px;">
+                    💾 Save to My LexiLog
+                </button>
+            </div>
+        </div>
+
+        <!-- My Vocabulary View -->
+        <div id="vocabularyView" class="view">
+            <button class="back-btn" onclick="showView('home')">← Back</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="logo">📖 My LexiLog</div>
+            <div class="subtitle">Your saved vocabulary</div>
+            
+            <div id="vocabularyList" class="vocabulary-list">
+                <div class="loading-message">Loading your vocabulary...</div>
+            </div>
+        </div>
+
+        <!-- Languages View -->
+        <div id="languagesView" class="view">
+            <button class="back-btn" onclick="showView('home')">← Back</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="logo">🌍 Languages</div>
+            <div class="subtitle">Multi-language word search</div>
+            
+            <div class="form-group">
+                <label for="languageSelect">Select Language</label>
+                <select id="languageSelect">
+                    <option value="es">🇪🇸 Spanish</option>
+                    <option value="fr">🇫🇷 French</option>
+                    <option value="de">🇩🇪 German</option>
+                    <option value="it">🇮🇹 Italian</option>
+                    <option value="pt">🇵🇹 Portuguese</option>
+                    <option value="ru">🇷🇺 Russian</option>
+                    <option value="ja">🇯🇵 Japanese</option>
+                    <option value="ko">🇰🇷 Korean</option>
+                    <option value="zh">🇨🇳 Chinese</option>
+                    <option value="hi">🇮🇳 Hindi</option>
+                </select>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="languageSearchInput" placeholder="Enter word in selected language..." onkeypress="if(event.key==='Enter') searchLanguageWord()">
+                <button class="btn" onclick="searchLanguageWord()" id="languageSearchBtn">
+                    <span class="btn-text">Translate & Define</span>
+                </button>
+            </div>
+            
+            <div id="languageSearchResult" class="search-result">
+                <div class="word-title" id="languageResultWord"></div>
+                <div class="definition" id="languageResultDefinition"></div>
+            </div>
+        </div>
+
+        <!-- Daily Word View -->
+        <div id="dailyView" class="view">
+            <button class="back-btn" onclick="showView('home')">← Back</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="logo">⭐ Word of the Day</div>
+            <div class="subtitle">Expand your vocabulary daily</div>
+            
+            <div id="dailyWordCard" class="daily-word-card">
+                <div class="loading-message">Loading today's word...</div>
+            </div>
+            
+            <button class="btn" onclick="getNewDailyWord()" id="newWordBtn" style="margin-top: 20px;">
+                🔄 Get New Word
+            </button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 LexiLog V2 - Loading...');
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByQABCkc1kQgSZevk30UKWQe3dq0bhHbs",
+            authDomain: "lexilog-c1559.firebaseapp.com",
+            projectId: "lexilog-c1559",
+            storageBucket: "lexilog-c1559.firebasestorage.app",
+            messagingSenderId: "383823777893",
+            appId: "1:383823777893:web:ffe084adfbf2d1ee7cf68c",
+            measurementId: "G-QXMEFRQ36N"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let currentSearchResult = null;
+
+        // View management - Simple and reliable
+        function showView(viewName) {
+            console.log('🔄 Switching to view:', viewName);
+            
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            
+            // Show target view
+            const targetView = document.getElementById(viewName + 'View');
+            if (targetView) {
+                targetView.classList.add('active');
+                
+                // Load content based on view
+                if (viewName === 'vocabulary' && currentUser) {
+                    loadUserVocabulary();
+                } else if (viewName === 'daily') {
+                    loadDailyWord();
+                }
+            }
+        }
+
+        // Authentication state listener
+        auth.onAuthStateChanged(async (user) => {
+            console.log('🔐 Auth state changed:', user ? 'User logged in' : 'User logged out');
+            
+            if (user) {
+                currentUser = user;
+                
+                // Update greeting
+                const emailName = user.email.split('@')[0];
+                document.getElementById('greeting').innerHTML = `Welcome back, <strong>${emailName}</strong>!`;
+                
+                // Show home view
+                showView('home');
+            } else {
+                currentUser = null;
+                showView('login');
+            }
+        });
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = loginBtn.querySelector('.btn-text');
+            
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            console.log('🔑 Attempting login...');
+            
+            // Show loading
+            btnText.innerHTML = '<div class="loading"></div>';
+            loginBtn.disabled = true;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                console.log('✅ Login successful');
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                alert('Login failed: ' + error.message);
+                
+                // Reset button
+                btnText.textContent = 'Sign In';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Signup form handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const goal = document.getElementById('signupGoal').value;
+            const signupBtn = document.getElementById('signupBtn');
+            const btnText = signupBtn.querySelector('.btn-text');
+            
+            if (!name || !email || !password || !goal) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            console.log('📝 Creating account...');
+            
+            // Show loading
+            btnText.innerHTML = '<div class="loading"></div>';
+            signupBtn.disabled = true;
+
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Save user profile
+                await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                    .collection('users').doc(result.user.uid)
+                    .collection('profile').doc('data').set({
+                        name: name,
+                        email: email,
+                        goal: goal,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                console.log('✅ Account created successfully');
+            } catch (error) {
+                console.error('❌ Signup error:', error);
+                alert('Signup failed: ' + error.message);
+                
+                // Reset button
+                btnText.textContent = 'Create Account';
+                signupBtn.disabled = false;
+            }
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                console.log('👋 Logging out...');
+                auth.signOut();
+            }
+        }
+
+        // Dictionary search
+        async function searchWord() {
+            const word = document.getElementById('searchInput').value.trim();
+            const searchBtn = document.getElementById('searchBtn');
+            const btnText = searchBtn.querySelector('.btn-text');
+            const resultDiv = document.getElementById('searchResult');
+            const saveBtn = document.getElementById('saveWordBtn');
+            
+            if (!word) {
+                alert('Please enter a word to search');
+                return;
+            }
+
+            console.log('🔍 Searching for word:', word);
+
+            // Show loading
+            btnText.innerHTML = '<div class="loading"></div>';
+            searchBtn.disabled = true;
+            resultDiv.style.display = 'none';
+            saveBtn.style.display = 'none';
+
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data && data[0]) {
+                        const wordData = data[0];
+                        currentSearchResult = {
+                            word: wordData.word,
+                            definition: wordData.meanings[0].definitions[0].definition
+                        };
+                        
+                        document.getElementById('resultWord').textContent = wordData.word;
+                        document.getElementById('resultDefinition').textContent = currentSearchResult.definition;
+                        resultDiv.style.display = 'block';
+                        
+                        if (currentUser) {
+                            saveBtn.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Word found:', wordData.word);
+                    } else {
+                        alert('Word not found');
+                    }
+                } else {
+                    alert('Word not found');
+                }
+            } catch (error) {
+                console.error('❌ Search error:', error);
+                alert('Search failed. Please try again.');
+            } finally {
+                // Reset button
+                btnText.textContent = 'Search';
+                searchBtn.disabled = false;
+            }
+        }
+
+        // Save word to vocabulary
+        async function saveWord() {
+            if (!currentSearchResult || !currentUser) return;
+            
+            const saveBtn = document.getElementById('saveWordBtn');
+            const originalText = saveBtn.innerHTML;
+            
+            console.log('💾 Saving word:', currentSearchResult.word);
+            
+            saveBtn.innerHTML = '<div class="loading"></div>';
+            saveBtn.disabled = true;
+            
+            try {
+                const wordData = {
+                    word: currentSearchResult.word,
+                    definition: currentSearchResult.definition,
+                    savedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                    .collection('users').doc(currentUser.uid)
+                    .collection('vocabulary').add(wordData);
+                
+                alert('✅ Word saved to your vocabulary!');
+                saveBtn.style.display = 'none';
+                
+                console.log('✅ Word saved successfully');
+                
+                // Refresh vocabulary if we're on that view
+                if (document.getElementById('vocabularyView').classList.contains('active')) {
+                    loadUserVocabulary();
+                }
+            } catch (error) {
+                console.error('❌ Error saving word:', error);
+                alert('Failed to save word. Please try again.');
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Load user vocabulary
+        async function loadUserVocabulary() {
+            if (!currentUser) return;
+            
+            console.log('📚 Loading vocabulary...');
+            
+            const vocabularyList = document.getElementById('vocabularyList');
+            vocabularyList.innerHTML = '<div class="loading-message">Loading your vocabulary...</div>';
+            
+            try {
+                const snapshot = await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                    .collection('users').doc(currentUser.uid)
+                    .collection('vocabulary')
+                    .orderBy('savedAt', 'desc')
+                    .get();
+                
+                if (snapshot.empty) {
+                    vocabularyList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📚</div>
+                            <p><strong>No words saved yet!</strong></p>
+                            <p style="font-size: 0.9rem; margin-top: 10px;">Search for words and save them to build your vocabulary.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.savedAt ? new Date(data.savedAt.toDate()).toLocaleDateString() : 'Recently';
+                    
+                    html += `
+                        <div class="vocab-item">
+                            <div class="vocab-date">${date}</div>
+                            <div class="vocab-word">${data.word}</div>
+                            <div class="vocab-definition">${data.definition}</div>
+                            <button class="delete-btn" onclick="deleteWord('${doc.id}')">Delete</button>
+                        </div>
+                    `;
+                });
+                
+                vocabularyList.innerHTML = html;
+                console.log('✅ Vocabulary loaded');
+            } catch (error) {
+                console.error('❌ Error loading vocabulary:', error);
+                vocabularyList.innerHTML = '<div class="loading-message">Failed to load vocabulary</div>';
+            }
+        }
+
+        // Delete word from vocabulary
+        async function deleteWord(docId) {
+            if (!confirm('Delete this word from your vocabulary?')) return;
+            
+            console.log('🗑️ Deleting word...');
+            
+            try {
+                await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                    .collection('users').doc(currentUser.uid)
+                    .collection('vocabulary').doc(docId).delete();
+                
+                console.log('✅ Word deleted');
+                loadUserVocabulary(); // Refresh the list
+            } catch (error) {
+                console.error('❌ Error deleting word:', error);
+                alert('Failed to delete word');
+            }
+        }
+
+        // Language search functionality
+        async function searchLanguageWord() {
+            const word = document.getElementById('languageSearchInput').value.trim();
+            const language = document.getElementById('languageSelect').value;
+            const searchBtn = document.getElementById('languageSearchBtn');
+            const btnText = searchBtn.querySelector('.btn-text');
+            const resultDiv = document.getElementById('languageSearchResult');
+            
+            if (!word) {
+                alert('Please enter a word to translate');
+                return;
+            }
+
+            console.log('🌍 Translating:', word, 'from', language);
+
+            btnText.innerHTML = '<div class="loading"></div>';
+            searchBtn.disabled = true;
+            resultDiv.style.display = 'none';
+
+            try {
+                // Use Google Translate API (simplified version)
+                const translateResponse = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${language}|en`);
+                const translateData = await translateResponse.json();
+                
+                if (translateData.responseStatus === 200) {
+                    const englishWord = translateData.responseData.translatedText;
+                    
+                    console.log('✅ Translation:', word, '→', englishWord);
+                    
+                    // Now get definition for the English word
+                    const dictResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(englishWord)}`);
+                    
+                    if (dictResponse.ok) {
+                        const dictData = await dictResponse.json();
+                        
+                        document.getElementById('languageResultWord').textContent = `${word} → ${englishWord}`;
+                        document.getElementById('languageResultDefinition').textContent = 
+                            dictData[0]?.meanings[0]?.definitions[0]?.definition || 'Definition not available';
+                        resultDiv.style.display = 'block';
+                        
+                        console.log('✅ Definition found');
+                    } else {
+                        document.getElementById('languageResultWord').textContent = `${word} → ${englishWord}`;
+                        document.getElementById('languageResultDefinition').textContent = 'Translation found, but definition not available';
+                        resultDiv.style.display = 'block';
+                    }
+                } else {
+                    alert('Translation failed. Please try another word.');
+                }
+            } catch (error) {
+                console.error('❌ Language search error:', error);
+                alert('Translation failed. Please check your connection.');
+            } finally {
+                btnText.textContent = 'Translate & Define';
+                searchBtn.disabled = false;
+            }
+        }
+
+        // Word of the Day functionality
+        const commonWords = [
+            'serendipity', 'eloquent', 'ubiquitous', 'pragmatic', 'ephemeral', 
+            'resilient', 'meticulous', 'innovative', 'profound', 'versatile',
+            'tenacious', 'astute', 'benevolent', 'candid', 'diligent',
+            'magnificent', 'exquisite', 'phenomenal', 'spectacular', 'extraordinary'
+        ];
+
+        async function loadDailyWord() {
+            console.log('⭐ Loading daily word...');
+            
+            // Check if we have today's word in localStorage
+            const today = new Date().toDateString();
+            const savedDailyWord = localStorage.getItem('dailyWord');
+            const savedDate = localStorage.getItem('dailyWordDate');
+            
+            if (savedDailyWord && savedDate === today) {
+                console.log('📅 Using cached daily word');
+                displayDailyWord(JSON.parse(savedDailyWord));
+                return;
+            }
+            
+            // Get new daily word
+            await getNewDailyWord();
+        }
+
+        async function getNewDailyWord() {
+            const dailyWordCard = document.getElementById('dailyWordCard');
+            const newWordBtn = document.getElementById('newWordBtn');
+            
+            console.log('🔄 Getting new daily word...');
+            
+            dailyWordCard.innerHTML = '<div class="loading-message">Loading today\'s word...</div>';
+            newWordBtn.disabled = true;
+            
+            try {
+                // Pick a random word from our list
+                const randomWord = commonWords[Math.floor(Math.random() * commonWords.length)];
+                
+                console.log('🎲 Selected word:', randomWord);
+                
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${randomWord}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const wordData = {
+                        word: data[0].word,
+                        pronunciation: data[0].phonetic || '',
+                        definition: data[0].meanings[0].definitions[0].definition,
+                        example: data[0].meanings[0].definitions[0].example || ''
+                    };
+                    
+                    // Save to localStorage
+                    localStorage.setItem('dailyWord', JSON.stringify(wordData));
+                    localStorage.setItem('dailyWordDate', new Date().toDateString());
+                    
+                    displayDailyWord(wordData);
+                    console.log('✅ Daily word loaded:', wordData.word);
+                } else {
+                    throw new Error('Failed to fetch word');
+                }
+            } catch (error) {
+                console.error('❌ Error loading daily word:', error);
+                dailyWordCard.innerHTML = '<div class="loading-message">Failed to load daily word</div>';
+            } finally {
+                newWordBtn.disabled = false;
+            }
+        }
+
+        function displayDailyWord(wordData) {
+            const dailyWordCard = document.getElementById('dailyWordCard');
+            
+            dailyWordCard.innerHTML = `
+                <div class="daily-word">${wordData.word}</div>
+                ${wordData.pronunciation ? `<div class="daily-pronunciation">${wordData.pronunciation}</div>` : ''}
+                <div class="daily-definition">${wordData.definition}</div>
+                ${wordData.example ? `<div class="daily-example">"${wordData.example}"</div>` : ''}
+            `;
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 LexiLog V2 - Ready!');
+            console.log('✨ All features loaded and working');
+            
+            // Ensure we start with login view
+            showView('login');
+        });
+    </script>
+</body>
+</html>
