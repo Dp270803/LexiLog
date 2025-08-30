@@ -73,36 +73,25 @@ let elements = {};
 // Mobile Detection and Setup
 function setupMobileInterface() {
     const isMobile = window.innerWidth <= 768;
+    console.log('Mobile detection:', isMobile, 'Width:', window.innerWidth);
     
     if (isMobile) {
-        // Add icons to mobile tabs
-        const tabIcons = {
-            searchTab: '🔍',
-            libraryTab: '📚',
-            dailyTab: '⭐'
-        };
+        // Simply add mobile class to body for CSS targeting
+        document.body.classList.add('mobile-device');
+        console.log('Mobile class added to body');
         
-        Object.keys(tabIcons).forEach(tabId => {
-            const tab = document.getElementById(tabId);
-            if (tab) {
-                const currentText = tab.textContent.trim();
-                tab.innerHTML = `
-                    <div class="text-lg mb-1">${tabIcons[tabId]}</div>
-                    <div class="text-xs">${currentText}</div>
-                `;
-            }
-        });
-        
-        // Add mobile-specific body class
-        document.body.classList.add('mobile-interface');
-        
-        // Create simple mobile interface that actually works
-        createSimpleMobileInterface();
+        // Don't hide the main app, just make it mobile-friendly
+        const mainApp = document.getElementById('mainApp');
+        if (mainApp) {
+            mainApp.classList.add('mobile-optimized');
+        }
     }
 }
 
-// Create Simple Mobile Interface
+// Legacy mobile interface function - no longer used
 function createSimpleMobileInterface() {
+    // This function is no longer used - we use CSS media queries instead
+    return;
     console.log('Creating simple mobile interface...');
     
     // Hide the complex desktop main app
