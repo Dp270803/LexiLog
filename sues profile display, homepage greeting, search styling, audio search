@@ -1,0 +1,10 @@
+[33m55c05fa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix critical signup and profile issues: proper auth flow, profile loading with retry logic, form validation
+[33m6482766[m Fix major UX issues: remove orphaned search bar, improve navigation ribbon with all tabs, fix user profile display
+[33m9bea65a[m Complete homepage and exam onboarding: navigation, personalization, feature cards
+[33mb41a97f[m Add homepage with feature cards and exam selection in signup - WIP
+[33m9033700[m Fix mobile website: simplified detection, reliable CSS-based mobile layout
+[33m1334ea7[m Separate languages: English Dictionary main tab, Other Languages separate tab for GRE/GMAT focus
+[33mf8165f1[m Remove problematic romanization brackets - keep it simple and clean
+[33m57a6d9a[m FINAL FIX: Show romanized pronunciation in brackets, not English meaning
+[33mdfdf4dd[m DEBUG: Add logs to track romanization issue
+[33m42bc43f[m Fix romanization: show pronunciation in brackets, not English translation

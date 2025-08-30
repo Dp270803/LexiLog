@@ -59,72 +59,94 @@ let currentUserId = null;
 let speechRecognition = null;
 let isListening = false;
 
-// DOM Elements
-const elements = {
-    // Authentication Views
-    loginView: document.getElementById('loginView'),
-    signupView: document.getElementById('signupView'),
-    mainApp: document.getElementById('mainApp'),
-    
-    // Login Form
-    loginForm: document.getElementById('loginForm'),
-    loginEmail: document.getElementById('loginEmail'),
-    loginPassword: document.getElementById('loginPassword'),
-    loginButton: document.getElementById('loginButton'),
-    showSignupBtn: document.getElementById('showSignupBtn'),
-    
-    // Signup Form
-    signupForm: document.getElementById('signupForm'),
-    signupName: document.getElementById('signupName'),
-    signupEmail: document.getElementById('signupEmail'),
-    signupPassword: document.getElementById('signupPassword'),
-    signupButton: document.getElementById('signupButton'),
-    showLoginBtn: document.getElementById('showLoginBtn'),
-    
-    // User Profile
-    userProfileButton: document.getElementById('userProfileButton'),
-    userProfileDropdown: document.getElementById('userProfileDropdown'),
-    userInitials: document.getElementById('userInitials'),
-    userDisplayName: document.getElementById('userDisplayName'),
-    userDisplayEmail: document.getElementById('userDisplayEmail'),
-    greeting: document.getElementById('greeting'),
-    
-    // Language Selection
-    languageSelector: document.getElementById('languageSelector'),
-    
-    // Tab Navigation
-    searchTab: document.getElementById('searchTab'),
-    libraryTab: document.getElementById('libraryTab'),
-    dailyTab: document.getElementById('dailyTab'),
-    logoutButton: document.getElementById('logoutButton'),
-    
-    // Search View
-    searchInput: document.getElementById('searchInput'),
-    searchButton: document.getElementById('searchButton'),
-    audioButton: document.getElementById('audioButton'),
-    searchResults: document.getElementById('searchResults'),
-    loadingState: document.getElementById('loadingState'),
-    errorState: document.getElementById('errorState'),
-    resultWord: document.getElementById('resultWord'),
-    resultPhonetic: document.getElementById('resultPhonetic'),
-    resultDefinitions: document.getElementById('resultDefinitions'),
-    playAudio: document.getElementById('playAudio'),
-    
-    // Library View
-    libraryContent: document.getElementById('libraryContent'),
-    emptyLibrary: document.getElementById('emptyLibrary'),
-    wordList: document.getElementById('wordList'),
-    
-    // Daily Word View
-    dailyWordContent: document.getElementById('dailyWordContent'),
-    dailyLoading: document.getElementById('dailyLoading'),
-    dailyWord: document.getElementById('dailyWord'),
-    dailyWordText: document.getElementById('dailyWordText'),
-    dailyPhonetic: document.getElementById('dailyPhonetic'),
-    dailyDefinitions: document.getElementById('dailyDefinitions'),
-    playDailyAudio: document.getElementById('playDailyAudio'),
-    saveDailyWord: document.getElementById('saveDailyWord')
-};
+// DOM Elements - will be initialized after DOM loads
+let elements = {};
+
+function initializeElements() {
+    elements = {
+        // Authentication Views
+        loginView: document.getElementById('loginView'),
+        signupView: document.getElementById('signupView'),
+        mainApp: document.getElementById('mainApp'),
+        
+        // Navigation
+        navigationRibbon: document.getElementById('navigationRibbon'),
+        homeButton: document.getElementById('homeButton'),
+        dictionaryTab: document.getElementById('dictionaryTab'),
+        languagesTab: document.getElementById('languagesTab'),
+        libraryTab: document.getElementById('libraryTab'),
+        dailyTab: document.getElementById('dailyTab'),
+        
+        // Login Form
+        loginForm: document.getElementById('loginForm'),
+        loginEmail: document.getElementById('loginEmail'),
+        loginPassword: document.getElementById('loginPassword'),
+        loginButton: document.getElementById('loginButton'),
+        showSignupBtn: document.getElementById('showSignupBtn'),
+        
+        // Signup Form
+        signupForm: document.getElementById('signupForm'),
+        signupName: document.getElementById('signupName'),
+        signupEmail: document.getElementById('signupEmail'),
+        signupPassword: document.getElementById('signupPassword'),
+        signupButton: document.getElementById('signupButton'),
+        showLoginBtn: document.getElementById('showLoginBtn'),
+        
+        // User Profile
+        userProfileButton: document.getElementById('userProfileButton'),
+        userProfileDropdown: document.getElementById('userProfileDropdown'),
+        userInitials: document.getElementById('userInitials'),
+        userDisplayName: document.getElementById('userDisplayName'),
+        userDisplayEmail: document.getElementById('userDisplayEmail'),
+        greeting: document.getElementById('greeting'),
+        logoutButton: document.getElementById('logoutButton'),
+        
+        // Views
+        homeView: document.getElementById('homeView'),
+        dictionaryView: document.getElementById('dictionaryView'),
+        languagesView: document.getElementById('languagesView'),
+        libraryView: document.getElementById('libraryView'),
+        dailyView: document.getElementById('dailyView'),
+        
+        // Dictionary Search (English)
+        searchInput: document.getElementById('searchInput'),
+        searchButton: document.getElementById('searchButton'),
+        audioButton: document.getElementById('audioButton'),
+        searchResults: document.getElementById('searchResults'),
+        loadingState: document.getElementById('loadingState'),
+        errorState: document.getElementById('errorState'),
+        resultWord: document.getElementById('resultWord'),
+        resultPhonetic: document.getElementById('resultPhonetic'),
+        resultDefinitions: document.getElementById('resultDefinitions'),
+        playAudio: document.getElementById('playAudio'),
+        
+        // Language Search (Other Languages)
+        languageSelector: document.getElementById('languageSelector'),
+        languageSearchInput: document.getElementById('languageSearchInput'),
+        languageSearchButton: document.getElementById('languageSearchButton'),
+        languageAudioButton: document.getElementById('languageAudioButton'),
+        languageSearchResults: document.getElementById('languageSearchResults'),
+        languageResultWord: document.getElementById('languageResultWord'),
+        languageResultPhonetic: document.getElementById('languageResultPhonetic'),
+        languageResultDefinitions: document.getElementById('languageResultDefinitions'),
+        playLanguageAudio: document.getElementById('playLanguageAudio'),
+        
+        // Library View
+        libraryContent: document.getElementById('libraryContent'),
+        emptyLibrary: document.getElementById('emptyLibrary'),
+        wordList: document.getElementById('wordList'),
+        
+        // Daily Word View
+        dailyWordContent: document.getElementById('dailyWordContent'),
+        dailyLoading: document.getElementById('dailyLoading'),
+        dailyWord: document.getElementById('dailyWord'),
+        dailyWordText: document.getElementById('dailyWordText'),
+        dailyPhonetic: document.getElementById('dailyPhonetic'),
+        dailyDefinitions: document.getElementById('dailyDefinitions'),
+        playDailyAudio: document.getElementById('playDailyAudio'),
+        saveDailyWord: document.getElementById('saveDailyWord')
+    };
+}
 
 // Language Helper Functions
 function getSpeechRecognitionLang(langCode) {
@@ -395,7 +417,11 @@ function showMainApp(userProfile) {
     
     // Update user profile display
     const firstName = userProfile.name.split(' ')[0];
-    elements.greeting.textContent = `Hi ${firstName}, Here is your Pocket Dictionary`;
+    elements.greeting.innerHTML = `
+        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Welcome to LexiLog, ${firstName}!
+        </span>
+    `;
     elements.userDisplayName.textContent = userProfile.name;
     elements.userDisplayEmail.textContent = userProfile.email;
     
@@ -405,6 +431,9 @@ function showMainApp(userProfile) {
         .join('')
         .substring(0, 2);
     elements.userInitials.textContent = initials;
+    
+    // Show homepage initially, hide navigation ribbon
+    navigateToView('home');
     
     // Initialize features
     initializeSpeechRecognition();
@@ -433,41 +462,90 @@ async function logout() {
     }
 }
 
-// Tab Navigation
-function initializeTabNavigation() {
-    const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
-    const tabContents = ['searchView', 'libraryView', 'dailyView'];
+// Navigation Functions
+function navigateToView(viewName) {
+    const views = ['home', 'dictionary', 'languages', 'library', 'daily'];
+    const tabButtons = [elements.dictionaryTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
     
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetTab = button.dataset.tab;
-            
-            // Update active tab button
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Update active content
-            tabContents.forEach(contentId => {
-                const content = document.getElementById(contentId);
-                if (contentId === `${targetTab}View`) {
-                    content.classList.add('active');
-                } else {
-                    content.classList.remove('active');
-                }
-            });
-            
-            // Refresh data when switching tabs
-            if (targetTab === 'library') {
-                loadUserVocabulary();
-            } else if (targetTab === 'daily') {
-                fetchWordOfTheDay();
-            }
+    // Hide all views
+    views.forEach(view => {
+        const viewElement = elements[`${view}View`];
+        if (viewElement) {
+            viewElement.classList.remove('active');
+            viewElement.classList.add('hidden');
+        }
+    });
+    
+    // Show target view
+    const targetView = elements[`${viewName}View`];
+    if (targetView) {
+        targetView.classList.add('active');
+        targetView.classList.remove('hidden');
+    }
+    
+    // Update navigation ribbon visibility
+    if (viewName === 'home') {
+        elements.navigationRibbon.classList.add('hidden');
+        document.body.style.paddingTop = '0';
+    } else {
+        elements.navigationRibbon.classList.remove('hidden');
+        document.body.style.paddingTop = '80px';
+    }
+    
+    // Update active tab button
+    tabButtons.forEach(btn => {
+        if (btn) btn.classList.remove('active');
+    });
+    
+    const activeTab = elements[`${viewName}Tab`];
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // Refresh data when switching to certain views
+    if (viewName === 'library') {
+        loadUserVocabulary();
+    } else if (viewName === 'daily') {
+        fetchWordOfTheDay();
+    }
+}
+
+// Initialize Navigation
+function initializeNavigation() {
+    // Home button
+    if (elements.homeButton) {
+        elements.homeButton.addEventListener('click', () => navigateToView('home'));
+    }
+    
+    // Tab navigation
+    const tabButtons = [
+        { element: elements.dictionaryTab, view: 'dictionary' },
+        { element: elements.languagesTab, view: 'languages' },
+        { element: elements.libraryTab, view: 'library' },
+        { element: elements.dailyTab, view: 'daily' }
+    ];
+    
+    tabButtons.forEach(({ element, view }) => {
+        if (element) {
+            element.addEventListener('click', () => navigateToView(view));
+        }
+    });
+    
+    // Feature card navigation
+    const featureCards = document.querySelectorAll('.feature-card[data-navigate]');
+    featureCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const targetView = card.getAttribute('data-navigate');
+            navigateToView(targetView);
         });
     });
 }
 
-// Search Functions
-async function searchWord(word) {
+// Global navigation function for onclick handlers
+window.navigateToView = navigateToView;
+
+// English Dictionary Search (Dictionary View)
+async function searchEnglishWord(word) {
     if (!word.trim()) return;
     
     showLoading();
@@ -477,25 +555,13 @@ async function searchWord(word) {
     try {
         let wordData = null;
         
-        // Try multiple dictionary sources
-        if (currentLanguage === 'en') {
-            // For English, try the main dictionary API first
-            try {
-                const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        wordData = data[0];
-                    }
-                }
-            } catch (error) {
-                console.log('Main dictionary API failed, trying alternatives...');
+        // For English dictionary, always use English API
+        const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0) {
+                wordData = data[0];
             }
-        }
-        
-        // If no data from main API, try translation and basic definition
-        if (!wordData) {
-            wordData = await getWordDefinitionFromTranslation(word.trim());
         }
         
         if (wordData) {
@@ -510,10 +576,33 @@ async function searchWord(word) {
     }
 }
 
-async function getWordDefinitionFromTranslation(word) {
+// Language Search (Languages View)
+async function searchLanguageWord(word, language) {
+    if (!word.trim()) return;
+    
+    showLanguageLoading();
+    hideLanguageResults();
+    hideLanguageError();
+    
+    try {
+        const wordData = await getWordDefinitionFromTranslation(word.trim(), language);
+        
+        if (wordData) {
+            displayLanguageSearchResults(wordData);
+            await saveWordToVocabulary(wordData);
+        } else {
+            throw new Error('Word not found');
+        }
+    } catch (error) {
+        console.error('Language search error:', error);
+        showLanguageError();
+    }
+}
+
+async function getWordDefinitionFromTranslation(word, language = currentLanguage) {
     try {
         // Get translation to English for better definition
-        const translateUrl = `${GOOGLE_TRANSLATE_API}?client=gtx&sl=${currentLanguage}&tl=en&dt=t&q=${encodeURIComponent(word)}`;
+        const translateUrl = `${GOOGLE_TRANSLATE_API}?client=gtx&sl=${language}&tl=en&dt=t&q=${encodeURIComponent(word)}`;
         const translateResponse = await fetch(translateUrl);
         const translateData = await translateResponse.json();
         
@@ -532,7 +621,7 @@ async function getWordDefinitionFromTranslation(word) {
                         meanings: definitionData[0].meanings,
                         phonetics: definitionData[0].phonetics,
                         translation: englishWord,
-                        originalLanguage: currentLanguage
+                        originalLanguage: language
                     };
                 }
             }
@@ -550,12 +639,73 @@ async function getWordDefinitionFromTranslation(word) {
                 }]
             }],
             phonetics: [],
-            originalLanguage: currentLanguage
+            originalLanguage: language
         };
     } catch (error) {
         console.error('Translation error:', error);
         return null;
     }
+}
+
+// Language Search Display Functions
+function showLanguageLoading() {
+    // Add loading state for language search if needed
+    console.log('Language search loading...');
+}
+
+function hideLanguageResults() {
+    if (elements.languageSearchResults) {
+        elements.languageSearchResults.classList.add('hidden');
+    }
+}
+
+function hideLanguageError() {
+    // Add error handling for language search if needed
+}
+
+function showLanguageError() {
+    // Add error display for language search if needed
+    console.log('Language search error');
+}
+
+function displayLanguageSearchResults(wordData) {
+    if (!elements.languageSearchResults) return;
+    
+    hideLanguageResults();
+    
+    elements.languageResultWord.textContent = wordData.word;
+    
+    // Show translation if available
+    if (wordData.translation && wordData.originalLanguage !== 'en') {
+        elements.languageResultPhonetic.innerHTML = `
+            <div class="text-purple-600 font-medium">English Translation: ${wordData.translation}</div>
+            ${wordData.phonetic ? `<div class="text-gray-600">${wordData.phonetic}</div>` : ''}
+        `;
+    } else {
+        elements.languageResultPhonetic.textContent = wordData.phonetic || '';
+    }
+    
+    // Clear previous definitions
+    elements.languageResultDefinitions.innerHTML = '';
+    
+    // Display definitions
+    wordData.meanings.forEach((meaning, index) => {
+        const meaningDiv = document.createElement('div');
+        meaningDiv.className = 'definition-item hover-lift';
+        
+        meaningDiv.innerHTML = `
+            <div class="part-of-speech bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs uppercase tracking-wide inline-block mb-3">${meaning.partOfSpeech}</div>
+            <div class="definition-text text-gray-800 text-lg leading-relaxed mb-3">${meaning.definitions[0].definition}</div>
+            ${meaning.definitions[0].example ? `<div class="example-text bg-gray-50 border-l-4 border-purple-500 pl-4 py-2 italic text-gray-700 rounded">"${meaning.definitions[0].example}"</div>` : ''}
+        `;
+        
+        meaningDiv.style.animationDelay = `${index * 0.1}s`;
+        meaningDiv.classList.add('animate-fade-in-up');
+        
+        elements.languageResultDefinitions.appendChild(meaningDiv);
+    });
+    
+    elements.languageSearchResults.classList.remove('hidden');
 }
 
 function displaySearchResults(wordData) {
@@ -1077,7 +1227,7 @@ function initializeEventListeners() {
                 elements.loginButton.disabled = true;
                 elements.loginButton.textContent = 'Signing In...';
                 
-                const success = signInWithEmail(email, password);
+                const success = await signInWithEmail(email, password);
                 
                 elements.loginButton.disabled = false;
                 elements.loginButton.textContent = 'Sign In';
@@ -1101,7 +1251,7 @@ function initializeEventListeners() {
                 elements.signupButton.disabled = true;
                 elements.signupButton.textContent = 'Creating Account...';
                 
-                const success = signUpWithEmail(name, email, password);
+                const success = await signUpWithEmail(name, email, password);
                 
                 elements.signupButton.disabled = false;
                 elements.signupButton.textContent = 'Create Account';
@@ -1149,32 +1299,69 @@ function initializeEventListeners() {
         elements.logoutButton.addEventListener('click', logout);
     }
     
-    // Search functionality
-    elements.searchButton.addEventListener('click', () => {
-        const word = elements.searchInput.value.trim();
-        if (word) {
-            searchWord(word);
-        }
-    });
-    
-    elements.searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    // English Dictionary Search (Dictionary View)
+    if (elements.searchButton && elements.searchInput) {
+        elements.searchButton.addEventListener('click', () => {
             const word = elements.searchInput.value.trim();
             if (word) {
-                searchWord(word);
+                searchEnglishWord(word);
             }
-        }
-    });
+        });
+        
+        elements.searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const word = elements.searchInput.value.trim();
+                if (word) {
+                    searchEnglishWord(word);
+                }
+            }
+        });
+    }
+    
+    // Language Search (Languages View)
+    if (elements.languageSearchButton && elements.languageSearchInput) {
+        elements.languageSearchButton.addEventListener('click', () => {
+            const word = elements.languageSearchInput.value.trim();
+            if (word) {
+                searchLanguageWord(word, currentLanguage);
+            }
+        });
+        
+        elements.languageSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const word = elements.languageSearchInput.value.trim();
+                if (word) {
+                    searchLanguageWord(word, currentLanguage);
+                }
+            }
+        });
+    }
     
     // Audio search
-    elements.audioButton.addEventListener('click', toggleAudioSearch);
+    if (elements.audioButton) {
+        elements.audioButton.addEventListener('click', toggleAudioSearch);
+    }
+    if (elements.languageAudioButton) {
+        elements.languageAudioButton.addEventListener('click', toggleAudioSearch);
+    }
     
-    // Tab navigation
-    initializeTabNavigation();
+    // Daily word save functionality
+    if (elements.saveDailyWord) {
+        elements.saveDailyWord.addEventListener('click', async () => {
+            if (window.currentDailyWord) {
+                await saveWordToVocabulary(window.currentDailyWord);
+                showNotification(`"${window.currentDailyWord.word}" added to your LexiLog!`, 'success');
+            }
+        });
+    }
+    
+    // Initialize navigation
+    initializeNavigation();
 }
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    initializeElements();
     initializeEventListeners();
     initializeAuth();
 });
