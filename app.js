@@ -725,6 +725,12 @@ async function signUpWithEmail(name, email, password, examGoal, otherExam) {
         // Save user profile with exam goal
         await saveUserProfile(name, email, examGoal, otherExam);
         
+        // Get the saved profile and show main app
+        const profile = await getUserProfile();
+        if (profile) {
+            showMainApp(profile);
+        }
+        
         showNotification('Account created successfully! Welcome to LexiLog!', 'success');
         return true;
     } catch (error) {
@@ -870,24 +876,31 @@ function showMainApp(userProfile) {
     elements.signupView.classList.add('hidden');
     elements.mainApp.classList.remove('hidden');
     
-    // Update user profile display
-    const firstName = userProfile.name.split(' ')[0];
-    elements.greeting.innerHTML = `
-        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Hi ${firstName},
-        </span>
-        <br>
-        <span class="text-gray-800">Here is your Pocket Dictionary</span>
-    `;
-    elements.userDisplayName.textContent = userProfile.name;
-    elements.userDisplayEmail.textContent = userProfile.email;
-    
-    // Update user initials
-    const initials = userProfile.name.split(' ')
-        .map(name => name.charAt(0).toUpperCase())
-        .join('')
-        .substring(0, 2);
-    elements.userInitials.textContent = initials;
+    // Update user profile display if profile is provided
+    if (userProfile && userProfile.name) {
+        const firstName = userProfile.name.split(' ')[0];
+        elements.greeting.innerHTML = `
+            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Hi ${firstName},
+            </span>
+            <br>
+            <span class="text-gray-800">Here is your Pocket Dictionary</span>
+        `;
+        elements.userDisplayName.textContent = userProfile.name;
+        elements.userDisplayEmail.textContent = userProfile.email;
+        
+        // Update user initials
+        const initials = userProfile.name.split(' ')
+            .map(name => name.charAt(0).toUpperCase())
+            .join('')
+            .substring(0, 2);
+        elements.userInitials.textContent = initials;
+    } else {
+        // Fallback if no profile
+        elements.userDisplayName.textContent = 'User';
+        elements.userDisplayEmail.textContent = '';
+        elements.userInitials.textContent = 'U';
+    }
     
     // Update mobile profile if exists
     const mobileProfile = document.getElementById('mobileUserProfile');
@@ -2540,13 +2553,14 @@ function initializeEventListeners() {
         });
     });
     
-    // Back to home button
-    const backToHomeBtn = document.getElementById('backToHome');
-    if (backToHomeBtn) {
-        backToHomeBtn.addEventListener('click', () => {
-            navigateToView('home');
+    // Navigation ribbon buttons
+    const navButtons = document.querySelectorAll('.nav-button[data-navigate]');
+    navButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const target = button.dataset.navigate;
+            navigateToView(target);
         });
-    }
+    });
     
     // Logo click to go home
     if (elements.homeButton) {

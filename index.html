@@ -174,18 +174,47 @@
                         <span class="group-hover:scale-110 inline-block transition-transform duration-300">LexiLog</span>
                     </button>
                     <div class="flex items-center space-x-4">
-                        <!-- Navigation will be hidden on homepage, shown on other pages -->
-                        <div id="navigationRibbon" class="hidden flex-wrap gap-1 md:space-x-1 bg-gray-100 rounded-lg p-1">
+                                                <!-- Navigation will be hidden on homepage, shown on other pages -->
+                        <div id="navigationRibbon" class="hidden flex flex-wrap gap-1 md:space-x-1 bg-gray-100 rounded-lg p-1">
                             <button 
-                                id="backToHome" 
-                                class="nav-button px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 no-focus-outline bg-blue-100 text-blue-700"
+                                id="navHome" 
+                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-blue-100"
+                                data-navigate="home"
                             >
                                 🏠 Home
+                            </button>
+                            <button 
+                                id="navDictionary" 
+                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-blue-100"
+                                data-navigate="dictionary"
+                            >
+                                📖 Dictionary
+                            </button>
+                        <button 
+                                id="navLanguages" 
+                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-purple-100"
+                                data-navigate="languages"
+                            >
+                                🌐 Languages
+                        </button>
+                        <button 
+                                id="navLibrary" 
+                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-green-100"
+                                data-navigate="library"
+                            >
+                                📚 My LexiLog
+                        </button>
+                        <button 
+                                id="navDaily" 
+                                class="nav-button px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 no-focus-outline hover:bg-orange-100"
+                                data-navigate="daily"
+                            >
+                                ⭐ Word of Day
                             </button>
                         </div>
                         <!-- User Profile Dropdown -->
                         <div class="relative">
-                            <button 
+                        <button 
                                 id="userProfileButton" 
                                 class="text-gray-700 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 no-focus-outline"
                             >
@@ -199,20 +228,20 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                            </button>
+                        </button>
                             
                             <!-- Dropdown Menu -->
                             <div id="userProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
                                 <div class="py-1">
-                                    <button 
+                        <button 
                                         id="logoutButton" 
                                         class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 no-focus-outline"
-                                    >
+                        >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                         </svg>
                                         <span>Sign Out</span>
-                                    </button>
+                        </button>
                                 </div>
                             </div>
                         </div>
@@ -325,46 +354,46 @@
                             <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
                                 Master English vocabulary for competitive exams. Search for any word and automatically save it to your personal library.
                             </p>
-                        </div>
+                </div>
 
                         <!-- Search Section -->
                         <div class="max-w-4xl mx-auto px-4">
-                            <!-- Search Bar -->
+                <!-- Search Bar -->
                             <div class="mb-8 md:mb-12 animate-fade-in-up" style="animation-delay: 0.4s;">
                                 <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-4 md:p-8 shadow-2xl border border-gray-200/50 hover:shadow-3xl transition-all duration-500 search-container">
-                                    <div class="relative">
-                                        <input 
-                                            type="text" 
-                                            id="searchInput" 
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
                                             placeholder="Search for any English word..." 
                                             class="w-full px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl bg-transparent border-0 focus:outline-none text-gray-800 placeholder-gray-500"
                                             autocomplete="off"
-                                        >
+                        >
                                         <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                                            <button 
+                        <button 
                                                 id="voiceSearch" 
                                                 class="p-3 text-gray-400 hover:text-blue-600 transition-colors duration-300 rounded-full hover:bg-blue-50 no-focus-outline"
                                                 title="Voice Search"
-                                            >
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                                                </svg>
-                                            </button>
-                                            <button 
-                                                id="searchButton" 
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                            </svg>
+                        </button>
+                    <button 
+                        id="searchButton" 
                                                 class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl no-focus-outline"
-                                            >
+                    >
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                                 </svg>
-                                            </button>
+                    </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                </div>
 
-                        <!-- Search Results -->
+                <!-- Search Results -->
                         <div id="searchResults" class="max-w-4xl mx-auto px-4 hidden animate-fade-in-up">
                             <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
                                 <div class="flex items-center justify-between mb-6">
@@ -380,46 +409,15 @@
                                 <div class="mt-6 pt-6 border-t border-gray-200">
                                     <button id="saveWord" class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                                         💾 Add to My LexiLog
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-4 md:p-8 shadow-2xl border border-gray-200/50 hover:shadow-3xl transition-all duration-500 search-container">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                                            placeholder="✨ Type native words in English script (e.g., 'namaste' for Hindi)..."
-                                            class="w-full px-8 py-6 text-xl border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 hover:bg-white pr-20 placeholder-gray-400"
-                        >
-                        <button 
-                            id="audioButton" 
-                                            class="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-blue-50 no-focus-outline"
-                                            title="🎤 Voice Search"
-                        >
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <button 
-                        id="searchButton" 
-                                        class="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    >
-                                        🔍 Search & Learn
                     </button>
                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+            </div>
 
-                <!-- Search Results -->
+            <!-- Languages View -->
                 <div id="searchResults" class="max-w-4xl mx-auto px-4 hidden animate-fade-in-up">
                     <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
                         <div class="flex items-center justify-between mb-6">
