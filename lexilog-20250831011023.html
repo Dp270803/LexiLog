@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLog - Personal Vocabulary Builder</title>
+    
+    <style>
+        /* Complete CSS Reset and Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        html {
+            line-height: 1.5 !important;
+            -webkit-text-size-adjust: 100% !important;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+        }
+        
+        body {
+            margin: 0 !important;
+            line-height: inherit !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+            min-height: 100vh !important;
+            position: relative !important;
+            overflow-x: hidden !important;
+        }
+        
+        /* Utility Classes */
+        .fixed { position: fixed !important; }
+        .absolute { position: absolute !important; }
+        .relative { position: relative !important; }
+        .inset-0 { top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; }
+        .z-50 { z-index: 50 !important; }
+        .z-10 { z-index: 10 !important; }
+        .flex { display: flex !important; }
+        .grid { display: grid !important; }
+        .hidden { display: none !important; }
+        .block { display: block !important; }
+        .h-full { height: 100% !important; }
+        .h-screen { height: 100vh !important; }
+        .min-h-screen { min-height: 100vh !important; }
+        .w-full { width: 100% !important; }
+        .max-w-md { max-width: 28rem !important; }
+        .max-w-4xl { max-width: 56rem !important; }
+        .max-w-6xl { max-width: 72rem !important; }
+        .max-w-2xl { max-width: 42rem !important; }
+        .mx-4 { margin-left: 1rem !important; margin-right: 1rem !important; }
+        .mx-auto { margin-left: auto !important; margin-right: auto !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-4 { margin-bottom: 1rem !important; }
+        .mb-6 { margin-bottom: 1.5rem !important; }
+        .mb-8 { margin-bottom: 2rem !important; }
+        .mt-6 { margin-top: 1.5rem !important; }
+        .mt-8 { margin-top: 2rem !important; }
+        .items-center { align-items: center !important; }
+        .justify-center { justify-content: center !important; }
+        .justify-between { justify-content: space-between !important; }
+        .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem !important; }
+        .space-x-1 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.25rem !important; }
+        .rounded-lg { border-radius: 0.5rem !important; }
+        .rounded-xl { border-radius: 0.75rem !important; }
+        .rounded-2xl { border-radius: 1rem !important; }
+        .rounded-3xl { border-radius: 1.5rem !important; }
+        .border { border-width: 1px !important; }
+        .border-gray-300 { border-color: #d1d5db !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-white { background-color: #fff !important; }
+        .bg-blue-600 { background-color: #2563eb !important; }
+        .bg-red-500 { background-color: #ef4444 !important; }
+        .hover\:bg-red-600:hover { background-color: #dc2626 !important; }
+        .bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important; }
+        .from-blue-600 { --tw-gradient-from: #2563eb !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(37,99,235,0)) !important; }
+        .to-purple-600 { --tw-gradient-to: #9333ea !important; }
+        .bg-clip-text { -webkit-background-clip: text !important; background-clip: text !important; }
+        .p-4 { padding: 1rem !important; }
+        .p-6 { padding: 1.5rem !important; }
+        .p-8 { padding: 2rem !important; }
+        .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+        .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+        .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+        .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .py-20 { padding-top: 5rem !important; padding-bottom: 5rem !important; }
+        .text-center { text-align: center !important; }
+        .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
+        .text-lg { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+        .text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+        .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+        .text-3xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+        .text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
+        .text-5xl { font-size: 3rem !important; line-height: 1 !important; }
+        .text-6xl { font-size: 3.75rem !important; line-height: 1 !important; }
+        .font-medium { font-weight: 500 !important; }
+        .font-semibold { font-weight: 600 !important; }
+        .font-bold { font-weight: 700 !important; }
+        .text-gray-600 { color: #4b5563 !important; }
+        .text-gray-700 { color: #374151 !important; }
+        .text-gray-800 { color: #1f2937 !important; }
+        .text-white { color: #fff !important; }
+        .text-transparent { color: transparent !important; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important; }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25) !important; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8 !important; }
+        .focus\:ring-2:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.5) !important; }
+        .focus\:ring-blue-500:focus { --tw-ring-color: #3b82f6 !important; }
+        .focus\:border-transparent:focus { border-color: transparent !important; }
+        .transition-colors { transition-property: color, background-color, border-color !important; transition-duration: 150ms !important; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .gap-6 { gap: 1.5rem !important; }
+        .transform { transform: var(--tw-transform) !important; }
+        .hover\:scale-105:hover { --tw-scale-x: 1.05 !important; --tw-scale-y: 1.05 !important; transform: scale(1.05) !important; }
+        .hover\:-translate-y-1:hover { transform: translateY(-0.25rem) !important; }
+        .transition-all { transition-property: all !important; transition-duration: 150ms !important; }
+        .duration-300 { transition-duration: 300ms !important; }
+        .cursor-pointer { cursor: pointer !important; }
+        
+        /* Input styles */
+        input, select, textarea {
+            font-family: inherit !important;
+            font-size: 100% !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+            color: inherit !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.5) !important;
+            border-color: transparent !important;
+        }
+        
+        button {
+            font-family: inherit !important;
+            font-size: 100% !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+            color: inherit !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: transparent !important;
+            background-image: none !important;
+            cursor: pointer !important;
+            border: none !important;
+        }
+        
+        /* Beautiful Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            }
+        }
+        
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Animation Classes */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards !important;
+        }
+        
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite !important;
+        }
+        
+        .animate-gradient {
+            background-size: 400% 400% !important;
+            animation: gradient-shift 3s ease infinite !important;
+        }
+        
+        /* Enhanced containers */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 2rem !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
+        }
+        
+        .glass-container::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 1px !important;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent) !important;
+        }
+        
+        /* Mobile responsive overrides */
+        @media (max-width: 768px) {
+            .max-w-md { max-width: 90% !important; }
+            .max-w-4xl, .max-w-6xl, .max-w-2xl { max-width: 95% !important; }
+            .p-8 { padding: 1.5rem !important; }
+            .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+            .py-20 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+            .text-6xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
+            .text-5xl { font-size: 2rem !important; line-height: 1.2 !important; }
+            .text-4xl { font-size: 1.75rem !important; line-height: 1.3 !important; }
+            .text-3xl { font-size: 1.5rem !important; line-height: 1.4 !important; }
+            .grid-cols-2 { grid-template-columns: 1fr !important; }
+            .gap-6 { gap: 1.5rem !important; }
+            .rounded-3xl { border-radius: 1rem !important; }
+            .shadow-2xl { box-shadow: 0 10px 25px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important; }
+        }
+        
+        /* Ensure inputs work properly on mobile */
+        @media (max-width: 768px) {
+            input[type="text"], input[type="email"], input[type="password"], select {
+                font-size: 16px !important; /* Prevent zoom on iOS */
+                padding: 12px !important;
+                min-height: 44px !important; /* Touch target size */
+            }
+            
+            button {
+                min-height: 44px !important;
+                padding: 12px 16px !important;
+            }
+        }
+    </style>
+    
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div style="position: fixed !important; top: 10px !important; right: 10px !important; background: #000 !important; color: #fff !important; padding: 5px 10px !important; border-radius: 5px !important; font-size: 12px !important; z-index: 999 !important;">
+        CACHE BUSTER: 20250831011023
+    </div>
+    
+    <!-- Authentication Views -->
+    <!-- Login View -->
+    <div id="loginView" class="fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg animate-fade-in-up">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+                <p class="text-gray-600">Sign in to your LexiLog account</p>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        name="email" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your email"
+                    >
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                        Password
+                    </label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        name="password" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your password"
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    id="loginButton"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                    Sign In
+                </button>
+            </form>
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Don't have an account? 
+                    <button id="showSignupBtn" class="text-blue-600 font-semibold cursor-pointer">Sign up</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup View -->
+    <div id="signupView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
+        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg animate-fade-in-up">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Join LexiLog</h1>
+                <p class="text-gray-600">Create your account and start building your vocabulary</p>
+            </div>
+            
+            <form id="signupForm" class="space-y-4">
+                <div>
+                    <label for="signupName" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="signupName" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your full name"
+                    >
+                </div>
+                
+                <div>
+                    <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input 
+                        type="email" 
+                        id="signupEmail" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your email"
+                    >
+                </div>
+                
+                <div>
+                    <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="signupPassword" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Create a password"
+                    >
+                </div>
+                
+                <div>
+                    <label for="signupQuestion" class="block text-sm font-medium text-gray-700 mb-2">
+                        What are you preparing for?
+                    </label>
+                    <select 
+                        id="signupQuestion" 
+                        name="goal" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Select your goal</option>
+                        <option value="cat">🐯 CAT (Common Admission Test)</option>
+                        <option value="gre">🎓 GRE (Graduate Record Examination)</option>
+                        <option value="gmat">📊 GMAT (Graduate Management Admission Test)</option>
+                        <option value="upsc">🏛️ UPSC Civil Services</option>
+                        <option value="banking">🏦 Banking Exams (IBPS, SBI PO/Clerk)</option>
+                        <option value="ssc">📝 SSC Exams (CGL, CHSL, MTS)</option>
+                        <option value="gate">⚙️ GATE (Graduate Aptitude Test in Engineering)</option>
+                        <option value="ielts">🌍 IELTS (International English Language Testing System)</option>
+                        <option value="toefl">🇺🇸 TOEFL (Test of English as a Foreign Language)</option>
+                        <option value="sat">📚 SAT (Scholastic Assessment Test)</option>
+                        <option value="act">📝 ACT (American College Testing)</option>
+                        <option value="clat">⚖️ CLAT (Common Law Admission Test)</option>
+                        <option value="neet">🏥 NEET (National Eligibility cum Entrance Test)</option>
+                        <option value="jee">🔬 JEE (Joint Entrance Examination)</option>
+                        <option value="vocabulary-building">📖 Just Building My Vocabulary</option>
+                        <option value="other">✏️ Other</option>
+                    </select>
+                </div>
+                
+                <div id="otherGoalField" class="hidden">
+                    <label for="signupOtherGoal" class="block text-sm font-medium text-gray-700 mb-2">
+                        Please specify your exam/goal:
+                    </label>
+                    <input 
+                        type="text" 
+                        id="signupOtherGoal" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., UPSC, CAT 2024, etc."
+                    >
+                </div>
+                
+                <button 
+                    type="submit" 
+                    id="signupButton"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Already have an account? 
+                    <button id="showLoginBtn" class="text-blue-600 font-semibold cursor-pointer">Sign in</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <!-- Homepage -->
+        <div id="homeView" class="min-h-screen bg-gray-50 py-20">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-8 animate-fade-in-up">
+                    <h1 id="greeting" class="text-5xl md:text-6xl font-bold mb-4">
+                        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                            Welcome to LexiLog!
+                        </span>
+                    </h1>
+                    <p class="text-xl text-gray-600">Your Personal Vocabulary Builder</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <div onclick="navigateToView('dictionary')" 
+                         style="position: relative !important; overflow: hidden !important; padding: 2rem !important; border-radius: 1.5rem !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; cursor: pointer !important; transition: all 0.3s ease !important; border: 1px solid rgba(255,255,255,0.2) !important; text-align: center !important; background: linear-gradient(135deg, #4facfe, #00f2fe) !important; color: white !important;">
+                        <div style="font-size: 3rem !important; margin-bottom: 1rem !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)) !important;">📚</div>
+                        <h3 style="font-size: 1.5rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;">Smart Dictionary</h3>
+                        <p style="opacity: 0.9 !important; line-height: 1.5 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;">Search English words with definitions, phonetics, and audio pronunciation</p>
+                    </div>
+                    
+                    <div onclick="navigateToView('library')" 
+                         style="position: relative !important; overflow: hidden !important; padding: 2rem !important; border-radius: 1.5rem !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; cursor: pointer !important; transition: all 0.3s ease !important; border: 1px solid rgba(255,255,255,0.2) !important; text-align: center !important; background: linear-gradient(135deg, #43e97b, #38f9d7) !important; color: white !important;">
+                        <div style="font-size: 3rem !important; margin-bottom: 1rem !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)) !important;">📖</div>
+                        <h3 style="font-size: 1.5rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;">My LexiLog</h3>
+                        <p style="opacity: 0.9 !important; line-height: 1.5 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;">Access your saved vocabulary and track your learning progress</p>
+                    </div>
+                    
+                    <div onclick="navigateToView('languages')" 
+                         style="position: relative !important; overflow: hidden !important; padding: 2rem !important; border-radius: 1.5rem !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; cursor: pointer !important; transition: all 0.3s ease !important; border: 1px solid rgba(255,255,255,0.2) !important; text-align: center !important; background: linear-gradient(135deg, #fa709a, #fee140) !important; color: white !important;">
+                        <div style="font-size: 3rem !important; margin-bottom: 1rem !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)) !important;">🌍</div>
+                        <h3 style="font-size: 1.5rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;">Other Languages</h3>
+                        <p style="opacity: 0.9 !important; line-height: 1.5 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;">Search words in 20+ languages with translations and definitions</p>
+                    </div>
+                    
+                    <div onclick="navigateToView('daily')" 
+                         style="position: relative !important; overflow: hidden !important; padding: 2rem !important; border-radius: 1.5rem !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; cursor: pointer !important; transition: all 0.3s ease !important; border: 1px solid rgba(255,255,255,0.2) !important; text-align: center !important; background: linear-gradient(135deg, #ffecd2, #fcb69f) !important; color: #333 !important;">
+                        <div style="font-size: 3rem !important; margin-bottom: 1rem !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)) !important;">⭐</div>
+                        <h3 style="font-size: 1.5rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;">Word of the Day</h3>
+                        <p style="opacity: 0.9 !important; line-height: 1.5 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;">Discover and learn a new word every day to expand your vocabulary</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Beautiful enhanced views -->
+        <div id="dictionaryView" class="hidden min-h-screen py-20">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="glass-container p-8 animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold mb-2">📚 Smart Dictionary</h2>
+                        <p class="text-gray-600">Search for English words with detailed definitions</p>
+                    </div>
+                    
+                    <div class="relative mb-6">
+                        <input type="text" id="searchInput" placeholder="Enter any English word..." 
+                               class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                               onkeypress="if(event.key==='Enter') searchWord()">
+                    </div>
+                    
+                    <button onclick="searchWord()" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-2xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        🔍 Search & Learn
+                    </button>
+                    
+                    <div id="searchResults" class="mt-8 hidden glass-container p-6 animate-fade-in-up">
+                        <h3 id="resultWord" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                        <p id="resultDefinition" class="text-gray-700 leading-relaxed"></p>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <button onclick="navigateToView('home')" 
+                                class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all transform hover:-translate-y-1">
+                            ← Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="libraryView" class="hidden min-h-screen py-20">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="glass-container p-8 animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold mb-2">📖 My LexiLog</h2>
+                        <p class="text-gray-600">Your personal vocabulary collection</p>
+                    </div>
+                    
+                    <div id="vocabularyList" class="space-y-4">
+                        <div class="text-center py-8">
+                            <div class="text-6xl mb-4">📚</div>
+                            <p class="text-gray-600">Loading your vocabulary...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <button onclick="navigateToView('home')" 
+                                class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all transform hover:-translate-y-1">
+                            ← Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="languagesView" class="hidden min-h-screen py-20">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="glass-container p-8 animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold mb-2">🌍 Other Languages</h2>
+                        <p class="text-gray-600">Multi-language word search and translation</p>
+                    </div>
+                    
+                    <div class="text-center py-12">
+                        <div class="text-8xl mb-6">🚧</div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Coming Soon!</h3>
+                        <p class="text-gray-600 mb-6">We're working on bringing you multi-language support with translations in 20+ languages.</p>
+                        <div class="flex flex-wrap justify-center gap-2 text-2xl">
+                            🇪🇸 🇫🇷 🇩🇪 🇮🇹 🇵🇹 🇷🇺 🇯🇵 🇰🇷 🇨🇳 🇮🇳
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <button onclick="navigateToView('home')" 
+                                class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all transform hover:-translate-y-1">
+                            ← Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dailyView" class="hidden min-h-screen py-20">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="glass-container p-8 animate-fade-in-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold mb-2">⭐ Word of the Day</h2>
+                        <p class="text-gray-600">Expand your vocabulary with daily featured words</p>
+                    </div>
+                    
+                    <div id="dailyWordCard" class="bg-gradient-to-br from-orange-400 to-pink-400 text-white p-8 rounded-2xl shadow-2xl mb-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold mb-2" id="dailyWord">Loading...</div>
+                            <div id="dailyDefinition" class="text-orange-100 leading-relaxed"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button onclick="loadDailyWord()" 
+                                class="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-8 py-3 rounded-xl hover:from-orange-600 hover:to-pink-600 transition-all transform hover:-translate-y-1 mb-4">
+                            🔄 Get New Word
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <button onclick="navigateToView('home')" 
+                                class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all transform hover:-translate-y-1">
+                            ← Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 LexiLog CACHE BUSTER VERSION - Loading...');
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByQABCkc1kQgSZevk30UKWQe3dq0bhHbs",
+            authDomain: "lexilog-c1559.firebaseapp.com",
+            projectId: "lexilog-c1559",
+            storageBucket: "lexilog-c1559.firebasestorage.app",
+            messagingSenderId: "383823777893",
+            appId: "1:383823777893:web:ffe084adfbf2d1ee7cf68c",
+            measurementId: "G-QXMEFRQ36N"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let currentUserId = null;
+
+        // View management
+        function navigateToView(viewName) {
+            console.log('🔄 Navigating to:', viewName);
+            
+            // Hide all views
+            const views = ['home', 'dictionary', 'library', 'languages', 'daily'];
+            views.forEach(view => {
+                const viewElement = document.getElementById(view + 'View');
+                if (viewElement) {
+                    viewElement.classList.add('hidden');
+                }
+            });
+            
+            // Show target view
+            const targetView = document.getElementById(viewName + 'View');
+            if (targetView) {
+                targetView.classList.remove('hidden');
+            }
+        }
+
+        // Show main app
+        function showMainApp(userProfile) {
+            console.log('🏠 Showing main app');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('signupView').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            if (userProfile && userProfile.name) {
+                const firstName = userProfile.name.split(' ')[0];
+                document.getElementById('greeting').innerHTML = `
+                    <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                        Welcome to LexiLog, ${firstName}!
+                    </span>
+                `;
+            }
+            
+            navigateToView('home');
+        }
+
+        // Show login
+        function showLogin() {
+            console.log('🔑 Showing login');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('signupView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        // Show signup
+        function showSignup() {
+            console.log('📝 Showing signup');
+            document.getElementById('signupView').classList.remove('hidden');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        // Authentication state listener
+        auth.onAuthStateChanged(async (user) => {
+            console.log('🔐 Auth state changed:', user ? 'User logged in' : 'User logged out');
+            
+            if (user) {
+                currentUser = user;
+                currentUserId = user.uid;
+                
+                try {
+                    const doc = await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                        .collection('users').doc(currentUserId)
+                        .collection('profile').doc('data').get();
+                    
+                    if (doc.exists) {
+                        showMainApp(doc.data());
+                    } else {
+                        showMainApp({ name: user.email.split('@')[0] });
+                    }
+                } catch (error) {
+                    console.error('Profile loading error:', error);
+                    showMainApp({ name: user.email.split('@')[0] });
+                }
+            } else {
+                showLogin();
+            }
+        });
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📱 DOM loaded, setting up events...');
+            
+            // Login/Signup navigation
+            document.getElementById('showSignupBtn').addEventListener('click', showSignup);
+            document.getElementById('showLoginBtn').addEventListener('click', showLogin);
+
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                console.log('🔑 Attempting login...');
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    console.log('✅ Login successful');
+                } catch (error) {
+                    console.error('❌ Login error:', error);
+                    alert('Login failed: ' + error.message);
+                }
+            });
+
+            // Signup form
+            document.getElementById('signupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signupName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
+                const goal = document.getElementById('signupQuestion').value;
+                const otherGoal = document.getElementById('signupOtherGoal').value.trim();
+                
+                console.log('📝 Creating account...');
+                
+                try {
+                    const result = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Save profile
+                    await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                        .collection('users').doc(result.user.uid)
+                        .collection('profile').doc('data').set({
+                            name: name,
+                            email: email,
+                            goal: goal,
+                            otherGoal: otherGoal,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                    console.log('✅ Account created successfully');
+                } catch (error) {
+                    console.error('❌ Signup error:', error);
+                    alert('Signup failed: ' + error.message);
+                }
+            });
+
+            // Goal selector
+            document.getElementById('signupQuestion').addEventListener('change', (e) => {
+                const otherField = document.getElementById('otherGoalField');
+                const otherInput = document.getElementById('signupOtherGoal');
+                
+                if (e.target.value === 'other') {
+                    otherField.classList.remove('hidden');
+                    otherInput.required = true;
+                } else {
+                    otherField.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = '';
+                }
+            });
+        });
+
+        // Logout function
+        function logout() {
+            console.log('👋 Logging out...');
+            auth.signOut();
+        }
+
+        // Simple search function
+        async function searchWord() {
+            const word = document.getElementById('searchInput').value.trim();
+            if (!word) return;
+            
+            console.log('🔍 Searching for:', word);
+            
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data[0]) {
+                        document.getElementById('resultWord').textContent = data[0].word;
+                        document.getElementById('resultDefinition').textContent = 
+                            data[0].meanings[0].definitions[0].definition;
+                        document.getElementById('searchResults').classList.remove('hidden');
+                        console.log('✅ Word found');
+                    }
+                } else {
+                    alert('Word not found');
+                }
+            } catch (error) {
+                console.error('❌ Search error:', error);
+                alert('Search failed');
+            }
+        }
+
+        // Load daily word
+        function loadDailyWord() {
+            const words = ['serendipity', 'eloquent', 'ubiquitous', 'pragmatic', 'ephemeral'];
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            
+            fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${randomWord}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data[0]) {
+                        document.getElementById('dailyWord').textContent = data[0].word;
+                        document.getElementById('dailyDefinition').textContent = 
+                            data[0].meanings[0].definitions[0].definition;
+                    }
+                })
+                .catch(error => console.error('Daily word error:', error));
+        }
+
+        // Initialize
+        console.log('✨ LexiLog CACHE BUSTER VERSION - Ready!');
+    </script>
+</body>
+</html>
