@@ -195,9 +195,7 @@
             animation: fadeInUp 0.8s ease-out forwards;
         }
         
-        .animate-floating {
-            animation: floating 6s ease-in-out infinite;
-        }
+        /* Floating animation removed as requested */
         
         .animate-pulse-glow {
             animation: pulse-glow 2s ease-in-out infinite;
@@ -212,14 +210,13 @@
         .feature-card {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, var(--card-from), var(--card-to));
-            color: white;
             padding: 2rem;
             border-radius: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
         }
         
         .feature-card::before {
@@ -238,8 +235,8 @@
         }
         
         .feature-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 35px 70px -12px rgba(0,0,0,0.35);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
         
         .feature-card:active {
@@ -349,16 +346,23 @@
             .shadow-2xl { box-shadow: 0 10px 25px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
             
             .feature-card {
-                padding: 1.5rem;
-                border-radius: 1.25rem;
+                padding: 1.25rem;
+                border-radius: 1rem;
             }
             
             .feature-card .emoji {
                 font-size: 2.5rem;
+                margin-bottom: 0.75rem;
             }
             
             .feature-card h3 {
-                font-size: 1.25rem;
+                font-size: 1.125rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .feature-card p {
+                font-size: 0.875rem;
+                line-height: 1.4;
             }
         }
         
@@ -556,29 +560,33 @@
                 </div>
                 
                 <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    <div class="feature-card card-blue animate-floating" 
-                         onclick="navigateToView('dictionary')" style="animation-delay: 0.1s;">
+                    <div class="feature-card" 
+                         onclick="navigateToView('dictionary')" 
+                         style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">
                         <div class="emoji">📚</div>
                         <h3>Smart Dictionary</h3>
                         <p>Search English words with definitions, phonetics, and audio pronunciation</p>
                     </div>
                     
-                    <div class="feature-card card-green animate-floating" 
-                         onclick="navigateToView('library')" style="animation-delay: 0.2s;">
+                    <div class="feature-card" 
+                         onclick="navigateToView('library')" 
+                         style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: white;">
                         <div class="emoji">📖</div>
                         <h3>My LexiLog</h3>
                         <p>Access your saved vocabulary and track your learning progress</p>
                     </div>
                     
-                    <div class="feature-card card-purple animate-floating" 
-                         onclick="navigateToView('languages')" style="animation-delay: 0.3s;">
+                    <div class="feature-card" 
+                         onclick="navigateToView('languages')" 
+                         style="background: linear-gradient(135deg, #fa709a, #fee140); color: white;">
                         <div class="emoji">🌍</div>
                         <h3>Other Languages</h3>
                         <p>Search words in 20+ languages with translations and definitions</p>
                     </div>
                     
-                    <div class="feature-card card-orange animate-floating" 
-                         onclick="navigateToView('daily')" style="animation-delay: 0.4s;">
+                    <div class="feature-card" 
+                         onclick="navigateToView('daily')" 
+                         style="background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #333;">
                         <div class="emoji">⭐</div>
                         <h3>Word of the Day</h3>
                         <p>Discover and learn a new word every day to expand your vocabulary</p>
