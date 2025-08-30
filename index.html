@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexiLog - Personal Vocabulary Builder (Demo)</title>
+    <title>LexiLog - Personal Vocabulary Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -15,7 +18,6 @@
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
                 <p class="text-gray-600">Sign in to your LexiLog account</p>
-                <div class="mt-2 text-sm text-blue-600">Demo Version - Data stored locally</div>
             </div>
             <form id="loginForm" class="space-y-6">
                 <div>
@@ -67,7 +69,6 @@
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
                 <p class="text-gray-600">Join LexiLog and start building your vocabulary</p>
-                <div class="mt-2 text-sm text-blue-600">Demo Version - Data stored locally</div>
             </div>
             <form id="signupForm" class="space-y-6">
                 <div>

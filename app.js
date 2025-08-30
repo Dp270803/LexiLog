@@ -1,5 +1,21 @@
-// LexiLog - Personal Vocabulary Builder (Demo Version)
-// This version works without Firebase configuration
+// LexiLog - Personal Vocabulary Builder
+// Main Application JavaScript
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyByQABCkc1kQgSZevk30UKWQe3dq0bhHbs",
+    authDomain: "lexilog-c1559.firebaseapp.com",
+    projectId: "lexilog-c1559",
+    storageBucket: "lexilog-c1559.firebasestorage.app",
+    messagingSenderId: "383823777893",
+    appId: "1:383823777893:web:ffe084adfbf2d1ee7cf68c",
+    measurementId: "G-QXMEFRQ36N"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // App Configuration
 const APP_ID = 'lexilog-vocabulary-builder';
@@ -39,6 +55,7 @@ let currentLanguage = 'en';
 
 // Global Variables
 let currentUser = null;
+let currentUserId = null;
 let speechRecognition = null;
 let isListening = false;
 
@@ -208,94 +225,154 @@ function initializeSpeechRecognition() {
     }
 }
 
-// LocalStorage-based Authentication Functions (Demo Version)
+// Firebase Authentication Functions
 function initializeAuth() {
-    // Check if user is logged in
-    const currentUserData = localStorage.getItem('lexilog_demo_user');
-    if (currentUserData) {
-        const userData = JSON.parse(currentUserData);
-        currentUser = userData;
-        showMainApp(userData);
-    } else {
-        showLogin();
-    }
+    // Listen for authentication state changes
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user;
+            currentUserId = user.uid;
+            
+            // Get user profile from Firestore
+            const profile = await getUserProfile();
+            if (profile && profile.name && profile.email) {
+                showMainApp(profile);
+            } else {
+                // User exists but no profile, this shouldn't happen with our flow
+                // But handle it gracefully
+                await signOut();
+            }
+        } else {
+            // No user signed in
+            currentUser = null;
+            currentUserId = null;
+            showLogin();
+        }
+    });
 }
 
-// Sign up with localStorage
-function signUpWithEmail(name, email, password) {
+// Sign up with Firebase
+async function signUpWithEmail(name, email, password) {
     try {
-        // Check if user already exists
-        const existingUsers = JSON.parse(localStorage.getItem('lexilog_demo_users') || '[]');
-        const userExists = existingUsers.find(user => user.email === email);
+        // Create user account
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
         
-        if (userExists) {
-            showNotification('This email is already registered. Please sign in instead.', 'error');
-            return false;
-        }
-        
-        if (password.length < 6) {
-            showNotification('Password should be at least 6 characters long.', 'error');
-            return false;
-        }
-        
-        // Create new user
-        const newUser = {
-            id: Date.now().toString(),
-            name: name,
-            email: email,
-            password: password, // In real app, this would be hashed
-            createdAt: new Date().toISOString()
-        };
-        
-        // Save to users list
-        existingUsers.push(newUser);
-        localStorage.setItem('lexilog_demo_users', JSON.stringify(existingUsers));
-        
-        // Set as current user
-        currentUser = { name: newUser.name, email: newUser.email, id: newUser.id };
-        localStorage.setItem('lexilog_demo_user', JSON.stringify(currentUser));
+        // Save user profile
+        await saveUserProfile(name, email);
         
         showNotification('Account created successfully! Welcome to LexiLog!', 'success');
-        showMainApp(currentUser);
         return true;
     } catch (error) {
         console.error('Sign up error:', error);
-        showNotification('Failed to create account. Please try again.', 'error');
+        let errorMessage = 'Failed to create account. Please try again.';
+        
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = 'This email is already registered. Please sign in instead.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Please enter a valid email address.';
+                break;
+            case 'auth/weak-password':
+                errorMessage = 'Password should be at least 6 characters long.';
+                break;
+            case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your connection.';
+                break;
+        }
+        
+        showNotification(errorMessage, 'error');
         return false;
     }
 }
 
-// Sign in with localStorage
-function signInWithEmail(email, password) {
+// Sign in with Firebase
+async function signInWithEmail(email, password) {
     try {
-        const existingUsers = JSON.parse(localStorage.getItem('lexilog_demo_users') || '[]');
-        const user = existingUsers.find(u => u.email === email && u.password === password);
-        
-        if (!user) {
-            showNotification('Invalid email or password. Please try again.', 'error');
-            return false;
-        }
-        
-        // Set as current user
-        currentUser = { name: user.name, email: user.email, id: user.id };
-        localStorage.setItem('lexilog_demo_user', JSON.stringify(currentUser));
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        currentUser = result.user;
+        currentUserId = result.user.uid;
         
         showNotification('Welcome back!', 'success');
-        showMainApp(currentUser);
         return true;
     } catch (error) {
         console.error('Sign in error:', error);
-        showNotification('Failed to sign in. Please try again.', 'error');
+        let errorMessage = 'Failed to sign in. Please check your credentials.';
+        
+        switch (error.code) {
+            case 'auth/user-not-found':
+                errorMessage = 'No account found with this email. Please sign up first.';
+                break;
+            case 'auth/wrong-password':
+                errorMessage = 'Incorrect password. Please try again.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Please enter a valid email address.';
+                break;
+            case 'auth/user-disabled':
+                errorMessage = 'This account has been disabled. Please contact support.';
+                break;
+            case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your connection.';
+                break;
+        }
+        
+        showNotification(errorMessage, 'error');
         return false;
     }
 }
 
 // Sign out
-function signOut() {
-    localStorage.removeItem('lexilog_demo_user');
-    currentUser = null;
-    showNotification('Signed out successfully', 'info');
-    showLogin();
+async function signOut() {
+    try {
+        await auth.signOut();
+        currentUser = null;
+        currentUserId = null;
+        showNotification('Signed out successfully', 'info');
+    } catch (error) {
+        console.error('Sign out error:', error);
+        showNotification('Error signing out', 'error');
+    }
+}
+
+// Get user profile from Firestore
+async function getUserProfile() {
+    try {
+        const doc = await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('profile').doc('data').get();
+        
+        return doc.exists ? doc.data() : null;
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+    }
+}
+
+// Save user profile to Firestore
+async function saveUserProfile(name, email) {
+    try {
+        const profileData = {
+            name: name,
+            email: email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+            totalWordsSearched: 0,
+            totalWordsSaved: 0
+        };
+        
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('profile').doc('data').set(profileData);
+        
+        return true;
+    } catch (error) {
+        console.error('Error saving user profile:', error);
+        throw error;
+    }
 }
 
 // UI Functions
@@ -633,7 +710,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Vocabulary Management (Demo version using localStorage only)
+// Vocabulary Management with Firebase and localStorage fallback
 async function saveWordToVocabulary(wordData) {
     try {
         const wordDoc = {
@@ -645,9 +722,16 @@ async function saveWordToVocabulary(wordData) {
             timestamp: Date.now()
         };
         
-        // Save to user-specific localStorage
-        const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
-        const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        // Try Firebase first
+        if (currentUserId) {
+            await db.collection('artifacts').doc(APP_ID)
+                .collection('users').doc(currentUserId)
+                .collection('vocabulary').doc(wordData.word.toLowerCase())
+                .set(wordDoc);
+        }
+        
+        // Always save to localStorage as fallback
+        const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
         const existingIndex = vocabulary.findIndex(w => w.word.toLowerCase() === wordData.word.toLowerCase());
         
         if (existingIndex >= 0) {
@@ -656,7 +740,7 @@ async function saveWordToVocabulary(wordData) {
             vocabulary.push(wordDoc);
         }
         
-        localStorage.setItem(storageKey, JSON.stringify(vocabulary));
+        localStorage.setItem('lexilog_vocabulary', JSON.stringify(vocabulary));
         
         // Show success animation and notification
         elements.searchResults.classList.add('save-success');
@@ -673,19 +757,76 @@ async function saveWordToVocabulary(wordData) {
         
     } catch (error) {
         console.error('Error saving word:', error);
-        showNotification('Failed to save word. Please try again.', 'error');
+        // Fallback to localStorage only
+        try {
+            const wordDoc = {
+                word: wordData.word,
+                phonetic: wordData.phonetic || '',
+                meanings: wordData.meanings,
+                audioUrl: wordData.phonetics?.find(p => p.audio)?.audio || '',
+                savedAt: new Date().toISOString(),
+                timestamp: Date.now()
+            };
+            
+            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+            const existingIndex = vocabulary.findIndex(w => w.word.toLowerCase() === wordData.word.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                vocabulary[existingIndex] = wordDoc;
+            } else {
+                vocabulary.push(wordDoc);
+            }
+            
+            localStorage.setItem('lexilog_vocabulary', JSON.stringify(vocabulary));
+            
+            // Show success animation and notification
+            elements.searchResults.classList.add('save-success');
+            showNotification(`${wordData.word} has been added to your LexiLog!`, 'success');
+            setTimeout(() => {
+                elements.searchResults.classList.remove('save-success');
+            }, 300);
+        } catch (localError) {
+            console.error('Error saving to localStorage:', localError);
+            showNotification('Failed to save word. Please try again.', 'error');
+        }
     }
 }
 
 async function loadUserVocabulary() {
     try {
-        const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
-        const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
+        let words = [];
+        
+        // Try Firebase first
+        if (currentUserId) {
+            const snapshot = await db.collection('artifacts').doc(APP_ID)
+                .collection('users').doc(currentUserId)
+                .collection('vocabulary')
+                .orderBy('timestamp', 'desc')
+                .get();
+            
+            snapshot.forEach(doc => {
+                words.push({ id: doc.id, ...doc.data() });
+            });
+        }
+        
+        // If no words from Firebase, try localStorage
+        if (words.length === 0) {
+            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+            words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
+        }
+        
         displayVocabulary(words);
     } catch (error) {
         console.error('Error loading vocabulary:', error);
-        displayVocabulary([]);
+        // Fallback to localStorage
+        try {
+            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+            const words = vocabulary.sort((a, b) => b.timestamp - a.timestamp);
+            displayVocabulary(words);
+        } catch (localError) {
+            console.error('Error loading from localStorage:', localError);
+            displayVocabulary([]);
+        }
     }
 }
 
@@ -744,16 +885,34 @@ function createWordCard(wordData) {
 async function deleteWord(word) {
     if (confirm(`Are you sure you want to remove "${word}" from your vocabulary?`)) {
         try {
-            const storageKey = currentUser ? `lexilog_vocabulary_${currentUser.id}` : 'lexilog_vocabulary';
-            const vocabulary = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            // Try Firebase first
+            if (currentUserId) {
+                await db.collection('artifacts').doc(APP_ID)
+                    .collection('users').doc(currentUserId)
+                    .collection('vocabulary').doc(word.toLowerCase())
+                    .delete();
+            }
+            
+            // Always remove from localStorage
+            const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
             const filteredVocabulary = vocabulary.filter(w => w.word.toLowerCase() !== word.toLowerCase());
-            localStorage.setItem(storageKey, JSON.stringify(filteredVocabulary));
+            localStorage.setItem('lexilog_vocabulary', JSON.stringify(filteredVocabulary));
             
             showNotification(`${word} has been removed from your LexiLog.`, 'success');
             loadUserVocabulary();
         } catch (error) {
             console.error('Error deleting word:', error);
-            showNotification('Failed to delete word. Please try again.', 'error');
+            // Fallback to localStorage only
+            try {
+                const vocabulary = JSON.parse(localStorage.getItem('lexilog_vocabulary') || '[]');
+                const filteredVocabulary = vocabulary.filter(w => w.word.toLowerCase() !== word.toLowerCase());
+                localStorage.setItem('lexilog_vocabulary', JSON.stringify(filteredVocabulary));
+                showNotification(`${word} has been removed from your LexiLog.`, 'success');
+                loadUserVocabulary();
+            } catch (localError) {
+                console.error('Error deleting from localStorage:', localError);
+                showNotification('Failed to delete word. Please try again.', 'error');
+            }
         }
     }
 }
