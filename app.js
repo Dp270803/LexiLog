@@ -198,12 +198,12 @@ function initializeSpeechRecognition() {
         speechRecognition.onstart = () => {
             isListening = true;
             if (elements.audioButton) {
-                elements.audioButton.classList.add('text-red-600');
-                elements.audioButton.innerHTML = `
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                `;
+            elements.audioButton.classList.add('text-red-600');
+            elements.audioButton.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            `;
                 elements.audioButton.title = "Listening... Click to stop";
             }
         };
@@ -211,7 +211,7 @@ function initializeSpeechRecognition() {
         speechRecognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             if (elements.searchInput) {
-                elements.searchInput.value = transcript;
+            elements.searchInput.value = transcript;
                 searchEnglishWord(transcript);
             }
         };
@@ -219,12 +219,12 @@ function initializeSpeechRecognition() {
         speechRecognition.onend = () => {
             isListening = false;
             if (elements.audioButton) {
-                elements.audioButton.classList.remove('text-red-600');
-                elements.audioButton.innerHTML = `
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                    </svg>
-                `;
+            elements.audioButton.classList.remove('text-red-600');
+            elements.audioButton.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                </svg>
+            `;
                 elements.audioButton.title = "Audio Search";
             }
         };
@@ -233,7 +233,7 @@ function initializeSpeechRecognition() {
             console.error('Speech recognition error:', event.error);
             isListening = false;
             if (elements.audioButton) {
-                elements.audioButton.classList.remove('text-red-600');
+            elements.audioButton.classList.remove('text-red-600');
                 elements.audioButton.innerHTML = `
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
@@ -481,7 +481,7 @@ function navigateToView(viewName) {
     if (viewName === 'home') {
         if (elements.navigationRibbon) elements.navigationRibbon.classList.add('hidden');
         document.body.style.paddingTop = '0';
-    } else {
+                } else {
         if (elements.navigationRibbon) elements.navigationRibbon.classList.remove('hidden');
         document.body.style.paddingTop = '80px';
     }
@@ -518,8 +518,8 @@ async function searchEnglishWord(word) {
         // For English dictionary, always use English API
         const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
         if (response.ok) {
-            const data = await response.json();
-            if (data && data.length > 0) {
+        const data = await response.json();
+        if (data && data.length > 0) {
                 wordData = data[0];
             }
         }
@@ -626,21 +626,21 @@ function displaySearchResults(wordData) {
     
     // Clear previous definitions
     if (elements.resultDefinitions) {
-        elements.resultDefinitions.innerHTML = '';
+    elements.resultDefinitions.innerHTML = '';
+    
+    // Display definitions
+    wordData.meanings.forEach(meaning => {
+        const meaningDiv = document.createElement('div');
+        meaningDiv.className = 'definition-item';
         
-        // Display definitions
-        wordData.meanings.forEach(meaning => {
-            const meaningDiv = document.createElement('div');
-            meaningDiv.className = 'definition-item';
-            
-            meaningDiv.innerHTML = `
-                <div class="part-of-speech">${meaning.partOfSpeech}</div>
-                <div class="definition-text">${meaning.definitions[0].definition}</div>
-                ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
-            `;
-            
-            elements.resultDefinitions.appendChild(meaningDiv);
-        });
+        meaningDiv.innerHTML = `
+            <div class="part-of-speech">${meaning.partOfSpeech}</div>
+            <div class="definition-text">${meaning.definitions[0].definition}</div>
+            ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
+        `;
+        
+        elements.resultDefinitions.appendChild(meaningDiv);
+    });
     }
     
     // Store audio URL if available
@@ -754,7 +754,7 @@ function toggleAudioSearch() {
         speechRecognition.stop();
     } else {
         try {
-            speechRecognition.start();
+        speechRecognition.start();
         } catch (error) {
             console.error('Error starting speech recognition:', error);
             alert('Unable to start voice search. Please check your microphone permissions and try again.');
@@ -849,10 +849,10 @@ async function saveWordToVocabulary(wordData) {
         
         // Try Firebase first
         if (currentUserId) {
-            await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary').doc(wordData.word.toLowerCase())
-                .set(wordDoc);
+        await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('vocabulary').doc(wordData.word.toLowerCase())
+            .set(wordDoc);
         }
         
         // Always save to localStorage as fallback
@@ -892,15 +892,15 @@ async function loadUserVocabulary() {
         
         // Try Firebase first
         if (currentUserId) {
-            const snapshot = await db.collection('artifacts').doc(APP_ID)
-                .collection('users').doc(currentUserId)
-                .collection('vocabulary')
-                .orderBy('timestamp', 'desc')
-                .get();
-            
-            snapshot.forEach(doc => {
-                words.push({ id: doc.id, ...doc.data() });
-            });
+        const snapshot = await db.collection('artifacts').doc(APP_ID)
+            .collection('users').doc(currentUserId)
+            .collection('vocabulary')
+            .orderBy('timestamp', 'desc')
+            .get();
+        
+        snapshot.forEach(doc => {
+            words.push({ id: doc.id, ...doc.data() });
+        });
         }
         
         // If no words from Firebase, try localStorage
@@ -919,7 +919,7 @@ async function loadUserVocabulary() {
             displayVocabulary(words);
         } catch (localError) {
             console.error('Error loading from localStorage:', localError);
-            displayVocabulary([]);
+        displayVocabulary([]);
         }
     }
 }
@@ -935,12 +935,12 @@ function displayVocabulary(words) {
     if (elements.wordList) elements.wordList.classList.remove('hidden');
     
     if (elements.wordList) {
-        elements.wordList.innerHTML = '';
-        
-        words.forEach(wordData => {
-            const wordCard = createWordCard(wordData);
-            elements.wordList.appendChild(wordCard);
-        });
+    elements.wordList.innerHTML = '';
+    
+    words.forEach(wordData => {
+        const wordCard = createWordCard(wordData);
+        elements.wordList.appendChild(wordCard);
+    });
     }
 }
 
@@ -983,10 +983,10 @@ async function deleteWord(word) {
         try {
             // Try Firebase first
             if (currentUserId) {
-                await db.collection('artifacts').doc(APP_ID)
-                    .collection('users').doc(currentUserId)
-                    .collection('vocabulary').doc(word.toLowerCase())
-                    .delete();
+            await db.collection('artifacts').doc(APP_ID)
+                .collection('users').doc(currentUserId)
+                .collection('vocabulary').doc(word.toLowerCase())
+                .delete();
             }
             
             // Always remove from localStorage
@@ -1015,7 +1015,7 @@ async function fetchWordOfTheDay() {
             const parsed = JSON.parse(dailyWordData);
             if (parsed.date === today) {
                 displayDailyWord(parsed);
-                return;
+            return;
             }
         }
         
@@ -1024,8 +1024,8 @@ async function fetchWordOfTheDay() {
         
         if (wordData) {
             const wordWithDate = {
-                ...wordData,
-                date: today,
+                    ...wordData,
+                    date: today,
                 timestamp: Date.now()
             };
             
@@ -1101,21 +1101,21 @@ function displayDailyWord(wordData) {
     
     // Clear previous definitions
     if (elements.dailyDefinitions) {
-        elements.dailyDefinitions.innerHTML = '';
+    elements.dailyDefinitions.innerHTML = '';
+    
+    // Display definitions
+    wordData.meanings.forEach(meaning => {
+        const meaningDiv = document.createElement('div');
+        meaningDiv.className = 'definition-item';
         
-        // Display definitions
-        wordData.meanings.forEach(meaning => {
-            const meaningDiv = document.createElement('div');
-            meaningDiv.className = 'definition-item';
-            
-            meaningDiv.innerHTML = `
-                <div class="part-of-speech">${meaning.partOfSpeech}</div>
-                <div class="definition-text">${meaning.definitions[0].definition}</div>
-                ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
-            `;
-            
-            elements.dailyDefinitions.appendChild(meaningDiv);
-        });
+        meaningDiv.innerHTML = `
+            <div class="part-of-speech">${meaning.partOfSpeech}</div>
+            <div class="definition-text">${meaning.definitions[0].definition}</div>
+            ${meaning.definitions[0].example ? `<div class="example-text">"${meaning.definitions[0].example}"</div>` : ''}
+        `;
+        
+        elements.dailyDefinitions.appendChild(meaningDiv);
+    });
     }
     
     // Store audio URL if available
@@ -1128,7 +1128,7 @@ function displayDailyWord(wordData) {
     
     // Store word data for saving
     if (elements.saveDailyWord) {
-        elements.saveDailyWord.onclick = () => saveDailyWord(wordData);
+    elements.saveDailyWord.onclick = () => saveDailyWord(wordData);
     }
 }
 
@@ -1136,17 +1136,17 @@ async function saveDailyWord(wordData) {
     try {
         await saveWordToVocabulary(wordData);
         if (elements.saveDailyWord) {
-            elements.saveDailyWord.textContent = 'Added to My LexiLog!';
-            elements.saveDailyWord.disabled = true;
-            elements.saveDailyWord.classList.remove('bg-green-600', 'hover:bg-green-700');
-            elements.saveDailyWord.classList.add('bg-gray-400');
-            
-            setTimeout(() => {
-                elements.saveDailyWord.textContent = 'Add to My LexiLog';
-                elements.saveDailyWord.disabled = false;
-                elements.saveDailyWord.classList.remove('bg-gray-400');
-                elements.saveDailyWord.classList.add('bg-green-600', 'hover:bg-green-700');
-            }, 2000);
+        elements.saveDailyWord.textContent = 'Added to My LexiLog!';
+        elements.saveDailyWord.disabled = true;
+        elements.saveDailyWord.classList.remove('bg-green-600', 'hover:bg-green-700');
+        elements.saveDailyWord.classList.add('bg-gray-400');
+        
+        setTimeout(() => {
+            elements.saveDailyWord.textContent = 'Add to My LexiLog';
+            elements.saveDailyWord.disabled = false;
+            elements.saveDailyWord.classList.remove('bg-gray-400');
+            elements.saveDailyWord.classList.add('bg-green-600', 'hover:bg-green-700');
+        }, 2000);
         }
         
         showNotification(`${wordData.word} has been added to your LexiLog!`, 'success');
@@ -1161,7 +1161,7 @@ function initializeEventListeners() {
     // Login form
     if (elements.loginForm) {
         elements.loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        e.preventDefault();
             const email = elements.loginEmail.value.trim();
             const password = elements.loginPassword.value;
             
@@ -1265,21 +1265,21 @@ function initializeEventListeners() {
     
     // English Dictionary Search (Dictionary View)
     if (elements.searchButton && elements.searchInput) {
-        elements.searchButton.addEventListener('click', () => {
+    elements.searchButton.addEventListener('click', () => {
+        const word = elements.searchInput.value.trim();
+        if (word) {
+                searchEnglishWord(word);
+        }
+    });
+    
+    elements.searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
             const word = elements.searchInput.value.trim();
             if (word) {
-                searchEnglishWord(word);
-            }
-        });
-        
-        elements.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const word = elements.searchInput.value.trim();
-                if (word) {
                     searchEnglishWord(word);
-                }
             }
-        });
+        }
+    });
     }
     
     // Language Search (Languages View)
@@ -1303,7 +1303,7 @@ function initializeEventListeners() {
     
     // Audio search
     if (elements.audioButton) {
-        elements.audioButton.addEventListener('click', toggleAudioSearch);
+    elements.audioButton.addEventListener('click', toggleAudioSearch);
     }
     if (elements.languageAudioButton) {
         elements.languageAudioButton.addEventListener('click', toggleAudioSearch);
@@ -1342,9 +1342,183 @@ function initializeEventListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     initializeAuth();
+    initializePWA();
 });
+
+// PWA Functionality
+let deferredPrompt;
+let isInstalled = false;
+
+// Check if app is installed
+function checkIfInstalled() {
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+        isInstalled = true;
+        console.log('LexiLog: Running as installed PWA');
+    } else if (window.navigator && window.navigator.standalone) {
+        isInstalled = true;
+        console.log('LexiLog: Running as iOS PWA');
+    }
+}
+
+// Register Service Worker
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('LexiLog: Service Worker registered successfully:', registration.scope);
+            
+            // Listen for updates
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New update available
+                        showNotification('LexiLog has been updated! Refresh to get the latest version.', 'info');
+                    }
+                });
+            });
+            
+        } catch (error) {
+            console.error('LexiLog: Service Worker registration failed:', error);
+        }
+    }
+}
+
+// PWA Install Prompt
+function initializePWAInstall() {
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('LexiLog: PWA install prompt available');
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Store the event for later use
+        deferredPrompt = e;
+        // Show custom install button/banner
+        showInstallPrompt();
+    });
+
+    // Listen for app installation
+    window.addEventListener('appinstalled', (e) => {
+        console.log('LexiLog: PWA installed successfully');
+        isInstalled = true;
+        hideInstallPrompt();
+        showNotification('🎉 LexiLog installed! You can now access it from your home screen.', 'success');
+    });
+}
+
+// Show custom install prompt
+function showInstallPrompt() {
+    if (isInstalled || !deferredPrompt) return;
+    
+    // Create install banner
+    const installBanner = document.createElement('div');
+    installBanner.id = 'pwa-install-banner';
+    installBanner.className = 'fixed top-4 left-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+    installBanner.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    📱
+                </div>
+                <div>
+                    <div class="font-semibold">Install LexiLog</div>
+                    <div class="text-sm opacity-90">Get the full app experience</div>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button id="pwa-install-btn" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm font-medium transition-colors">
+                    Install
+                </button>
+                <button id="pwa-dismiss-btn" class="text-white/70 hover:text-white p-1">
+                    ✕
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(installBanner);
+    
+    // Add event listeners
+    document.getElementById('pwa-install-btn').addEventListener('click', installPWA);
+    document.getElementById('pwa-dismiss-btn').addEventListener('click', hideInstallPrompt);
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        if (document.getElementById('pwa-install-banner')) {
+            hideInstallPrompt();
+        }
+    }, 10000);
+}
+
+// Install PWA
+async function installPWA() {
+    if (!deferredPrompt) return;
+    
+    try {
+        // Show the install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('LexiLog: User accepted PWA install');
+        } else {
+            console.log('LexiLog: User dismissed PWA install');
+        }
+        
+        // Clear the deferredPrompt
+        deferredPrompt = null;
+        hideInstallPrompt();
+        
+    } catch (error) {
+        console.error('LexiLog: PWA install error:', error);
+        hideInstallPrompt();
+    }
+}
+
+// Hide install prompt
+function hideInstallPrompt() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+        banner.style.transform = 'translateY(-100%)';
+        setTimeout(() => {
+            banner.remove();
+        }, 300);
+    }
+}
+
+// PWA Navigation handling
+function handlePWANavigation() {
+    // Handle deep links when app is opened from home screen
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('view');
+    
+    if (view && ['dictionary', 'languages', 'library', 'daily'].includes(view)) {
+        // Delay navigation to ensure app is fully loaded
+        setTimeout(() => {
+            navigateToView(view);
+        }, 1000);
+    }
+}
+
+// Initialize PWA features
+function initializePWA() {
+    checkIfInstalled();
+    registerServiceWorker();
+    initializePWAInstall();
+    handlePWANavigation();
+    
+    // Add PWA-specific styles for better mobile experience
+    if (isInstalled) {
+        document.body.classList.add('pwa-installed');
+        // Add some padding for status bar on mobile
+        document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
+    }
+}
 
 // Make functions globally available for onclick handlers
 window.navigateToView = navigateToView;
 window.playAudio = playAudio;
 window.deleteWord = deleteWord;
+window.installPWA = installPWA;
