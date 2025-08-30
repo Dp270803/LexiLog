@@ -1505,7 +1505,8 @@ function handlePWANavigation() {
 // Initialize PWA features
 function initializePWA() {
     checkIfInstalled();
-    registerServiceWorker();
+    // Temporarily disable service worker for debugging
+    // registerServiceWorker();
     initializePWAInstall();
     handlePWANavigation();
     

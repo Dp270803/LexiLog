@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiLog - Simple Mobile Version</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        .result {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .word {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .phonetic {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        
+        .definition {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .part-of-speech {
+            color: #3B82F6;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .status {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 LexiLog</h1>
+            <p>Simple Mobile Dictionary</p>
+        </div>
+        
+        <div class="status" id="status">
+            <strong>Status:</strong> <span id="statusText">Loading...</span>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Enter a word to search...">
+            <button onclick="searchWord()">🔍 Search Word</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>🔄 Searching...</p>
+        </div>
+        
+        <div class="error" id="error">
+            <p id="errorMessage"></p>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="word" id="wordText"></div>
+            <div class="phonetic" id="phoneticText"></div>
+            <div id="definitions"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update status
+        function updateStatus(message, isError = false) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = message;
+            statusText.style.color = isError ? '#dc2626' : '#059669';
+        }
+
+        // Search function
+        async function searchWord() {
+            const input = document.getElementById('searchInput');
+            const word = input.value.trim();
+            
+            if (!word) {
+                showError('Please enter a word to search');
+                return;
+            }
+            
+            showLoading();
+            hideError();
+            hideResult();
+            
+            try {
+                updateStatus('Searching for word...');
+                
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    displayResult(data[0]);
+                    updateStatus('Word found successfully!');
+                } else {
+                    throw new Error('Word not found');
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showError(`Search failed: ${error.message}`);
+                updateStatus('Search failed', true);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Display functions
+        function displayResult(wordData) {
+            document.getElementById('wordText').textContent = wordData.word;
+            document.getElementById('phoneticText').textContent = wordData.phonetic || '';
+            
+            const definitionsDiv = document.getElementById('definitions');
+            definitionsDiv.innerHTML = '';
+            
+            wordData.meanings.forEach(meaning => {
+                const defDiv = document.createElement('div');
+                defDiv.className = 'definition';
+                defDiv.innerHTML = `
+                    <div class="part-of-speech">${meaning.partOfSpeech}</div>
+                    <div>${meaning.definitions[0].definition}</div>
+                    ${meaning.definitions[0].example ? `<div style="font-style: italic; margin-top: 8px; color: #6b7280;">"${meaning.definitions[0].example}"</div>` : ''}
+                `;
+                definitionsDiv.appendChild(defDiv);
+            });
+            
+            showResult();
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showResult() {
+            document.getElementById('result').style.display = 'block';
+        }
+        
+        function hideResult() {
+            document.getElementById('result').style.display = 'none';
+        }
+        
+        // Enter key support
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchWord();
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Ready to search');
+            
+            // Test basic functionality
+            try {
+                const testDiv = document.createElement('div');
+                testDiv.textContent = 'Test';
+                updateStatus('App loaded successfully!');
+            } catch (error) {
+                updateStatus('App initialization failed', true);
+                console.error('Init error:', error);
+            }
+        });
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e);
+            updateStatus('JavaScript error detected', true);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Promise rejection:', e);
+            updateStatus('Network or promise error', true);
+        });
+    </script>
+</body>
+</html>
