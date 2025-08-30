@@ -533,6 +533,9 @@ function initializeElements() {
         signupName: document.getElementById('signupName'),
         signupEmail: document.getElementById('signupEmail'),
         signupPassword: document.getElementById('signupPassword'),
+        examGoal: document.getElementById('examGoal'),
+        otherExam: document.getElementById('otherExam'),
+        otherExamContainer: document.getElementById('otherExamContainer'),
         signupButton: document.getElementById('signupButton'),
         showLoginBtn: document.getElementById('showLoginBtn'),
         
@@ -712,15 +715,15 @@ async function initializeAuth() {
 }
 
 // Sign up with email and password
-async function signUpWithEmail(name, email, password) {
+async function signUpWithEmail(name, email, password, examGoal, otherExam) {
     try {
         // Create user account
         const result = await auth.createUserWithEmailAndPassword(email, password);
         currentUser = result.user;
         currentUserId = result.user.uid;
         
-        // Save user profile
-        await saveUserProfile(name, email);
+        // Save user profile with exam goal
+        await saveUserProfile(name, email, examGoal, otherExam);
         
         showNotification('Account created successfully! Welcome to LexiLog!', 'success');
         return true;
@@ -810,11 +813,13 @@ async function getUserProfile() {
     }
 }
 
-async function saveUserProfile(name, email) {
+async function saveUserProfile(name, email, examGoal, otherExam) {
     try {
         const profileData = {
             name: name,
             email: email,
+            examGoal: examGoal || '',
+            otherExam: otherExam || '',
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             lastActive: firebase.firestore.FieldValue.serverTimestamp(),
@@ -985,10 +990,64 @@ async function logout() {
     }
 }
 
-// Tab Navigation
+// View Navigation
+function navigateToView(targetView) {
+    console.log('Navigating to view:', targetView);
+    
+    // Hide all views
+    const allViews = ['homeView', 'dictionaryView', 'languagesView', 'libraryView', 'dailyView'];
+    allViews.forEach(viewId => {
+        const view = document.getElementById(viewId);
+        if (view) {
+            view.classList.remove('active');
+            view.classList.add('hidden');
+        }
+    });
+    
+    // Show target view
+    let targetViewId = targetView + 'View';
+    if (targetView === 'dictionary') {
+        targetViewId = 'dictionaryView';
+        currentLanguage = 'en'; // Force English for dictionary
+    } else if (targetView === 'languages') {
+        targetViewId = 'languagesView';
+        currentLanguage = 'hi'; // Default to Hindi for languages
+    } else if (targetView === 'library') {
+        targetViewId = 'libraryView';
+    } else if (targetView === 'daily') {
+        targetViewId = 'dailyView';
+    } else {
+        targetViewId = 'homeView'; // Default to home
+    }
+    
+    const targetElement = document.getElementById(targetViewId);
+    if (targetElement) {
+        targetElement.classList.add('active');
+        targetElement.classList.remove('hidden');
+    }
+    
+    // Show/hide navigation ribbon
+    const navigationRibbon = document.getElementById('navigationRibbon');
+    if (navigationRibbon) {
+        if (targetView === 'home') {
+            navigationRibbon.classList.add('hidden');
+        } else {
+            navigationRibbon.classList.remove('hidden');
+        }
+    }
+    
+    // Initialize view-specific functionality
+    if (targetView === 'library') {
+        displayVocabulary();
+    } else if (targetView === 'daily') {
+        fetchWordOfTheDay();
+    }
+}
+
+// Legacy Tab Navigation (keeping for compatibility)
 function initializeTabNavigation() {
-    const tabButtons = [elements.searchTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
-    const tabContents = ['searchView', 'languagesView', 'libraryView', 'dailyView'];
+    // This function is now mostly handled by navigateToView
+    console.log('Tab navigation initialized (legacy)');
     
     tabButtons.forEach(button => {
         if (button) {
@@ -2458,6 +2517,44 @@ async function saveDailyWord(wordData) {
 
 // Event Listeners
 function initializeEventListeners() {
+    // Exam goal dropdown handler
+    if (elements.examGoal) {
+        elements.examGoal.addEventListener('change', (e) => {
+            if (e.target.value === 'other') {
+                elements.otherExamContainer?.classList.remove('hidden');
+                elements.otherExam?.setAttribute('required', 'required');
+            } else {
+                elements.otherExamContainer?.classList.add('hidden');
+                elements.otherExam?.removeAttribute('required');
+                elements.otherExam.value = '';
+            }
+        });
+    }
+    
+    // Feature card navigation
+    const featureCards = document.querySelectorAll('.feature-card[data-navigate]');
+    featureCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            const target = card.dataset.navigate;
+            navigateToView(target);
+        });
+    });
+    
+    // Back to home button
+    const backToHomeBtn = document.getElementById('backToHome');
+    if (backToHomeBtn) {
+        backToHomeBtn.addEventListener('click', () => {
+            navigateToView('home');
+        });
+    }
+    
+    // Logo click to go home
+    if (elements.homeButton) {
+        elements.homeButton.addEventListener('click', () => {
+            navigateToView('home');
+        });
+    }
+    
     // Login form
     if (elements.loginForm) {
         elements.loginForm.addEventListener('submit', async (e) => {
@@ -2488,12 +2585,14 @@ function initializeEventListeners() {
         const name = elements.signupName.value.trim();
         const email = elements.signupEmail.value.trim();
         const password = elements.signupPassword.value;
+        const examGoal = elements.examGoal.value;
+        const otherExam = elements.otherExam?.value || '';
         
-        if (name && email && password) {
+        if (name && email && password && examGoal) {
             elements.signupButton.disabled = true;
             elements.signupButton.textContent = 'Creating Account...';
             
-            const success = await signUpWithEmail(name, email, password);
+            const success = await signUpWithEmail(name, email, password, examGoal, otherExam);
             
             elements.signupButton.disabled = false;
             elements.signupButton.textContent = 'Create Account';
