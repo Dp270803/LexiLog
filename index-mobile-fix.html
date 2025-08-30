@@ -450,12 +450,14 @@
 
         // Authentication functions
         function showLogin() {
+            console.log('Showing login view');
             elements.loginView.classList.remove('hidden');
             elements.signupView.classList.add('hidden');
             elements.mainApp.classList.add('hidden');
         }
 
         function showSignup() {
+            console.log('Showing signup view');
             elements.signupView.classList.remove('hidden');
             elements.loginView.classList.add('hidden');
             elements.mainApp.classList.add('hidden');
@@ -538,6 +540,11 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, initializing...');
+            
+            // Ensure we start with login view visible
+            showLogin();
+            
             // Auth state listener
             auth.onAuthStateChanged(async (user) => {
                 console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
@@ -571,8 +578,14 @@
             });
 
             // Event listeners
-            document.getElementById('showSignupBtn').addEventListener('click', showSignup);
-            document.getElementById('showLoginBtn').addEventListener('click', showLogin);
+            document.getElementById('showSignupBtn').addEventListener('click', () => {
+                console.log('Show signup button clicked');
+                showSignup();
+            });
+            document.getElementById('showLoginBtn').addEventListener('click', () => {
+                console.log('Show login button clicked');
+                showLogin();
+            });
 
             // Login form
             elements.loginForm.addEventListener('submit', async (e) => {
