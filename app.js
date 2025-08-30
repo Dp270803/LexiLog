@@ -561,7 +561,7 @@ function initializeElements() {
         // Navigation
         homeButton: document.getElementById('homeButton'),
     searchTab: document.getElementById('searchTab'),
-
+    languagesTab: document.getElementById('languagesTab'),
     libraryTab: document.getElementById('libraryTab'),
     dailyTab: document.getElementById('dailyTab'),
         logoutButton: document.getElementById('logoutButton'),
@@ -998,13 +998,23 @@ async function logout() {
 
 // Tab Navigation
 function initializeTabNavigation() {
-    const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
-    const tabContents = ['searchView', 'libraryView', 'dailyView'];
+    const tabButtons = [elements.searchTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
+    const tabContents = ['searchView', 'languagesView', 'libraryView', 'dailyView'];
     
     tabButtons.forEach(button => {
         if (button) {
         button.addEventListener('click', () => {
             const targetTab = button.dataset.tab;
+            
+            // Force English for search tab, allow language selection for languages tab
+            if (targetTab === 'search') {
+                currentLanguage = 'en'; // Force English for main dictionary
+            } else if (targetTab === 'languages') {
+                // Keep current language selection or default to Hindi
+                if (currentLanguage === 'en') {
+                    currentLanguage = 'hi';
+                }
+            }
             
             // Update active tab button
                 tabButtons.forEach(btn => {
@@ -2532,8 +2542,8 @@ function initializeEventListeners() {
     if (elements.homeButton) {
         elements.homeButton.addEventListener('click', () => {
             // Switch to search/home tab
-            const tabButtons = [elements.searchTab, elements.libraryTab, elements.dailyTab];
-            const tabContents = ['searchView', 'libraryView', 'dailyView'];
+            const tabButtons = [elements.searchTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
+            const tabContents = ['searchView', 'languagesView', 'libraryView', 'dailyView'];
             
             // Update active tab button
             tabButtons.forEach(btn => btn.classList.remove('active'));
