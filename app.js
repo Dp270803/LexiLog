@@ -566,8 +566,8 @@ async function searchEnglishWord(word) {
         // For English dictionary, always use English API
         const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(word.trim())}`);
         if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
+            const data = await response.json();
+            if (data && data.length > 0) {
                 wordData = data[0];
             }
         }
@@ -576,11 +576,253 @@ async function searchEnglishWord(word) {
             displaySearchResults(wordData);
             await saveWordToVocabulary(wordData);
         } else {
-            throw new Error('Word not found');
+            // Word not found, try spell checking
+            const suggestions = await getSpellSuggestions(word.trim());
+            if (suggestions && suggestions.length > 0) {
+                displaySpellSuggestions(word.trim(), suggestions);
+            } else {
+                throw new Error('Word not found');
+            }
         }
     } catch (error) {
         console.error('Search error:', error);
         showError();
+    }
+}
+
+// Spell checking functionality
+async function getSpellSuggestions(word) {
+    try {
+        // Use a spell checking API or implement basic suggestions
+        const suggestions = await getSpellCheckSuggestions(word);
+        return suggestions;
+    } catch (error) {
+        console.error('Spell check error:', error);
+        return [];
+    }
+}
+
+// Get spell check suggestions using multiple approaches
+async function getSpellCheckSuggestions(word) {
+    const suggestions = [];
+    
+    try {
+        // Method 1: Try common misspellings and corrections
+        const commonMisspellings = getCommonMisspellings(word);
+        suggestions.push(...commonMisspellings);
+        
+        // Method 2: Try phonetic suggestions
+        const phoneticSuggestions = getPhoneticSuggestions(word);
+        suggestions.push(...phoneticSuggestions);
+        
+        // Method 3: Try API-based suggestions (if available)
+        const apiSuggestions = await getAPISpellSuggestions(word);
+        suggestions.push(...apiSuggestions);
+        
+        // Remove duplicates and limit to top 5
+        const uniqueSuggestions = [...new Set(suggestions)].slice(0, 5);
+        
+        // Verify suggestions exist in dictionary
+        const verifiedSuggestions = [];
+        for (const suggestion of uniqueSuggestions) {
+            try {
+                const response = await fetch(`${DICTIONARY_API_BASE}en/${encodeURIComponent(suggestion)}`);
+                if (response.ok) {
+                    verifiedSuggestions.push(suggestion);
+                }
+            } catch (error) {
+                // Skip this suggestion
+            }
+        }
+        
+        return verifiedSuggestions;
+    } catch (error) {
+        console.error('Error getting spell suggestions:', error);
+        return [];
+    }
+}
+
+// Common misspellings dictionary
+function getCommonMisspellings(word) {
+    const misspellings = {
+        'recieve': 'receive',
+        'seperate': 'separate',
+        'definately': 'definitely',
+        'occassion': 'occasion',
+        'accomodate': 'accommodate',
+        'begining': 'beginning',
+        'beleive': 'believe',
+        'calender': 'calendar',
+        'collegue': 'colleague',
+        'concious': 'conscious',
+        'embarass': 'embarrass',
+        'enviroment': 'environment',
+        'existance': 'existence',
+        'foward': 'forward',
+        'freind': 'friend',
+        'garentee': 'guarantee',
+        'goverment': 'government',
+        'grammer': 'grammar',
+        'happend': 'happened',
+        'harrass': 'harass',
+        'immediatly': 'immediately',
+        'independant': 'independent',
+        'knowlege': 'knowledge',
+        'liase': 'liaise',
+        'liason': 'liaison',
+        'lollypop': 'lollipop',
+        'neccessary': 'necessary',
+        'neccessity': 'necessity',
+        'occassionally': 'occasionally',
+        'occurence': 'occurrence',
+        'occured': 'occurred',
+        'occuring': 'occurring',
+        'pavillion': 'pavilion',
+        'peice': 'piece',
+        'persistant': 'persistent',
+        'pharoah': 'pharaoh',
+        'peom': 'poem',
+        'posession': 'possession',
+        'prefered': 'preferred',
+        'priviledge': 'privilege',
+        'probaly': 'probably',
+        'proffesional': 'professional',
+        'promiss': 'promise',
+        'pronounciation': 'pronunciation',
+        'prufe': 'proof',
+        'publically': 'publicly',
+        'quater': 'quarter',
+        'que': 'queue',
+        'questionaire': 'questionnaire',
+        'readible': 'readable',
+        'realy': 'really',
+        'reccomend': 'recommend',
+        'rediculous': 'ridiculous',
+        'refered': 'referred',
+        'refering': 'referring',
+        'religous': 'religious',
+        'rember': 'remember',
+        'remberance': 'remembrance',
+        'resistence': 'resistance',
+        'sence': 'sense',
+        'seperate': 'separate',
+        'sieze': 'seize',
+        'similiar': 'similar',
+        'sincerly': 'sincerely',
+        'speach': 'speech',
+        'sucess': 'success',
+        'sucessful': 'successful',
+        'sucessfully': 'successfully',
+        'sucessor': 'successor',
+        'surelly': 'surely',
+        'surprize': 'surprise',
+        'tatoo': 'tattoo',
+        'tendancy': 'tendency',
+        'therefor': 'therefore',
+        'threshhold': 'threshold',
+        'tommorow': 'tomorrow',
+        'tounge': 'tongue',
+        'truely': 'truly',
+        'unfortunatly': 'unfortunately',
+        'untill': 'until',
+        'wierd': 'weird',
+        'whereever': 'wherever',
+        'wich': 'which',
+        'womens': 'women\'s',
+        'youre': 'you\'re',
+        'your': 'you\'re'
+    };
+    
+    return misspellings[word.toLowerCase()] ? [misspellings[word.toLowerCase()]] : [];
+}
+
+// Phonetic suggestions based on common sound patterns
+function getPhoneticSuggestions(word) {
+    const suggestions = [];
+    const lowerWord = word.toLowerCase();
+    
+    // Common phonetic patterns
+    const phoneticPatterns = [
+        { pattern: /ph/g, replacement: 'f' },
+        { pattern: /f/g, replacement: 'ph' },
+        { pattern: /ck/g, replacement: 'k' },
+        { pattern: /k/g, replacement: 'ck' },
+        { pattern: /sh/g, replacement: 'ch' },
+        { pattern: /ch/g, replacement: 'sh' },
+        { pattern: /th/g, replacement: 't' },
+        { pattern: /t/g, replacement: 'th' },
+        { pattern: /ee/g, replacement: 'ea' },
+        { pattern: /ea/g, replacement: 'ee' },
+        { pattern: /oo/g, replacement: 'u' },
+        { pattern: /u/g, replacement: 'oo' },
+        { pattern: /ai/g, replacement: 'ay' },
+        { pattern: /ay/g, replacement: 'ai' },
+        { pattern: /ou/g, replacement: 'ow' },
+        { pattern: /ow/g, replacement: 'ou' }
+    ];
+    
+    // Generate phonetic variations
+    phoneticPatterns.forEach(({ pattern, replacement }) => {
+        if (pattern.test(lowerWord)) {
+            const suggestion = lowerWord.replace(pattern, replacement);
+            if (suggestion !== lowerWord) {
+                suggestions.push(suggestion);
+            }
+        }
+    });
+    
+    return suggestions;
+}
+
+// API-based spell suggestions (using a free API)
+async function getAPISpellSuggestions(word) {
+    try {
+        // Using a free spell check API
+        const response = await fetch(`https://api.datamuse.com/words?sp=${word}&max=5`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.map(item => item.word);
+        }
+    } catch (error) {
+        console.error('API spell check error:', error);
+    }
+    return [];
+}
+
+// Display spell suggestions
+function displaySpellSuggestions(originalWord, suggestions) {
+    hideLoading();
+    hideError();
+    
+    if (elements.searchResults) {
+        elements.searchResults.innerHTML = `
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            Did you mean one of these words?
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p class="mb-2">We couldn't find "<strong>${originalWord}</strong>" but here are some suggestions:</p>
+                            <div class="space-y-2">
+                                ${suggestions.map(suggestion => `
+                                    <button onclick="searchEnglishWord('${suggestion}')" 
+                                            class="block w-full text-left px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors">
+                                        <span class="font-medium text-yellow-900">${suggestion}</span>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        elements.searchResults.classList.remove('hidden');
     }
 }
 
@@ -598,11 +840,66 @@ async function searchLanguageWord(word, language) {
             displayLanguageSearchResults(wordData);
             await saveWordToVocabulary(wordData);
         } else {
-            throw new Error('Word not found');
+            // Word not found, try spell checking for language
+            const suggestions = await getLanguageSpellSuggestions(word.trim(), language);
+            if (suggestions && suggestions.length > 0) {
+                displayLanguageSpellSuggestions(word.trim(), suggestions, language);
+            } else {
+                throw new Error('Word not found');
+            }
         }
     } catch (error) {
         console.error('Language search error:', error);
         showLanguageError();
+    }
+}
+
+// Language spell checking
+async function getLanguageSpellSuggestions(word, language) {
+    try {
+        // For now, use the same spell checking as English
+        // In the future, this could be enhanced with language-specific spell checking
+        const suggestions = await getSpellCheckSuggestions(word);
+        return suggestions;
+    } catch (error) {
+        console.error('Language spell check error:', error);
+        return [];
+    }
+}
+
+// Display language spell suggestions
+function displayLanguageSpellSuggestions(originalWord, suggestions, language) {
+    hideLanguageResults();
+    
+    if (elements.languageSearchResults) {
+        elements.languageSearchResults.innerHTML = `
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            Did you mean one of these words?
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p class="mb-2">We couldn't find "<strong>${originalWord}</strong>" in ${SUPPORTED_LANGUAGES[language]?.name || language} but here are some suggestions:</p>
+                            <div class="space-y-2">
+                                ${suggestions.map(suggestion => `
+                                    <button onclick="searchLanguageWord('${suggestion}', '${language}')" 
+                                            class="block w-full text-left px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors">
+                                        <span class="font-medium text-yellow-900">${suggestion}</span>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        elements.languageSearchResults.classList.remove('hidden');
     }
 }
 
