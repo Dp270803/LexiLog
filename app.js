@@ -58,6 +58,7 @@ let currentUser = null;
 let currentUserId = null;
 let speechRecognition = null;
 let isListening = false;
+let navigationHistory = ['home'];
 
 // DOM Elements
 const elements = {
@@ -458,6 +459,11 @@ function showMainApp(userProfile) {
 
 // Navigation Functions
 function navigateToView(viewName) {
+    console.log('🔄 Navigating to:', viewName);
+    
+    // Add to navigation history
+    navigationHistory.push(viewName);
+    
     const views = ['home', 'dictionary', 'languages', 'library', 'daily'];
     const tabButtons = [elements.dictionaryTab, elements.languagesTab, elements.libraryTab, elements.dailyTab];
     
@@ -477,11 +483,14 @@ function navigateToView(viewName) {
         targetView.classList.remove('hidden');
     }
     
+    // Update mobile header
+    updateMobileHeader(viewName);
+    
     // Update navigation ribbon visibility
     if (viewName === 'home') {
         if (elements.navigationRibbon) elements.navigationRibbon.classList.add('hidden');
         document.body.style.paddingTop = '0';
-                } else {
+    } else {
         if (elements.navigationRibbon) elements.navigationRibbon.classList.remove('hidden');
         document.body.style.paddingTop = '80px';
     }
@@ -502,6 +511,45 @@ function navigateToView(viewName) {
     } else if (viewName === 'daily') {
         fetchWordOfTheDay();
     }
+}
+
+// Update mobile header
+function updateMobileHeader(viewName) {
+    const mobileHeader = document.getElementById('mobileHeader');
+    const mobilePageTitle = document.getElementById('mobilePageTitle');
+    
+    if (viewName === 'home') {
+        if (mobileHeader) mobileHeader.style.display = 'none';
+    } else {
+        if (mobileHeader) mobileHeader.style.display = 'flex';
+        
+        // Set page title
+        const titles = {
+            'dictionary': 'Smart Dictionary',
+            'library': 'My LexiLog',
+            'languages': 'Other Languages',
+            'daily': 'Word of the Day'
+        };
+        if (mobilePageTitle) mobilePageTitle.textContent = titles[viewName] || 'LexiLog';
+    }
+}
+
+// Mobile-friendly back navigation
+function goBack() {
+    console.log('🔙 Going back...');
+    
+    // Remove current view from history
+    navigationHistory.pop();
+    
+    // Get previous view
+    const previousView = navigationHistory[navigationHistory.length - 1] || 'home';
+    
+    // Navigate to previous view
+    navigateToView(previousView);
+    
+    // Update history (remove the duplicate we just added)
+    navigationHistory.pop();
+    navigationHistory.push(previousView);
 }
 
 // Search Functions
