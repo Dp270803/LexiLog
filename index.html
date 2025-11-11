@@ -35,25 +35,10 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
+            background: linear-gradient(180deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
             min-height: 100vh;
             padding: 20px;
             position: relative;
-        }
-        
-        /* Subtle background pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 2px 2px, rgba(139, 92, 246, 0.03) 1px, transparent 0);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
         }
         
         .container {
@@ -98,11 +83,12 @@
         h1 {
             font-size: 3rem;
             font-weight: 800;
-            color: var(--text-dark);
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 12px;
             text-align: center;
             letter-spacing: -0.03em;
             animation: fadeIn 0.6s ease-out;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         @keyframes fadeIn {
@@ -112,7 +98,7 @@
         
         .subtitle {
             text-align: center;
-            color: var(--text-light);
+            color: rgba(255, 255, 255, 0.85);
             margin-bottom: 40px;
             font-size: 1.05rem;
             font-weight: 500;
@@ -385,25 +371,31 @@
             align-items: center;
             margin-bottom: 24px;
             padding: 18px 28px;
-            background: var(--bg);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             box-shadow: 
-                0 1px 3px rgba(0, 0, 0, 0.05),
-                0 4px 12px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--border);
+                0 4px 20px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
         }
         
         .nav h1 {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .nav-tabs {
             display: flex;
             gap: 6px;
-            background: var(--bg-light);
+            background: rgba(139, 92, 246, 0.15);
             padding: 4px;
             border-radius: 10px;
         }
@@ -415,7 +407,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            color: var(--text);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
@@ -423,11 +415,11 @@
         .nav-tab.active {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
         }
         
         .nav-tab:not(.active):hover {
-            background: rgba(99, 102, 241, 0.08);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .user-info {
@@ -565,10 +557,14 @@
         
         <!-- Dictionary View -->
         <div id="dictionaryView">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 12px;">English Dictionary</h1>
+                <p class="subtitle" style="margin-bottom: 0;">Search any word and it will be automatically saved to your collection</p>
+            </div>
             <div class="card">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search for a word...">
-                    <button class="btn" onclick="searchWord()">Search</button>
+                    <input type="text" id="searchInput" placeholder="Type a word to search...">
+                    <button class="btn" onclick="searchWord()">🔍 Search</button>
                 </div>
                 
                 <div id="searchResults"></div>
@@ -577,8 +573,11 @@
         
         <!-- My Words View -->
         <div id="myWordsView" class="hidden">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 12px;">My Words</h1>
+                <p class="subtitle" style="margin-bottom: 0;">All the words you've searched and saved</p>
+            </div>
             <div class="card">
-                <h2 style="margin-bottom: 20px;">My Saved Words</h2>
                 <div id="wordList"></div>
             </div>
         </div>
