@@ -150,18 +150,24 @@ const authManager = {
     
     async signIn(email, password) {
         try {
-            await auth.signInWithEmailAndPassword(email, password);
+            console.log('Attempting to sign in...');
+            const result = await auth.signInWithEmailAndPassword(email, password);
+            console.log('Sign in successful:', result.user.uid);
             return { success: true };
         } catch (error) {
+            console.error('Sign in error:', error);
             return { success: false, error: error.message };
         }
     },
     
     async signOut() {
         try {
+            console.log('Signing out user...');
             await auth.signOut();
+            console.log('Sign out successful');
             return { success: true };
         } catch (error) {
+            console.error('Sign out error:', error);
             return { success: false, error: error.message };
         }
     },
@@ -541,15 +547,30 @@ async function handleSearch() {
 function initApp() {
     // Auth state listener
     auth.onAuthStateChanged(async (user) => {
+        console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
+        
         if (user) {
             appState.currentUser = user;
-            // Get profile if it exists, but don't require it
-            const profile = await authManager.getUserProfile(user.uid).catch(() => null);
-            uiManager.showMainApp(user, profile);
+            console.log('User UID:', user.uid);
             
-            // Load library if on library view
-            if (appState.currentView === 'library') {
-                libraryManager.loadWords();
+            try {
+                // Get profile if it exists, but don't require it
+                const profile = await authManager.getUserProfile(user.uid).catch((error) => {
+                    console.log('Profile fetch error (non-critical):', error);
+                    return null;
+                });
+                
+                console.log('Profile loaded:', profile ? 'Yes' : 'No');
+                uiManager.showMainApp(user, profile);
+                
+                // Load library if on library view
+                if (appState.currentView === 'library') {
+                    libraryManager.loadWords();
+                }
+            } catch (error) {
+                console.error('Error in auth state handler:', error);
+                // Still show main app even if profile fetch fails
+                uiManager.showMainApp(user, null);
             }
         } else {
             appState.currentUser = null;
@@ -564,9 +585,31 @@ function initApp() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         
-        const result = await authManager.signIn(email, password);
-        if (!result.success) {
-            alert('Login failed: ' + result.error);
+        // Disable button to prevent double submission
+        const loginButton = document.getElementById('loginSubmitBtn');
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = 'Signing in...';
+        }
+        
+        try {
+            const result = await authManager.signIn(email, password);
+            if (!result.success) {
+                alert('Login failed: ' + result.error);
+                if (loginButton) {
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Sign In';
+                }
+            }
+            // If successful, auth state listener will handle the UI update
+            // Don't re-enable button here - let auth state listener handle it
+        } catch (error) {
+            console.error('Login form error:', error);
+            alert('An unexpected error occurred. Please try again.');
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Sign In';
+            }
         }
     });
     
