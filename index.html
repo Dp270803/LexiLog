@@ -3,741 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexiLog - Personal Vocabulary Builder</title>
-    <!-- Embedded Tailwind CSS for mobile compatibility -->
-    <style>
-        /* Tailwind CSS Reset & Base */
-        *,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,"Consolas","Liberation Mono","Menlo",monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;font-weight:inherit;line-height:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}
-
-        /* Essential Tailwind utilities */
-        .fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{top:0;right:0;bottom:0;left:0}.z-50{z-index:50}.z-10{z-index:10}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-full{height:100%}.h-screen{height:100vh}.min-h-screen{min-height:100vh}.w-full{width:100%}.max-w-md{max-width:28rem}.max-w-4xl{max-width:56rem}.max-w-6xl{max-width:72rem}.max-w-2xl{max-width:42rem}.mx-4{margin-left:1rem;margin-right:1rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-6{margin-top:1.5rem}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-x-1>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.25rem * var(--tw-space-x-reverse));margin-left:calc(.25rem * calc(1 - var(--tw-space-x-reverse)))}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.border{border-width:1px}.border-gray-300{border-color:#d1d5db}.bg-gray-50{background-color:#f9fafb}.bg-white{background-color:#fff}.bg-blue-600{background-color:#2563eb}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-blue-600{--tw-gradient-from:#2563eb;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgba(37,99,235,0))}.to-purple-600{--tw-gradient-to:#9333ea}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-20{padding-top:5rem;padding-bottom:5rem}.text-center{text-align:center}.text-sm{font-size:.875rem;line-height:1.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-bold{font-weight:700}.text-gray-600{color:#4b5563}.text-gray-700{color:#374151}.text-gray-800{color:#1f2937}.text-white{color:#fff}.text-transparent{color:transparent}.shadow-lg{box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05)}.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.hover\:bg-blue-700:hover{background-color:#1d4ed8}.focus\:ring-2:focus{box-shadow:0 0 0 3px rgba(59,130,246,.5)}.focus\:ring-blue-500:focus{--tw-ring-color:#3b82f6}.focus\:border-transparent:focus{border-color:transparent}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.gap-6{gap:1.5rem}.transform{transform:var(--tw-transform)}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05}.hover\:-translate-y-1:hover{--tw-translate-y:-0.25rem}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.cursor-pointer{cursor:pointer}
-
-        /* Mobile responsive overrides */
-        @media (max-width: 768px) {
-            .max-w-md{max-width:90%}
-            .max-w-4xl,.max-w-6xl,.max-w-2xl{max-width:95%}
-            .p-8{padding:1.5rem}
-            .px-4{padding-left:1rem;padding-right:1rem}
-            .py-20{padding-top:2rem;padding-bottom:2rem}
-            .text-6xl{font-size:2.5rem;line-height:1.1}
-            .text-5xl{font-size:2rem;line-height:1.2}
-            .text-4xl{font-size:1.75rem;line-height:1.3}
-            .text-3xl{font-size:1.5rem;line-height:1.4}
-            .grid-cols-2{grid-template-columns:1fr}
-            .gap-6{gap:1.5rem}
-            .rounded-3xl{border-radius:1rem}
-            .shadow-2xl{box-shadow:0 10px 25px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05)}
-            
-            /* Mobile-specific improvements */
-            .glass-container { 
-                margin: 0.5rem !important; 
-                border-radius: 1rem !important; 
-                padding: 1.5rem !important; 
-            }
-            
-            /* Better touch targets */
-            button { 
-                min-height: 48px !important; 
-                min-width: 48px !important; 
-                padding: 12px 16px !important; 
-                font-size: 16px !important; 
-            }
-            
-            /* Improved card spacing */
-            .space-y-4 > * + * { margin-top: 1rem !important; }
-            .space-y-6 > * + * { margin-top: 1.5rem !important; }
-            
-            /* Better text readability */
-            .text-gray-600 { color: #374151 !important; }
-            .text-gray-700 { color: #1f2937 !important; }
-            
-            /* Improved button styling */
-            .bg-gradient-to-r { 
-                background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important; 
-                border: none !important; 
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important; 
-            }
-            
-            /* Mobile header adjustments */
-            #mobileHeader { 
-                display: flex !important; 
-                background: rgba(255,255,255,0.95) !important; 
-                backdrop-filter: blur(10px) !important; 
-            }
-            
-            /* Adjust content padding when header is visible */
-            .min-h-screen { 
-                padding-top: 60px !important; 
-            }
-            
-            /* Better mobile card styling */
-            .glass-container { 
-                background: rgba(255,255,255,0.98) !important; 
-                border: 1px solid rgba(0,0,0,0.1) !important; 
-            }
-        }
-        
-        /* Ensure inputs work properly on mobile */
-        @media (max-width: 768px) {
-            input[type="text"], input[type="email"], input[type="password"], select {
-                font-size: 16px !important; /* Prevent zoom on iOS */
-                padding: 12px !important;
-                min-height: 44px !important; /* Touch target size */
-            }
-            
-            button {
-                min-height: 44px !important;
-                padding: 12px 16px !important;
-            }
-        }
-    </style>
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3B82F6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="LexiLog">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23ffffff'/%3E%3Crect x='16' y='32' width='160' height='128' rx='8' fill='%233B82F6'/%3E%3Crect x='32' y='48' width='32' height='48' rx='4' fill='%2310B981'/%3E%3Crect x='80' y='48' width='32' height='48' rx='4' fill='%23EF4444'/%3E%3Crect x='128' y='48' width='32' height='48' rx='4' fill='%236366F1'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-family='system-ui' font-size='24' font-weight='bold' fill='%23ffffff'%3ELexiLog%3C/text%3E%3C/svg%3E">
+    <title>LexiLog - English Vocabulary Builder</title>
     
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://unpkg.com/tesseract.js@v4.1.1/dist/tesseract.min.js"></script>
+    
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Mobile Navigation Header -->
-    <div id="mobileHeader" class="fixed top-0 left-0 right-0 bg-white shadow-md z-40 hidden" style="display: none !important;">
-        <div class="flex items-center justify-between px-4 py-3">
-            <button onclick="goBack()" class="text-blue-600 font-semibold text-lg">
-                ← Back
-            </button>
-            <h1 class="text-lg font-bold text-gray-800" id="mobilePageTitle">LexiLog</h1>
-            <div class="w-8"></div> <!-- Spacer for centering -->
+<body>
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="auth-screen">
+        <!-- Login View -->
+        <div id="loginView" class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="logo-text">📚 LexiLog</h1>
+                    <p class="auth-subtitle">Welcome back! Sign in to continue</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" required placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <button id="showSignupBtn" class="link-btn">Sign up</button></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Signup View -->
+        <div id="signupView" class="auth-container hidden">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="logo-text">📚 LexiLog</h1>
+                    <p class="auth-subtitle">Create your account and start learning</p>
+                </div>
+                
+                <form id="signupForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="signupName">Full Name</label>
+                        <input type="text" id="signupName" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupEmail">Email Address</label>
+                        <input type="email" id="signupEmail" required placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" required minlength="6" placeholder="Create a password (min. 6 characters)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupQuestion">What are you preparing for?</label>
+                        <select id="signupQuestion" required>
+                            <option value="">Select your preparation goal</option>
+                            <option value="cat">🐯 CAT</option>
+                            <option value="gre">🎓 GRE</option>
+                            <option value="gmat">📊 GMAT</option>
+                            <option value="upsc">🏛️ UPSC</option>
+                            <option value="banking">🏦 Banking Exams</option>
+                            <option value="ssc">📋 SSC Exams</option>
+                            <option value="gate">⚙️ GATE</option>
+                            <option value="ielts">🌍 IELTS</option>
+                            <option value="toefl">🇺🇸 TOEFL</option>
+                            <option value="sat">📚 SAT</option>
+                            <option value="other">🎯 Other</option>
+                        </select>
+                    </div>
+                    
+                    <div id="otherGoalField" class="form-group hidden">
+                        <label for="signupOtherGoal">Please specify your goal</label>
+                        <input type="text" id="signupOtherGoal" placeholder="Tell us about your specific goal...">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <button id="showLoginBtn" class="link-btn">Sign in</button></p>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- Authentication Views -->
-    <!-- Login View -->
-    <div id="loginView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
-        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                <p class="text-gray-600">Sign in to your LexiLog account</p>
-            </div>
-            <form id="loginForm" class="space-y-6">
-                <div>
-                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                    </label>
-                    <input 
-                        type="email" 
-                        id="loginEmail" 
-                        name="email" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your email"
-                    >
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app hidden">
+        <!-- Navigation Header -->
+        <nav class="nav-header">
+            <div class="nav-container">
+                <button id="homeBtn" class="nav-logo">📚 LexiLog</button>
+                
+                <div class="nav-tabs">
+                    <button id="dictionaryTab" class="nav-tab active" data-view="dictionary">Dictionary</button>
+                    <button id="libraryTab" class="nav-tab" data-view="library">My Words</button>
                 </div>
-                <div>
-                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
-                    <input 
-                        type="password" 
-                        id="loginPassword" 
-                        name="password" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your password"
-                    >
-                </div>
-                <button 
-                    type="submit"
-                    id="loginButton"
-                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                    Sign In
-                </button>
-            </form>
-            <div class="mt-6 text-center">
-                <p class="text-gray-600">
-                    Don't have an account? 
-                    <button id="showSignupBtn" class="text-blue-600 hover:text-blue-700 font-medium">Sign up</button>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup View -->
-    <div id="signupView" class="hidden fixed inset-0 bg-gray-50 z-50 flex items-center justify-center">
-        <div class="max-w-md w-full mx-4 p-8 bg-white rounded-lg shadow-lg">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-                <p class="text-gray-600">Join LexiLog and start building your vocabulary</p>
-            </div>
-            <form id="signupForm" class="space-y-6">
-                <div>
-                    <label for="signupName" class="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name
-                    </label>
-                    <input 
-                        type="text" 
-                        id="signupName" 
-                        name="name" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your full name"
-                    >
-                </div>
-                <div>
-                    <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                    </label>
-                    <input 
-                        type="email" 
-                        id="signupEmail" 
-                        name="email" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your email"
-                    >
-                </div>
-                <div>
-                    <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
-                    <input 
-                        type="password" 
-                        id="signupPassword" 
-                        name="password" 
-                        required
-                        minlength="6"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Create a password (min. 6 characters)"
-                    >
-                </div>
-                <div>
-                    <label for="signupQuestion" class="block text-sm font-medium text-gray-700 mb-2">
-                        What are you preparing for?
-                    </label>
-                    <select 
-                        id="signupQuestion" 
-                        name="goal" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                        <option value="">Select your preparation goal</option>
-                        <option value="cat">🐯 CAT (Common Admission Test)</option>
-                        <option value="gre">🎓 GRE (Graduate Record Examination)</option>
-                        <option value="gmat">📊 GMAT (Graduate Management Admission Test)</option>
-                        <option value="upsc">🏛️ UPSC Civil Services</option>
-                        <option value="banking">🏦 Banking Exams (IBPS, SBI PO/Clerk)</option>
-                        <option value="ssc">📋 SSC Exams (CGL, CHSL, MTS)</option>
-                        <option value="gate">⚙️ GATE (Graduate Aptitude Test in Engineering)</option>
-                        <option value="ielts">🌍 IELTS (International English Language Testing System)</option>
-                        <option value="toefl">🇺🇸 TOEFL (Test of English as a Foreign Language)</option>
-                        <option value="sat">📚 SAT (Scholastic Assessment Test)</option>
-                        <option value="act">📝 ACT (American College Testing)</option>
-                        <option value="clat">⚖️ CLAT (Common Law Admission Test)</option>
-                        <option value="neet">🏥 NEET (National Eligibility cum Entrance Test)</option>
-                        <option value="jee">🔬 JEE (Joint Entrance Examination)</option>
-                        <option value="academic-research">🔬 Academic Research & PhD</option>
-                        <option value="professional-career">💼 Professional Career Growth</option>
-                        <option value="creative-writing">✍️ Creative Writing & Literature</option>
-                        <option value="personal-enrichment">🌟 Personal Enrichment & Communication</option>
-                        <option value="other">🎯 Other Exam/Goal (Please specify)</option>
-                    </select>
-                </div>
-                <div id="otherGoalField" class="hidden">
-                    <label for="signupOtherGoal" class="block text-sm font-medium text-gray-700 mb-2">
-                        Please specify your goal
-                    </label>
-                    <input 
-                        type="text" 
-                        id="signupOtherGoal" 
-                        name="otherGoal" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Tell us about your specific goal..."
-                    >
-                </div>
-                <button 
-                    type="submit"
-                    id="signupButton"
-                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
-                >
-                    Create Account
-                </button>
-            </form>
-            <div class="mt-6 text-center">
-                <p class="text-gray-600">
-                    Already have an account? 
-                    <button id="showLoginBtn" class="text-blue-600 hover:text-blue-700 font-medium">Sign in</button>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="mainApp" class="hidden">
-        <!-- Navigation Ribbon (Hidden on Home) -->
-        <nav id="navigationRibbon" class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/50 fixed top-0 left-0 right-0 z-40 transition-all duration-300 hidden">
-            <div class="max-w-6xl mx-auto px-4 py-3">
-                <div class="flex items-center justify-between">
-                    <button id="homeButton" class="text-2xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300 cursor-pointer group">
-                        <span class="group-hover:scale-110 inline-block transition-transform duration-300">LexiLog</span>
-                    </button>
-                    <div class="flex items-center space-x-4">
-                    <div class="flex space-x-1 bg-gray-100 rounded-lg p-1">
-                        <button 
-                                id="dictionaryTab" 
-                                class="tab-button px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                                data-tab="dictionary"
-                            >
-                                📖 Dictionary
-                            </button>
-                            <button 
-                                id="languagesTab" 
-                                class="tab-button px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                                data-tab="languages"
-                            >
-                                🌐 Languages
+                
+                <div class="nav-user">
+                    <div class="user-menu">
+                        <button id="userBtn" class="user-btn">
+                            <span id="userInitials" class="user-avatar">U</span>
+                            <span id="userName" class="user-name">User</span>
                         </button>
-                        <button 
-                            id="libraryTab" 
-                                class="tab-button px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                            data-tab="library"
-                        >
-                                📚 My LexiLog
-                        </button>
-                        <button 
-                            id="dailyTab" 
-                                class="tab-button px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-                            data-tab="daily"
-                        >
-                                ⭐ Word of Day
-                            </button>
-                        </div>
-                        <!-- User Profile Dropdown -->
-                        <div class="relative">
-                            <button 
-                                id="userProfileButton" 
-                                class="text-gray-700 hover:text-gray-900 transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2"
-                            >
-                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <span id="userInitials" class="text-white font-medium text-sm">U</span>
-                                </div>
-                                <div class="text-left hidden md:block">
-                                    <div id="userDisplayName" class="font-medium text-gray-900">User</div>
-                                    <div id="userDisplayEmail" class="text-xs text-gray-500">user@email.com</div>
-                                </div>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            
-                            <!-- Dropdown Menu -->
-                            <div id="userProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
-                                <div class="py-1">
-                                    <button 
-                                        id="logoutButton" 
-                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                        </svg>
-                                        <span>Sign Out</span>
-                        </button>
-                                </div>
-                            </div>
+                        <div id="userDropdown" class="user-dropdown hidden">
+                            <button id="logoutBtn" class="dropdown-item">Sign Out</button>
                         </div>
                     </div>
                 </div>
             </div>
         </nav>
-
+        
+        <!-- Mobile Back Button -->
+        <div id="mobileBackBtn" class="mobile-back hidden">
+            <button onclick="appNavigation.goBack()" class="back-btn">← Back</button>
+            <h2 id="mobilePageTitle" class="mobile-title">LexiLog</h2>
+        </div>
+        
         <!-- Content Area -->
-        <main>
-            <!-- Homepage/Home View -->
-            <div id="homeView" class="tab-content active">
-                <!-- Hero Section -->
-                <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center">
-                    <!-- Animated Background Elements -->
-                    <div class="absolute inset-0 overflow-hidden">
-                        <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full"></div>
-                        <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-purple-200/30 rounded-full" style="animation-delay: 1s;"></div>
-                        <div class="floating-element absolute bottom-40 left-20 w-12 h-12 bg-green-200/30 rounded-full" style="animation-delay: 2s;"></div>
-                        <div class="floating-element absolute bottom-20 right-40 w-24 h-24 bg-pink-200/30 rounded-full" style="animation-delay: 0.5s;"></div>
+        <main class="main-content">
+            <!-- Dictionary View -->
+            <div id="dictionaryView" class="view active">
+                <div class="view-container">
+                    <div class="view-header">
+                        <h1 class="view-title">English Dictionary</h1>
+                        <p class="view-subtitle">Search any word and it will be automatically saved to your collection</p>
                     </div>
                     
-                    <div class="relative z-10 max-w-6xl mx-auto px-4 py-20">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h1 id="greeting" class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    Welcome to LexiLog
-                                </span>
-                            </h1>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
-                                Master English vocabulary for competitive exams. Build your personal word library and excel in your goals.
-                            </p>
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Type a word to search..." autocomplete="off">
+                            <button id="searchBtn" class="search-button">🔍 Search</button>
                         </div>
-
-                        <!-- Feature Cards -->
-                        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-                            <!-- Dictionary Card -->
-                            <div class="feature-card group bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-500 cursor-pointer animate-fade-in-up" style="animation-delay: 0.4s;" data-navigate="dictionary">
-                                <div class="text-center">
-                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <span class="text-3xl">📖</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Smart Dictionary</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Comprehensive English dictionary with definitions, examples, and pronunciation for competitive exam preparation.
-                                    </p>
-                                </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="state-container hidden">
+                        <div class="spinner"></div>
+                        <p>Searching...</p>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="errorState" class="state-container hidden">
+                        <div class="error-icon">😔</div>
+                        <h3>Word not found</h3>
+                        <p>Please check your spelling or try a different word.</p>
+                    </div>
+                    
+                    <!-- Spell Suggestions -->
+                    <div id="spellSuggestions" class="suggestions-container hidden"></div>
+                    
+                    <!-- Results -->
+                    <div id="searchResults" class="results-container hidden">
+                        <div class="word-card">
+                            <div class="word-header">
+                                <h2 id="resultWord" class="word-title"></h2>
+                                <button id="playAudio" class="audio-btn" title="Play pronunciation">🔊</button>
                             </div>
-
-                            <!-- My LexiLog Card -->
-                            <div class="feature-card group bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-500 cursor-pointer animate-fade-in-up" style="animation-delay: 0.6s;" data-navigate="library">
-                                <div class="text-center">
-                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <span class="text-3xl">📚</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">My LexiLog</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Your personal vocabulary collection. Track, review, and master words you've learned for better retention.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Other Languages Card -->
-                            <div class="feature-card group bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-500 cursor-pointer animate-fade-in-up" style="animation-delay: 0.8s;" data-navigate="languages">
-                                <div class="text-center">
-                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <span class="text-3xl">🌐</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Multi-Language</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Explore vocabulary in Hindi, Tamil, Spanish, French, and 15+ other languages with AI-powered definitions.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Word of the Day Card -->
-                            <div class="feature-card group bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-500 cursor-pointer animate-fade-in-up" style="animation-delay: 1s;" data-navigate="daily">
-                                <div class="text-center">
-                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <span class="text-3xl">⭐</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Word of the Day</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
-                                        Discover a new challenging word daily. Perfect for building advanced vocabulary for competitive exams.
-                                    </p>
-                                </div>
+                            <div id="resultPhonetic" class="word-phonetic"></div>
+                            <div id="resultDefinitions" class="word-definitions"></div>
+                            <div class="word-saved">
+                                <span class="saved-badge">✓ Auto-saved to My Words</span>
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
-
-            <!-- Dictionary View (English Only) -->
-            <div id="dictionaryView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20 pt-24">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                    📖 Smart Dictionary
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Master English vocabulary for competitive exams. Search for any word and automatically save it to your personal library.
-                            </p>
+            
+            <!-- Library View (My Words) -->
+            <div id="libraryView" class="view">
+                <div class="view-container">
+                    <div class="view-header">
+                        <h1 class="view-title">My Words</h1>
+                        <p class="view-subtitle">All the words you've searched and saved</p>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyLibrary" class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h3>No words yet</h3>
+                        <p>Start searching for words to build your vocabulary!</p>
+                        <button onclick="appNavigation.navigate('dictionary')" class="btn btn-primary">Start Searching</button>
+                    </div>
+                    
+                    <!-- Word List -->
+                    <div id="wordList" class="word-list hidden"></div>
                 </div>
-
-                        <!-- Search Section -->
-                        <div class="max-w-4xl mx-auto">
-                <!-- Search Bar -->
-                            <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.4s;">
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-gray-200/50 hover:shadow-3xl transition-all duration-500">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                                            placeholder="🔍 Search English words (e.g., serendipity, eloquent, paradigm)..."
-                                            class="w-full px-8 py-6 text-xl border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 hover:bg-white pr-20 placeholder-gray-400"
-                                        >
-                                        <button 
-                                            id="cameraButton" 
-                                            class="absolute right-16 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-blue-50"
-                                            title="📷 Photo Search"
-                                        >
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            </svg>
-                                        </button>
-                        <button 
-                            id="audioButton" 
-                                            class="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-blue-50"
-                                            title="🎤 Voice Search"
-                        >
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <button 
-                        id="searchButton" 
-                                        class="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-8 rounded-2xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    >
-                                        🔍 Search & Learn
-                    </button>
-                                    <!-- Hidden file input for photo capture -->
-                                    <input 
-                                        type="file" 
-                                        id="photoInput" 
-                                        accept="image/*" 
-                                        capture="environment"
-                                        class="hidden"
-                                        multiple="false"
-                                    >
-                                </div>
-                </div>
-
-                <!-- Search Results -->
-                            <div id="searchResults" class="hidden animate-fade-in-up">
-                                <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <h3 id="resultWord" class="text-3xl font-bold text-gray-800"></h3>
-                                        <button id="playAudio" class="text-blue-600 hover:text-blue-800 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300">
-                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                                    <div id="resultPhonetic" class="text-gray-600 mb-6 text-lg"></div>
-                                    <div id="resultDefinitions" class="space-y-4"></div>
-                                    <div class="mt-8 text-center">
-                                        <span class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                            💾 Auto-saved to My LexiLog
-                                        </span>
-                                    </div>
-                    </div>
-                </div>
-
-                <!-- Loading State -->
-                            <div id="loadingState" class="hidden">
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 text-center">
-                                    <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                                    <p class="text-gray-600 text-lg">Searching for word...</p>
-                    </div>
-                </div>
-
-                <!-- Error State -->
-                            <div id="errorState" class="hidden">
-                                <div class="bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
-                                    <div class="text-red-500 text-6xl mb-4">😔</div>
-                                    <h3 class="text-xl font-bold text-red-800 mb-2">Word not found</h3>
-                                    <p class="text-red-600">Please try a different word or check your spelling.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Other Languages View -->
-            <div id="languagesView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-pink-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20 pt-24">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    🌐 Other Languages
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Explore vocabulary in multiple languages with smart translation and native definitions.
-                            </p>
-                        </div>
-
-                        <!-- Language Selection -->
-                        <div class="max-w-4xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.4s;">
-                            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-gray-200/50">
-                                <div class="text-center mb-6">
-                                    <div class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-3">
-                                        <span class="text-2xl">🌐</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Choose Your Language</h3>
-                                    <p class="text-sm text-gray-600">
-                                        💡 <span class="font-medium">Dictionary:</span> Type native words in English script<br>
-                                        🔄 <span class="font-medium">Smart AI:</span> Powered by translation services
-                                    </p>
-                                </div>
-                                <select 
-                                    id="languageSelector" 
-                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-800 font-medium shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-                                >
-                                    <option value="hi">🇮🇳 Hindi</option>
-                                    <option value="kn">🇮🇳 Kannada</option>
-                                    <option value="ta">🇮🇳 Tamil</option>
-                                    <option value="te">🇮🇳 Telugu</option>
-                                    <option value="ml">🇮🇳 Malayalam</option>
-                                    <option value="bn">🇧🇩 Bengali</option>
-                                    <option value="gu">🇮🇳 Gujarati</option>
-                                    <option value="mr">🇮🇳 Marathi</option>
-                                    <option value="pa">🇮🇳 Punjabi</option>
-                                    <option value="ur">🇵🇰 Urdu</option>
-                                    <option value="es">🇪🇸 Spanish</option>
-                                    <option value="fr">🇫🇷 French</option>
-                                    <option value="de">🇩🇪 German</option>
-                                    <option value="it">🇮🇹 Italian</option>
-                                    <option value="pt">🇵🇹 Portuguese</option>
-                                    <option value="ru">🇷🇺 Russian</option>
-                                    <option value="ja">🇯🇵 Japanese</option>
-                                    <option value="ko">🇰🇷 Korean</option>
-                                    <option value="zh">🇨🇳 Chinese</option>
-                                    <option value="ar">🇸🇦 Arabic</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Language Search Section -->
-                        <div class="max-w-4xl mx-auto">
-                            <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.6s;">
-                                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-gray-200/50">
-                                    <div class="relative">
-                                        <input 
-                                            type="text" 
-                                            id="languageSearchInput" 
-                                            placeholder="✨ Type native words in English script (e.g., namaste, bonjour, hola)..."
-                                            class="w-full px-8 py-6 text-xl border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all duration-300 bg-gray-50/50 hover:bg-white pr-20 placeholder-gray-400"
-                                        >
-                                        <button 
-                                            id="languageAudioButton" 
-                                            class="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 text-gray-400 hover:text-purple-600 transition-all duration-300 hover:scale-110 rounded-xl hover:bg-purple-50"
-                                            title="🎤 Voice Search"
-                                        >
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <button 
-                                        id="languageSearchButton" 
-                                        class="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-8 rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                                    >
-                                        🔍 Search & Translate
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Language Search Results -->
-                            <div id="languageSearchResults" class="hidden animate-fade-in-up">
-                                <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 mb-8">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <h3 id="languageResultWord" class="text-3xl font-bold text-gray-800"></h3>
-                                        <button id="playLanguageAudio" class="text-purple-600 hover:text-purple-800 p-2 rounded-xl hover:bg-purple-50 transition-all duration-300">
-                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div id="languageResultPhonetic" class="text-gray-600 mb-6 text-lg"></div>
-                                    <div id="languageResultDefinitions" class="space-y-4"></div>
-                                    <div class="mt-8 text-center">
-                                        <span class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                                            💾 Auto-saved to My LexiLog
-                                        </span>
-                                    </div>
-                                </div>
-                    </div>
-                </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Library View -->
-            <div id="libraryView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-blue-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20 pt-24">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    📚 My LexiLog
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Your personal vocabulary collection - every word you've discovered and saved
-                            </p>
-                </div>
-
-                        <div id="libraryContent" class="max-w-4xl mx-auto">
-                            <div id="emptyLibrary" class="text-center py-16">
-                                <div class="text-gray-300 mb-6">
-                                    <svg class="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                                <h3 class="text-2xl font-bold text-gray-600 mb-4">No words yet</h3>
-                                <p class="text-gray-500 text-lg mb-8">Start searching for words to build your vocabulary!</p>
-                                <button class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-3 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300" onclick="navigateToView('dictionary')">
-                                    🔍 Start Learning
-                                </button>
-                    </div>
-                            <div id="wordList" class="space-y-6 hidden"></div>
-                </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Word of the Day View -->
-            <div id="dailyView" class="tab-content">
-                <section class="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-yellow-50 min-h-screen">
-                    <div class="max-w-6xl mx-auto px-4 py-20 pt-24">
-                        <div class="text-center mb-12 animate-fade-in-up">
-                            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                                <span class="bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
-                                    🌟 Word of the Day
-                                </span>
-                            </h2>
-                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                                Discover a beautiful new word every day and expand your vocabulary
-                            </p>
-                </div>
-
-                <div id="dailyWordContent" class="max-w-2xl mx-auto">
-                            <div id="dailyLoading" class="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 text-center">
-                                <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-orange-600 mx-auto mb-4"></div>
-                                <p class="text-gray-600 text-lg">Loading word of the day...</p>
-                    </div>
-                            <div id="dailyWord" class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-gray-200/50 hidden">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 id="dailyWordText" class="text-3xl font-bold text-gray-800"></h3>
-                                    <button id="playDailyAudio" class="text-orange-600 hover:text-orange-800 p-2 rounded-xl hover:bg-orange-50 transition-all duration-300">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                                <div id="dailyPhonetic" class="text-gray-600 mb-6 text-lg"></div>
-                                <div id="dailyDefinitions" class="space-y-4 mb-8"></div>
-                        <button 
-                            id="saveDailyWord" 
-                                    class="w-full bg-gradient-to-r from-orange-600 to-yellow-600 text-white py-4 px-8 rounded-2xl hover:from-orange-700 hover:to-yellow-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                        >
-                                    💾 Add to My LexiLog
-                        </button>
-                    </div>
-                </div>
-                    </div>
-                </section>
             </div>
         </main>
     </div>
-
+    
     <script src="app.js"></script>
 </body>
 </html>
