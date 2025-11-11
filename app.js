@@ -166,7 +166,7 @@ const authManager = {
             await auth.signOut();
             console.log('Sign out successful');
             return { success: true };
-        } catch (error) {
+    } catch (error) {
             console.error('Sign out error:', error);
             return { success: false, error: error.message };
         }
@@ -184,11 +184,17 @@ const authManager = {
     },
     
     async getUserProfile(uid) {
-        const doc = await db.collection('artifacts').doc('lexilog-vocabulary-builder')
-            .collection('users').doc(uid).get();
+        try {
+            const doc = await db.collection('artifacts').doc('lexilog-vocabulary-builder')
+                .collection('users').doc(uid).get();
         
         return doc.exists ? doc.data() : null;
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+            // Return null if there's a permissions error - app will work without profile
+        return null;
     }
+}
 };
 
 // Dictionary Functions
@@ -251,8 +257,8 @@ const dictionaryManager = {
                 const response = await fetch(`${DICTIONARY_API}${encodeURIComponent(suggestion)}`);
                 if (response.ok) {
                     verifiedSuggestions.push(suggestion);
-                }
-            } catch (error) {
+        }
+    } catch (error) {
                 // Skip this suggestion
             }
         }
@@ -282,7 +288,7 @@ const dictionaryManager = {
         meanings.forEach((meaning, index) => {
             definitionsHTML += `
                 <div class="meaning-section">
-                    <div class="part-of-speech">${meaning.partOfSpeech}</div>
+            <div class="part-of-speech">${meaning.partOfSpeech}</div>
                     <ul class="definitions-list">
                         ${meaning.definitions.slice(0, 3).map(def => `
                             <li>
@@ -375,8 +381,8 @@ const dictionaryManager = {
     async saveWord(word, wordData) {
         if (!appState.currentUser) return;
         
-        try {
-            const wordDoc = {
+    try {
+        const wordDoc = {
                 word: word,
                 phonetic: wordData.phonetic || wordData.phonetics?.find(p => p.text)?.text || '',
                 meanings: wordData.meanings || [],
@@ -386,9 +392,9 @@ const dictionaryManager = {
             await db.collection('artifacts').doc('lexilog-vocabulary-builder')
                 .collection('users').doc(appState.currentUser.uid)
                 .collection('vocabulary').doc(word.toLowerCase()).set(wordDoc);
-        } catch (error) {
-            console.error('Error saving word:', error);
-        }
+    } catch (error) {
+        console.error('Error saving word:', error);
+    }
     },
     
     playAudio(word) {
@@ -422,6 +428,8 @@ const libraryManager = {
             this.displayWords(words);
         } catch (error) {
             console.error('Error loading words:', error);
+            // Show empty state if there's a permissions error
+            this.displayWords([]);
         }
     },
     
@@ -431,12 +439,12 @@ const libraryManager = {
         
         if (!emptyLibrary || !wordList) return;
         
-        if (words.length === 0) {
+    if (words.length === 0) {
             emptyLibrary.classList.remove('hidden');
             wordList.classList.add('hidden');
-            return;
-        }
-        
+        return;
+    }
+    
         emptyLibrary.classList.add('hidden');
         wordList.classList.remove('hidden');
         
@@ -553,24 +561,18 @@ function initApp() {
             appState.currentUser = user;
             console.log('User UID:', user.uid);
             
-            try {
-                // Get profile if it exists, but don't require it
-                const profile = await authManager.getUserProfile(user.uid).catch((error) => {
-                    console.log('Profile fetch error (non-critical):', error);
-                    return null;
-                });
-                
-                console.log('Profile loaded:', profile ? 'Yes' : 'No');
-                uiManager.showMainApp(user, profile);
-                
-                // Load library if on library view
-                if (appState.currentView === 'library') {
-                    libraryManager.loadWords();
-                }
-            } catch (error) {
-                console.error('Error in auth state handler:', error);
-                // Still show main app even if profile fetch fails
-                uiManager.showMainApp(user, null);
+            // Get profile if it exists, but don't require it
+            // Profile fetch errors are non-critical - app works without it
+            const profile = await authManager.getUserProfile(user.uid);
+            
+            console.log('Profile loaded:', profile ? 'Yes' : 'No');
+            
+            // Always show main app, even if profile fetch failed
+            uiManager.showMainApp(user, profile);
+            
+            // Load library if on library view
+            if (appState.currentView === 'library') {
+                libraryManager.loadWords();
             }
         } else {
             appState.currentUser = null;

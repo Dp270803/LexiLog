@@ -16,9 +16,7 @@ const urlsToCache = [
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js',
   // Tesseract.js for OCR
-  'https://unpkg.com/tesseract.js@v4.1.1/dist/tesseract.min.js',
-  // Tailwind CSS
-  'https://cdn.tailwindcss.com'
+  'https://unpkg.com/tesseract.js@v4.1.1/dist/tesseract.min.js'
 ];
 
 // Install event - cache resources
