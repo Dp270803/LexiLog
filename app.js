@@ -138,10 +138,10 @@ const appNavigation = {
 
 // Authentication Functions
 const authManager = {
-    async signUp(name, email, password, goal, otherGoal) {
+    async signUp(name, email, password) {
         try {
             const result = await auth.createUserWithEmailAndPassword(email, password);
-            await this.saveUserProfile(result.user.uid, name, email, goal, otherGoal);
+            await this.saveUserProfile(result.user.uid, name, email);
             return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
@@ -166,12 +166,10 @@ const authManager = {
         }
     },
     
-    async saveUserProfile(uid, name, email, goal, otherGoal) {
+    async saveUserProfile(uid, name, email) {
         const profileData = {
             name,
             email,
-            goal: goal || '',
-            otherGoal: otherGoal || '',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         
@@ -491,6 +489,13 @@ const uiManager = {
                 const initials = profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                 userInitials.textContent = initials;
             }
+        } else if (user && user.email) {
+            // Fallback to email if no profile
+            const displayName = user.email.split('@')[0];
+            if (userName) userName.textContent = displayName;
+            if (userInitials) {
+                userInitials.textContent = displayName.substring(0, 2).toUpperCase();
+            }
         }
     },
     
@@ -538,7 +543,8 @@ function initApp() {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             appState.currentUser = user;
-            const profile = await authManager.getUserProfile(user.uid);
+            // Get profile if it exists, but don't require it
+            const profile = await authManager.getUserProfile(user.uid).catch(() => null);
             uiManager.showMainApp(user, profile);
             
             // Load library if on library view
@@ -569,10 +575,8 @@ function initApp() {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-        const goal = document.getElementById('signupQuestion').value;
-        const otherGoal = document.getElementById('signupOtherGoal')?.value || '';
         
-        const result = await authManager.signUp(name, email, password, goal, otherGoal);
+        const result = await authManager.signUp(name, email, password);
         if (!result.success) {
             alert('Signup failed: ' + result.error);
         }
@@ -587,15 +591,6 @@ function initApp() {
         uiManager.showLogin();
     });
     
-    // Other goal field toggle
-    document.getElementById('signupQuestion')?.addEventListener('change', (e) => {
-        const otherField = document.getElementById('otherGoalField');
-        if (e.target.value === 'other') {
-            if (otherField) otherField.classList.remove('hidden');
-        } else {
-            if (otherField) otherField.classList.add('hidden');
-        }
-    });
     
     // Navigation handlers
     document.getElementById('homeBtn')?.addEventListener('click', () => {
