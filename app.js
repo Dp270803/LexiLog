@@ -329,7 +329,25 @@ async function loadMyWords() {
         wordListDiv.innerHTML = html;
     } catch (error) {
         console.error('Error loading words:', error);
-        wordListDiv.innerHTML = '<div class="error">Error loading words: ' + error.message + '. Please try again.</div>';
+        
+        if (error.message && error.message.includes('permissions')) {
+            wordListDiv.innerHTML = `
+                <div class="error" style="padding: 24px;">
+                    <h3 style="margin-bottom: 12px; color: #dc2626;">⚠️ Firestore Permissions Error</h3>
+                    <p style="margin-bottom: 16px;">You need to set up Firestore security rules to view your saved words.</p>
+                    <p style="margin-bottom: 16px;"><strong>Quick Fix:</strong></p>
+                    <ol style="margin-left: 20px; margin-bottom: 16px; line-height: 1.8;">
+                        <li>Go to <a href="https://console.firebase.google.com/project/lexilog-c1559/firestore/rules" target="_blank" style="color: #6366f1; text-decoration: underline;">Firebase Console → Firestore → Rules</a></li>
+                        <li>Copy the rules from <code>FIRESTORE_RULES.md</code> file</li>
+                        <li>Paste and click "Publish"</li>
+                        <li>Refresh this page</li>
+                    </ol>
+                    <p style="font-size: 0.9rem; color: #6b7280;">See FIRESTORE_RULES.md for detailed instructions.</p>
+                </div>
+            `;
+        } else {
+            wordListDiv.innerHTML = '<div class="error">Error loading words: ' + error.message + '. Please try again.</div>';
+        }
     }
 }
 
