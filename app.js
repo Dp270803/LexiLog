@@ -17,6 +17,9 @@ const db = firebase.firestore();
 // Current user
 let currentUser = null;
 
+// Navigation history
+let navigationHistory = ['dictionary'];
+
 // Dictionary API
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
@@ -106,6 +109,11 @@ function showMainApp() {
 
 // Navigation
 function showDictionary() {
+    // Add to history if not already there
+    if (navigationHistory[navigationHistory.length - 1] !== 'dictionary') {
+        navigationHistory.push('dictionary');
+    }
+    
     document.getElementById('dictionaryView').classList.remove('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
     
@@ -117,6 +125,11 @@ function showDictionary() {
 }
 
 function showMyWords() {
+    // Add to history
+    if (navigationHistory[navigationHistory.length - 1] !== 'myWords') {
+        navigationHistory.push('myWords');
+    }
+    
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.remove('hidden');
     
@@ -129,6 +142,35 @@ function showMyWords() {
     // Load words
     loadMyWords();
 }
+
+// Back navigation
+function goBack() {
+    if (navigationHistory.length > 1) {
+        // Remove current page
+        navigationHistory.pop();
+        // Get previous page
+        const previousPage = navigationHistory[navigationHistory.length - 1];
+        
+        if (previousPage === 'dictionary') {
+            showDictionary();
+        } else if (previousPage === 'myWords') {
+            showMyWords();
+        }
+    } else {
+        // If only one page in history, go to dictionary
+        showDictionary();
+    }
+}
+
+// Prevent browser back button
+window.addEventListener('popstate', function(event) {
+    event.preventDefault();
+    goBack();
+    window.history.pushState(null, null, window.location.href);
+});
+
+// Push initial state
+window.history.pushState(null, null, window.location.href);
 
 // Search word
 async function searchWord() {
@@ -209,32 +251,76 @@ async function saveWord(wordData) {
 
 // Load my words
 async function loadMyWords() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        console.log('No current user');
+        return;
+    }
     
     const wordListDiv = document.getElementById('wordList');
+    if (!wordListDiv) {
+        console.log('wordList element not found');
+        return;
+    }
+    
     wordListDiv.innerHTML = '<div class="loading">Loading...</div>';
     
     try {
-        const snapshot = await db.collection('users').doc(currentUser.uid)
-            .collection('words')
-            .orderBy('savedAt', 'desc')
-            .get();
+        console.log('Loading words for user:', currentUser.uid);
+        
+        // Try with orderBy first, if it fails, get all and sort manually
+        let snapshot;
+        try {
+            snapshot = await db.collection('users').doc(currentUser.uid)
+                .collection('words')
+                .orderBy('savedAt', 'desc')
+                .get();
+        } catch (orderError) {
+            console.log('OrderBy failed, getting all words:', orderError);
+            // If orderBy fails (no index), get all and sort manually
+            snapshot = await db.collection('users').doc(currentUser.uid)
+                .collection('words')
+                .get();
+        }
+        
+        console.log('Snapshot size:', snapshot.size);
         
         if (snapshot.empty) {
-            wordListDiv.innerHTML = '<p style="text-align: center; color: #666;">No words saved yet. Start searching!</p>';
+            wordListDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No words saved yet. Start searching for words!</p>';
             return;
         }
         
-        let html = '<div class="word-list">';
+        // Convert to array and sort if needed
+        const words = [];
         snapshot.forEach(doc => {
-            const word = doc.data();
+            words.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort by savedAt if we got all words without orderBy
+        if (words.length > 0 && words[0].savedAt) {
+            words.sort((a, b) => {
+                if (!a.savedAt || !b.savedAt) return 0;
+                return b.savedAt.toMillis() - a.savedAt.toMillis();
+            });
+        }
+        
+        console.log('Words loaded:', words.length);
+        
+        let html = '<div class="word-list">';
+        words.forEach(wordData => {
+            const word = wordData.word || wordData.id;
+            const phonetic = wordData.phonetic || '';
+            const meaning = wordData.meanings && wordData.meanings[0] && wordData.meanings[0].definitions 
+                ? wordData.meanings[0].definitions[0].definition 
+                : '';
+            
             html += `
                 <div class="word-item">
                     <div>
-                        <h3>${word.word}</h3>
-                        ${word.phonetic ? `<div class="phonetic">${word.phonetic}</div>` : ''}
+                        <h3>${word}</h3>
+                        ${phonetic ? `<div class="phonetic" style="color: #6b7280; font-style: italic; margin-top: 4px;">${phonetic}</div>` : ''}
+                        ${meaning ? `<div style="color: #6b7280; font-size: 0.9rem; margin-top: 8px;">${meaning.substring(0, 100)}${meaning.length > 100 ? '...' : ''}</div>` : ''}
                     </div>
-                    <button class="delete-btn" onclick="deleteWord('${doc.id}')">Delete</button>
+                    <button class="delete-btn" onclick="deleteWord('${wordData.id}')">Delete</button>
                 </div>
             `;
         });
@@ -243,7 +329,7 @@ async function loadMyWords() {
         wordListDiv.innerHTML = html;
     } catch (error) {
         console.error('Error loading words:', error);
-        wordListDiv.innerHTML = '<div class="error">Error loading words. Please try again.</div>';
+        wordListDiv.innerHTML = '<div class="error">Error loading words: ' + error.message + '. Please try again.</div>';
     }
 }
 

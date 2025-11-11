@@ -569,7 +569,10 @@
         <!-- My Words View -->
         <div id="myWordsView" class="hidden">
             <div class="card">
-                <h2 style="margin-bottom: 20px;">My Saved Words</h2>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                    <h2 style="margin: 0;">My Saved Words</h2>
+                    <button onclick="goBack()" class="btn" style="width: auto; padding: 10px 20px; font-size: 0.9rem;">← Back to Dictionary</button>
+                </div>
                 <div id="wordList"></div>
             </div>
         </div>
