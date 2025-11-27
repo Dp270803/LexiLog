@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
         currentUser = user;
         // Handle initial route after auth state is determined
         handleRoute();
+        // Hide loading screen after auth state is determined
+        setTimeout(() => {
+            document.getElementById('loadingScreen').classList.add('hidden');
+        }, 500);
     });
     
     // Login form
