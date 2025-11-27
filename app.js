@@ -53,12 +53,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const result = await auth.createUserWithEmailAndPassword(email, password);
-            // Save user profile
-            await db.collection('users').doc(result.user.uid).set({
-                name: name,
-                email: email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+
+            // Try to save user profile (optional - won't block signup if Firestore rules aren't set)
+            try {
+                await db.collection('users').doc(result.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (profileError) {
+                console.warn('Profile save failed (Firestore rules may not be set up):', profileError);
+                // Continue anyway - user account was created successfully
+            }
+
             // Auth state listener will handle UI update and redirect to dictionary
             navigate('/dictionary');
         } catch (error) {
