@@ -280,15 +280,17 @@
             font-size: 1.15rem;
             font-weight: 400;
             font-style: italic;
-            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             letter-spacing: 0.03em;
+            position: relative;
+            z-index: 10;
         }
 
         .form-group {
             margin-bottom: 28px;
-            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            z-index: 1;
+            z-index: 10;
         }
 
         label {
@@ -354,8 +356,9 @@
                 inset 0 -1px 0 rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            z-index: 10;
         }
 
         /* Leather texture */
@@ -370,6 +373,7 @@
                 repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
                 repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
             pointer-events: none;
+            z-index: -1;
         }
 
         /* Gold foil text effect */
@@ -382,6 +386,8 @@
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
             transition: left 0.6s;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .btn:hover::after {
@@ -436,7 +442,9 @@
 
         .text-center {
             text-align: center;
-            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 10;
         }
 
         .mt-20 {
