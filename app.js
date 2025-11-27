@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('logoLink').addEventListener('click', function() {
-        navigate('/dictionary');
+        navigate('/home');
     });
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -110,24 +110,55 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('searchBtn').addEventListener('click', searchWord);
 
     document.getElementById('backBtn').addEventListener('click', goBack);
+
+    // Homepage navigation
+    document.getElementById('homeLogo').addEventListener('click', function() {
+        navigate('/home');
+    });
+
+    document.getElementById('homeLogoutBtn').addEventListener('click', logout);
+
+    document.getElementById('goToDictionary').addEventListener('click', function() {
+        navigate('/dictionary');
+    });
+
+    document.getElementById('goToMyWords').addEventListener('click', function() {
+        navigate('/words');
+    });
 });
 
 // Show screens
 function showLogin() {
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('signupScreen').classList.add('hidden');
+    document.getElementById('homepageScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.add('hidden');
 }
 
 function showSignup() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('signupScreen').classList.remove('hidden');
+    document.getElementById('homepageScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.add('hidden');
+}
+
+function showHomepage() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('signupScreen').classList.add('hidden');
+    document.getElementById('homepageScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+
+    // Update user avatar on homepage
+    if (currentUser && currentUser.email) {
+        const initial = currentUser.email[0].toUpperCase();
+        document.getElementById('homeUserAvatar').textContent = initial;
+    }
 }
 
 function showMainApp() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('signupScreen').classList.add('hidden');
+    document.getElementById('homepageScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
 
     // Update user avatar
@@ -173,7 +204,18 @@ function navigate(path) {
 }
 
 function handleRoute() {
-    const hash = window.location.hash.slice(1) || '/login'; // Remove # and default to /login
+    const hash = window.location.hash.slice(1);
+
+    // Default routes based on auth state
+    if (!hash) {
+        if (currentUser) {
+            navigate('/home');
+            return;
+        } else {
+            navigate('/login');
+            return;
+        }
+    }
 
     // Check if user is authenticated
     if (!currentUser && hash !== '/login' && hash !== '/signup') {
@@ -189,6 +231,10 @@ function handleRoute() {
             break;
         case '/signup':
             showSignup();
+            break;
+        case '/home':
+            if (currentUser) showHomepage();
+            else navigate('/login');
             break;
         case '/dictionary':
             if (currentUser) showDictionary();
@@ -249,14 +295,18 @@ async function searchWord() {
 function displayWordResult(wordData) {
     const word = wordData.word;
     const phonetic = wordData.phonetic || wordData.phonetics?.find(p => p.text)?.text || '';
+    const audioUrl = wordData.phonetics?.find(p => p.audio)?.audio || '';
     const meanings = wordData.meanings || [];
-    
+
     let html = `
         <div class="word-result">
-            <div class="word-title">${word}</div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div class="word-title">${word}</div>
+                ${audioUrl ? `<button class="audio-btn" onclick="playAudio('${audioUrl}')">🔊</button>` : ''}
+            </div>
             ${phonetic ? `<div class="phonetic">${phonetic}</div>` : ''}
     `;
-    
+
     meanings.forEach(meaning => {
         html += `
             <div class="meaning">
@@ -265,13 +315,22 @@ function displayWordResult(wordData) {
             </div>
         `;
     });
-    
+
     html += `
             <div class="saved-badge">✓ Saved to My Words</div>
         </div>
     `;
-    
+
     document.getElementById('searchResults').innerHTML = html;
+}
+
+// Play audio pronunciation
+function playAudio(audioUrl) {
+    const audio = new Audio(audioUrl);
+    audio.play().catch(error => {
+        console.error('Error playing audio:', error);
+        alert('Could not play audio pronunciation');
+    });
 }
 
 // Save word
