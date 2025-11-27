@@ -465,15 +465,6 @@
             flex: 1;
             font-size: 18px;
             padding: 20px 28px;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .search-box input:focus {
-            box-shadow:
-                0 0 0 4px rgba(102, 126, 234, 0.15),
-                0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
         .search-box .btn {
@@ -490,81 +481,86 @@
         }
 
         .word-title {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 2.8rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--burgundy) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 12px;
             letter-spacing: -0.02em;
+            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.1);
         }
 
         .phonetic {
-            color: rgba(0, 0, 0, 0.5);
+            color: var(--text-light);
             font-style: italic;
             margin-bottom: 24px;
             font-size: 1.1rem;
             font-weight: 500;
+            font-family: 'Lora', Georgia, serif;
         }
 
         .meaning {
             margin-bottom: 20px;
             padding: 24px 28px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--secondary);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 16px var(--shadow);
         }
 
         .meaning:hover {
-            border-color: rgba(102, 126, 234, 0.5);
+            border-left-color: var(--gold);
             transform: translateX(8px);
             box-shadow:
-                0 8px 24px rgba(0, 0, 0, 0.1),
-                0 0 0 1px rgba(102, 126, 234, 0.1);
+                0 8px 24px rgba(139, 69, 19, 0.2),
+                0 0 0 1px var(--gold);
         }
 
         .part-of-speech {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--burgundy) 0%, var(--primary-dark) 100%);
+            color: var(--cream);
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 700;
             margin-bottom: 12px;
             box-shadow:
-                0 4px 12px rgba(102, 126, 234, 0.3),
+                0 4px 12px rgba(128, 0, 32, 0.3),
                 0 0 0 1px rgba(255, 255, 255, 0.2);
             letter-spacing: 0.02em;
             text-transform: uppercase;
+            font-family: 'Lora', Georgia, serif;
         }
 
         .definition {
-            color: rgba(0, 0, 0, 0.8);
+            color: var(--text);
             line-height: 1.8;
             font-size: 1.05rem;
+            font-family: 'Source Serif Pro', Georgia, serif;
         }
 
         .saved-badge {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--forest) 0%, #1a6b1a 100%);
+            color: var(--cream);
             padding: 12px 24px;
             border-radius: 24px;
             font-size: 0.9rem;
             font-weight: 700;
             margin-top: 24px;
             box-shadow:
-                0 4px 16px rgba(16, 185, 129, 0.3),
-                0 0 0 1px rgba(255, 255, 255, 0.2);
+                0 4px 16px rgba(34, 139, 34, 0.3),
+                0 0 0 1px rgba(212, 175, 55, 0.3);
             animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Lora', Georgia, serif;
         }
 
         .error {
@@ -584,9 +580,10 @@
         .loading {
             text-align: center;
             padding: 60px 40px;
-            color: rgba(0, 0, 0, 0.5);
+            color: var(--text-light);
             font-size: 1.1rem;
             font-weight: 500;
+            font-family: 'Lora', Georgia, serif;
         }
 
         .loading::after {
@@ -607,31 +604,31 @@
 
         .word-item {
             padding: 24px 28px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
+            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--secondary);
+            box-shadow: 0 4px 16px var(--shadow);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .word-item:hover {
-            border-color: rgba(102, 126, 234, 0.5);
+            border-left-color: var(--gold);
             transform: translateX(8px);
             box-shadow:
-                0 8px 24px rgba(0, 0, 0, 0.1),
-                0 0 0 1px rgba(102, 126, 234, 0.1);
+                0 8px 24px rgba(139, 69, 19, 0.2),
+                0 0 0 1px var(--gold);
         }
 
         .word-item h3 {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--burgundy) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -670,35 +667,43 @@
             align-items: center;
             margin-bottom: 24px;
             padding: 20px 32px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
+            background: linear-gradient(to bottom, #FFFBF5 0%, #FFF9F0 100%);
+            border-radius: 12px;
             box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.1),
-                0 0 0 1px var(--glass-border),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-            border: 1px solid var(--glass-border);
+                0 8px 32px var(--shadow),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--primary);
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .nav h1 {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 1.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--burgundy) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin: 0;
+            text-shadow: none;
+        }
+
+        .nav h1::before {
+            content: none;
+        }
+
+        .nav h1::after {
+            content: none;
         }
 
         .nav-tabs {
             display: flex;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--parchment);
             padding: 6px;
             border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid var(--border);
         }
 
         .nav-tab {
@@ -708,23 +713,25 @@
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            color: rgba(0, 0, 0, 0.6);
+            color: var(--text-light);
             font-size: 0.95rem;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Lora', Georgia, serif;
         }
 
         .nav-tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--cream);
             box-shadow:
-                0 4px 12px rgba(102, 126, 234, 0.4),
-                0 0 0 1px rgba(255, 255, 255, 0.2);
+                0 4px 12px rgba(139, 69, 19, 0.4),
+                0 0 0 1px rgba(212, 175, 55, 0.3);
             transform: scale(1.02);
         }
 
         .nav-tab:not(.active):hover {
-            background: rgba(102, 126, 234, 0.15);
+            background: rgba(139, 69, 19, 0.1);
             transform: translateY(-2px);
+            color: var(--primary);
         }
 
         .user-info {
@@ -737,25 +744,26 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--burgundy) 0%, var(--primary-dark) 100%);
+            color: var(--cream);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 1.1rem;
             box-shadow:
-                0 4px 16px rgba(102, 126, 234, 0.4),
-                0 0 0 3px rgba(255, 255, 255, 0.3);
+                0 4px 16px rgba(128, 0, 32, 0.4),
+                0 0 0 3px rgba(212, 175, 55, 0.2);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
+            font-family: 'Playfair Display', Georgia, serif;
         }
 
         .user-avatar:hover {
             transform: scale(1.1) rotate(5deg);
             box-shadow:
-                0 6px 24px rgba(102, 126, 234, 0.5),
-                0 0 0 4px rgba(255, 255, 255, 0.4);
+                0 6px 24px rgba(128, 0, 32, 0.5),
+                0 0 0 4px rgba(212, 175, 55, 0.3);
         }
 
         @media (max-width: 768px) {
