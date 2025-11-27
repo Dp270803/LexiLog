@@ -677,22 +677,21 @@
         }
 
         .nav-content {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 32px;
+            gap: 24px;
+            width: 100%;
         }
 
         .nav h1 {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 1.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--burgundy) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary-dark);
             margin: 0;
             text-shadow: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -895,10 +894,7 @@
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 4rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--burgundy) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary-dark);
             margin-bottom: 20px;
             animation: fadeInScale 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -971,6 +967,12 @@
             font-size: 4rem;
             margin-bottom: 24px;
             animation: float 3s ease-in-out infinite;
+            font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+            text-shadow: none;
+            -webkit-text-fill-color: initial;
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
         }
 
         @keyframes float {
