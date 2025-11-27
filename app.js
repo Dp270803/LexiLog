@@ -93,6 +93,10 @@ document.addEventListener('DOMContentLoaded', function() {
         navigate('/login');
     });
 
+    document.getElementById('homeTab').addEventListener('click', function() {
+        navigate('/home');
+    });
+
     document.getElementById('dictionaryTab').addEventListener('click', function() {
         navigate('/dictionary');
     });
@@ -125,6 +129,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('goToMyWords').addEventListener('click', function() {
         navigate('/words');
     });
+
+    document.getElementById('goToDictionary2').addEventListener('click', function() {
+        navigate('/dictionary');
+    });
+
+    document.getElementById('goToMyWords2').addEventListener('click', function() {
+        navigate('/words');
+    });
 });
 
 // Show screens
@@ -143,16 +155,18 @@ function showSignup() {
 }
 
 function showHomepage() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('signupScreen').classList.add('hidden');
-    document.getElementById('homepageScreen').classList.remove('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
+    showMainApp();
 
-    // Update user avatar on homepage
-    if (currentUser && currentUser.email) {
-        const initial = currentUser.email[0].toUpperCase();
-        document.getElementById('homeUserAvatar').textContent = initial;
-    }
+    document.getElementById('homepageScreen').classList.add('hidden');
+    document.getElementById('homeView').classList.remove('hidden');
+    document.getElementById('dictionaryView').classList.add('hidden');
+    document.getElementById('myWordsView').classList.add('hidden');
+
+    // Update tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById('homeTab').classList.add('active');
 }
 
 function showMainApp() {
@@ -172,6 +186,7 @@ function showMainApp() {
 function showDictionary() {
     showMainApp();
 
+    document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.remove('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
 
@@ -179,12 +194,13 @@ function showDictionary() {
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+    document.getElementById('dictionaryTab').classList.add('active');
 }
 
 function showMyWords() {
     showMainApp();
 
+    document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.remove('hidden');
 
@@ -192,7 +208,7 @@ function showMyWords() {
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    document.querySelectorAll('.nav-tab')[1].classList.add('active');
+    document.getElementById('myWordsTab').classList.add('active');
 
     // Load words
     loadMyWords();

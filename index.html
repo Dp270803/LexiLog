@@ -1162,7 +1162,8 @@
             <div class="nav-content">
                 <h1 id="logoLink" style="font-size: 1.5rem; margin: 0; cursor: pointer;">📚 LexiLog</h1>
                 <div class="nav-tabs">
-                    <button class="nav-tab active" id="dictionaryTab">Dictionary</button>
+                    <button class="nav-tab" id="homeTab">Home</button>
+                    <button class="nav-tab" id="dictionaryTab">Dictionary</button>
                     <button class="nav-tab" id="myWordsTab">My Words</button>
                 </div>
                 <div class="user-info">
@@ -1172,14 +1173,41 @@
             </div>
         </div>
 
+        <!-- Home View -->
+        <div id="homeView" class="container hidden">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">📚 Welcome to LexiLog</h1>
+                <p class="hero-subtitle">Your Personal Literary Companion</p>
+                <p class="hero-description">Discover words, build your vocabulary, and cultivate a collection of your favorite expressions</p>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="feature-grid">
+                <div class="feature-card" id="goToDictionary2">
+                    <div class="feature-icon">🔍</div>
+                    <h2>Dictionary</h2>
+                    <p>Search and explore the meaning of words from our comprehensive dictionary</p>
+                    <div class="feature-arrow">→</div>
+                </div>
+
+                <div class="feature-card" id="goToMyWords2">
+                    <div class="feature-icon">📖</div>
+                    <h2>My Words</h2>
+                    <p>Your personal collection of saved words and their meanings</p>
+                    <div class="feature-arrow">→</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Dictionary View -->
-        <div id="dictionaryView" class="container">
+        <div id="dictionaryView" class="container hidden">
             <div class="card">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search for a word...">
                     <button class="btn" id="searchBtn">Search</button>
                 </div>
-                
+
                 <div id="searchResults"></div>
             </div>
         </div>
