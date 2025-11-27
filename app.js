@@ -101,6 +101,10 @@ document.addEventListener('DOMContentLoaded', function() {
         navigate('/words');
     });
 
+    document.getElementById('logoLink').addEventListener('click', function() {
+        navigate('/dictionary');
+    });
+
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
     document.getElementById('searchBtn').addEventListener('click', searchWord);
