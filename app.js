@@ -17,9 +17,6 @@ const db = firebase.firestore();
 // Current user
 let currentUser = null;
 
-// Navigation history
-let navigationHistory = ['dictionary'];
-
 // Dictionary API
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
@@ -27,13 +24,9 @@ const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 document.addEventListener('DOMContentLoaded', function() {
     // Check auth state
     auth.onAuthStateChanged(function(user) {
-        if (user) {
-            currentUser = user;
-            showMainApp();
-        } else {
-            currentUser = null;
-            showLogin();
-        }
+        currentUser = user;
+        // Handle initial route after auth state is determined
+        handleRoute();
     });
     
     // Login form
@@ -41,10 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
-        
+
         try {
             await auth.signInWithEmailAndPassword(email, password);
-            // Auth state listener will handle UI update
+            // Auth state listener will handle UI update and redirect to dictionary
+            navigate('/dictionary');
         } catch (error) {
             alert('Login failed: ' + error.message);
         }
@@ -56,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-        
+
         try {
             const result = await auth.createUserWithEmailAndPassword(email, password);
             // Save user profile
@@ -65,7 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 email: email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            // Auth state listener will handle UI update
+            // Auth state listener will handle UI update and redirect to dictionary
+            navigate('/dictionary');
         } catch (error) {
             alert('Signup failed: ' + error.message);
         }
@@ -77,6 +72,29 @@ document.addEventListener('DOMContentLoaded', function() {
             searchWord();
         }
     });
+
+    // Navigation event listeners
+    document.getElementById('showSignupBtn').addEventListener('click', function() {
+        navigate('/signup');
+    });
+
+    document.getElementById('showLoginBtn').addEventListener('click', function() {
+        navigate('/login');
+    });
+
+    document.getElementById('dictionaryTab').addEventListener('click', function() {
+        navigate('/dictionary');
+    });
+
+    document.getElementById('myWordsTab').addEventListener('click', function() {
+        navigate('/words');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    document.getElementById('searchBtn').addEventListener('click', searchWord);
+
+    document.getElementById('backBtn').addEventListener('click', goBack);
 });
 
 // Show screens
@@ -96,27 +114,21 @@ function showMainApp() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('signupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
-    
+
     // Update user avatar
     if (currentUser && currentUser.email) {
         const initial = currentUser.email[0].toUpperCase();
         document.getElementById('userAvatar').textContent = initial;
     }
-    
-    // Show dictionary by default
-    showDictionary();
 }
 
 // Navigation
 function showDictionary() {
-    // Add to history if not already there
-    if (navigationHistory[navigationHistory.length - 1] !== 'dictionary') {
-        navigationHistory.push('dictionary');
-    }
-    
+    showMainApp();
+
     document.getElementById('dictionaryView').classList.remove('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
-    
+
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -125,52 +137,69 @@ function showDictionary() {
 }
 
 function showMyWords() {
-    // Add to history
-    if (navigationHistory[navigationHistory.length - 1] !== 'myWords') {
-        navigationHistory.push('myWords');
-    }
-    
+    showMainApp();
+
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.remove('hidden');
-    
+
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
     });
     document.querySelectorAll('.nav-tab')[1].classList.add('active');
-    
+
     // Load words
     loadMyWords();
 }
 
-// Back navigation
-function goBack() {
-    if (navigationHistory.length > 1) {
-        // Remove current page
-        navigationHistory.pop();
-        // Get previous page
-        const previousPage = navigationHistory[navigationHistory.length - 1];
-        
-        if (previousPage === 'dictionary') {
-            showDictionary();
-        } else if (previousPage === 'myWords') {
-            showMyWords();
-        }
-    } else {
-        // If only one page in history, go to dictionary
-        showDictionary();
+// Hash-based Router
+function navigate(path) {
+    window.location.hash = path;
+}
+
+function handleRoute() {
+    const hash = window.location.hash.slice(1) || '/login'; // Remove # and default to /login
+
+    // Check if user is authenticated
+    if (!currentUser && hash !== '/login' && hash !== '/signup') {
+        // Redirect to login if not authenticated
+        navigate('/login');
+        return;
+    }
+
+    // Route to appropriate view
+    switch(hash) {
+        case '/login':
+            showLogin();
+            break;
+        case '/signup':
+            showSignup();
+            break;
+        case '/dictionary':
+            if (currentUser) showDictionary();
+            else navigate('/login');
+            break;
+        case '/words':
+            if (currentUser) showMyWords();
+            else navigate('/login');
+            break;
+        default:
+            // Default route based on auth state
+            if (currentUser) {
+                navigate('/dictionary');
+            } else {
+                navigate('/login');
+            }
     }
 }
 
-// Prevent browser back button
-window.addEventListener('popstate', function(event) {
-    event.preventDefault();
-    goBack();
-    window.history.pushState(null, null, window.location.href);
-});
+// Listen for hash changes (browser back/forward button)
+window.addEventListener('hashchange', handleRoute);
 
-// Push initial state
-window.history.pushState(null, null, window.location.href);
+// Back navigation
+function goBack() {
+    window.history.back();
+}
 
 // Search word
 async function searchWord() {
@@ -372,7 +401,8 @@ async function deleteWord(wordId) {
 async function logout() {
     try {
         await auth.signOut();
-        // Auth state listener will handle UI update
+        // Redirect to login page
+        navigate('/login');
     } catch (error) {
         console.error('Logout error:', error);
     }

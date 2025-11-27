@@ -504,8 +504,8 @@
             </form>
             
             <p class="text-center mt-20">
-                Don't have an account? 
-                <button class="link-btn" onclick="showSignup()">Sign up</button>
+                Don't have an account?
+                <button class="link-btn" id="showSignupBtn">Sign up</button>
             </p>
         </div>
     </div>
@@ -533,8 +533,8 @@
             </form>
             
             <p class="text-center mt-20">
-                Already have an account? 
-                <button class="link-btn" onclick="showLogin()">Sign in</button>
+                Already have an account?
+                <button class="link-btn" id="showLoginBtn">Sign in</button>
             </p>
         </div>
     </div>
@@ -545,12 +545,12 @@
         <div class="nav">
             <h1 style="font-size: 1.5rem; margin: 0;">📚 LexiLog</h1>
             <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showDictionary()">Dictionary</button>
-                <button class="nav-tab" onclick="showMyWords()">My Words</button>
+                <button class="nav-tab active" id="dictionaryTab">Dictionary</button>
+                <button class="nav-tab" id="myWordsTab">My Words</button>
             </div>
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">U</div>
-                <button class="link-btn" onclick="logout()">Logout</button>
+                <button class="link-btn" id="logoutBtn">Logout</button>
             </div>
         </div>
         
@@ -559,7 +559,7 @@
             <div class="card">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search for a word...">
-                    <button class="btn" onclick="searchWord()">Search</button>
+                    <button class="btn" id="searchBtn">Search</button>
                 </div>
                 
                 <div id="searchResults"></div>
@@ -571,7 +571,7 @@
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
                     <h2 style="margin: 0;">My Saved Words</h2>
-                    <button onclick="goBack()" class="btn" style="width: auto; padding: 10px 20px; font-size: 0.9rem;">← Back to Dictionary</button>
+                    <button id="backBtn" class="btn" style="width: auto; padding: 10px 20px; font-size: 0.9rem;">← Back to Dictionary</button>
                 </div>
                 <div id="wordList"></div>
             </div>
