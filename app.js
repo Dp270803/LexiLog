@@ -20,11 +20,44 @@ let currentUser = null;
 // Dictionary API
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
+// Word of the Day word lists
+const BOOK_LOVER_WORDS = [
+    'serendipity', 'ephemeral', 'mellifluous', 'eloquent', 'ethereal',
+    'luminous', 'quintessential', 'enigmatic', 'resplendent', 'ineffable',
+    'tranquil', 'reverie', 'solitude', 'wanderlust', 'nostalgia',
+    'eloquence', 'petrichor', 'aurora', 'sonorous', 'ebullient'
+];
+
+const EXAM_PREP_WORDS = [
+    'aberration', 'pragmatic', 'vindicate', 'meticulous', 'substantiate',
+    'comprehensive', 'analyze', 'empirical', 'hypothesis', 'paradigm',
+    'ambiguous', 'articulate', 'coherent', 'correlate', 'criterion',
+    'deduce', 'disparity', 'enumerate', 'explicit', 'facilitate',
+    'formulate', 'infer', 'justify', 'paradigm', 'preclude',
+    'refute', 'simulate', 'subsequent', 'comprise', 'context'
+];
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     // Check auth state
-    auth.onAuthStateChanged(function(user) {
+    auth.onAuthStateChanged(async function(user) {
         currentUser = user;
+
+        // If user is logged in, check and apply their theme
+        if (user) {
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.userType) {
+                        applyUserTheme(userData.userType);
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load user theme:', error);
+            }
+        }
+
         // Handle initial route after auth state is determined
         handleRoute();
         // Hide loading screen after auth state is determined
@@ -58,20 +91,20 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const result = await auth.createUserWithEmailAndPassword(email, password);
 
-            // Try to save user profile (optional - won't block signup if Firestore rules aren't set)
+            // Save basic user info (userType will be added when they choose)
             try {
                 await db.collection('users').doc(result.user.uid).set({
                     name: name,
                     email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    userType: null // Will be set when user chooses
                 });
             } catch (profileError) {
                 console.warn('Profile save failed (Firestore rules may not be set up):', profileError);
-                // Continue anyway - user account was created successfully
             }
 
-            // Auth state listener will handle UI update and redirect to home
-            navigate('/home');
+            // Show user type selection modal
+            showUserTypeModal();
         } catch (error) {
             alert('Signup failed: ' + error.message);
         }
@@ -145,6 +178,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Google Sign-In buttons
     document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
     document.getElementById('googleSignupBtn').addEventListener('click', signInWithGoogle);
+
+    // User type selection
+    document.getElementById('selectBookLover').addEventListener('click', function() {
+        selectUserType('book-lover');
+    });
+    document.getElementById('selectExamPrep').addEventListener('click', function() {
+        selectUserType('exam-prep');
+    });
 });
 
 // Show screens
@@ -176,6 +217,9 @@ function showHomepage() {
         tab.classList.remove('active');
     });
     document.getElementById('homeTab').classList.add('active');
+
+    // Load Word of the Day
+    loadWordOfDay();
 }
 
 function showMainApp() {
@@ -608,16 +652,27 @@ async function signInWithGoogle() {
                     email: user.email,
                     photoURL: user.photoURL || null,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    provider: 'google'
+                    provider: 'google',
+                    userType: null // Will be set when user chooses
                 });
             } catch (profileError) {
                 console.warn('Profile save failed (Firestore rules may not be set up):', profileError);
-                // Continue anyway - user account was created successfully
+            }
+
+            // Show user type selection modal for new users
+            showUserTypeModal();
+        } else {
+            // Existing user, check if they have a userType
+            const userData = userDoc.data();
+            if (!userData.userType) {
+                // Show modal if userType not set
+                showUserTypeModal();
+            } else {
+                // Apply user's theme and navigate to home
+                applyUserTheme(userData.userType);
+                navigate('/home');
             }
         }
-
-        // Auth state listener will handle UI update and redirect to home
-        navigate('/home');
     } catch (error) {
         console.error('Google sign-in error:', error);
         if (error.code === 'auth/popup-closed-by-user') {
@@ -626,4 +681,159 @@ async function signInWithGoogle() {
         }
         alert('Google sign-in failed: ' + error.message);
     }
+}
+
+// Show user type selection modal
+function showUserTypeModal() {
+    document.getElementById('userTypeModal').classList.remove('hidden');
+}
+
+// Hide user type selection modal
+function hideUserTypeModal() {
+    document.getElementById('userTypeModal').classList.add('hidden');
+}
+
+// Handle user type selection
+async function selectUserType(type) {
+    if (!currentUser) return;
+
+    try {
+        // Update user profile in Firestore
+        await db.collection('users').doc(currentUser.uid).update({
+            userType: type,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Hide modal
+        hideUserTypeModal();
+
+        // Apply theme
+        applyUserTheme(type);
+
+        // Navigate to home
+        navigate('/home');
+    } catch (error) {
+        console.error('Error saving user type:', error);
+        alert('Failed to save your preference. Please try again.');
+    }
+}
+
+// Apply user theme based on type
+function applyUserTheme(type) {
+    const body = document.body;
+
+    // Remove existing theme classes
+    body.classList.remove('theme-book-lover', 'theme-exam-prep');
+
+    // Add appropriate theme class
+    if (type === 'exam-prep') {
+        body.classList.add('theme-exam-prep');
+    } else {
+        body.classList.add('theme-book-lover');
+    }
+}
+
+// Simple hash function for deterministic word selection
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+}
+
+// Get today's date as string (YYYY-MM-DD)
+function getTodayString() {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+}
+
+// Get personalized Word of the Day for user
+async function getWordOfDay(userType) {
+    if (!currentUser) return null;
+
+    // Create unique seed from user ID + today's date
+    const seed = currentUser.uid + getTodayString();
+    const hash = simpleHash(seed);
+
+    // Select word list based on user type
+    const wordList = userType === 'exam-prep' ? EXAM_PREP_WORDS : BOOK_LOVER_WORDS;
+
+    // Use hash to deterministically select a word
+    const index = hash % wordList.length;
+    const word = wordList[index];
+
+    return word;
+}
+
+// Load and display Word of the Day
+async function loadWordOfDay() {
+    if (!currentUser) return;
+
+    const contentDiv = document.getElementById('wordOfDayContent');
+    if (!contentDiv) return;
+
+    try {
+        // Get user type
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userType = userDoc.exists ? userDoc.data().userType : 'book-lover';
+
+        // Get personalized word
+        const word = await getWordOfDay(userType);
+
+        if (!word) {
+            contentDiv.innerHTML = '<div class="error">Unable to load word</div>';
+            return;
+        }
+
+        // Fetch word definition
+        const response = await fetch(DICTIONARY_API + encodeURIComponent(word));
+
+        if (!response.ok) {
+            throw new Error('Word not found');
+        }
+
+        const data = await response.json();
+        const wordData = data[0];
+
+        // Display word of the day
+        displayWordOfDay(wordData);
+
+    } catch (error) {
+        console.error('Error loading Word of the Day:', error);
+        contentDiv.innerHTML = '<div class="error">Failed to load today\'s word. Please try again later.</div>';
+    }
+}
+
+// Display Word of the Day
+function displayWordOfDay(wordData) {
+    const word = wordData.word;
+    const phonetic = wordData.phonetic || wordData.phonetics?.find(p => p.text)?.text || '';
+    const audioUrl = wordData.phonetics?.find(p => p.audio)?.audio || '';
+    const meanings = wordData.meanings || [];
+
+    let html = `
+        <div class="word-result">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                <div class="word-title" style="font-size: 2rem;">${word}</div>
+                ${audioUrl ? `<button class="audio-btn" onclick="playAudio('${audioUrl}')" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">🔊 Play</button>` : ''}
+            </div>
+            ${phonetic ? `<div class="phonetic" style="font-size: 1.1rem; color: var(--text-light); margin-bottom: 20px;">${phonetic}</div>` : ''}
+    `;
+
+    meanings.slice(0, 2).forEach(meaning => {
+        html += `
+            <div class="meaning" style="margin-bottom: 16px;">
+                <span class="part-of-speech" style="display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem; margin-bottom: 8px;">${meaning.partOfSpeech}</span>
+                <div class="definition" style="font-size: 1.05rem; line-height: 1.8; color: var(--text);">${meaning.definitions[0].definition}</div>
+                ${meaning.definitions[0].example ? `<div style="margin-top: 8px; font-style: italic; color: var(--text-light);">"${meaning.definitions[0].example}"</div>` : ''}
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    document.getElementById('wordOfDayContent').innerHTML = html;
 }
