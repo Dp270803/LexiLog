@@ -1163,103 +1163,9 @@
         <div class="loading-text">LexiLog</div>
     </div>
 
-    <!-- Homepage -->
-    <div id="homepageScreen" class="hidden">
-        <!-- Navigation -->
-        <div class="nav">
-            <div class="nav-content">
-                <h1 id="homeLogo" style="font-size: 1.5rem; margin: 0; cursor: pointer;">📚 LexiLog</h1>
-                <div style="flex: 1;"></div>
-                <div class="user-info">
-                    <div class="user-avatar" id="homeUserAvatar">U</div>
-                    <button class="link-btn" id="homeLogoutBtn">Logout</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-            <!-- Hero Section -->
-            <div class="hero-section">
-                <h1 class="hero-title">📚 Welcome to LexiLog</h1>
-                <p class="hero-subtitle">Your Personal Literary Companion</p>
-                <p class="hero-description">Discover words, build your vocabulary, and cultivate a collection of your favorite expressions</p>
-            </div>
-
-            <!-- Feature Cards -->
-            <div class="feature-grid">
-                <div class="feature-card" id="goToDictionary">
-                    <div class="feature-icon">🔍</div>
-                    <h2>Dictionary</h2>
-                    <p>Search and explore the meaning of words from our comprehensive dictionary</p>
-                    <div class="feature-arrow">→</div>
-                </div>
-
-                <div class="feature-card" id="goToMyWords">
-                    <div class="feature-icon">📖</div>
-                    <h2>My Words</h2>
-                    <p>Your personal collection of saved words and their meanings</p>
-                    <div class="feature-arrow">→</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Login Screen -->
-    <div id="loginScreen" class="container hidden">
-        <div class="card">
-            <h1>📚 LexiLog</h1>
-            <p class="subtitle">English Dictionary</p>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <button type="submit" class="btn">Sign In</button>
-            </form>
-            
-            <p class="text-center mt-20">
-                Don't have an account?
-                <button class="link-btn" id="showSignupBtn">Sign up</button>
-            </p>
-        </div>
-    </div>
-    
-    <!-- Signup Screen -->
-    <div id="signupScreen" class="container hidden">
-        <div class="card">
-            <h1>📚 LexiLog</h1>
-            <p class="subtitle">Create Account</p>
-            
-            <form id="signupForm">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="signupName" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="signupEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="signupPassword" required minlength="6">
-                </div>
-                <button type="submit" class="btn">Create Account</button>
-            </form>
-            
-            <p class="text-center mt-20">
-                Already have an account?
-                <button class="link-btn" id="showLoginBtn">Sign in</button>
-            </p>
-        </div>
-    </div>
     
     <!-- Main App -->
-    <div id="mainApp" class="hidden">
+    <div id="mainApp">
         <!-- Navigation -->
         <div class="nav">
             <div class="nav-content">
@@ -1268,19 +1174,6 @@
                     <button class="nav-tab" id="homeTab">Home</button>
                     <button class="nav-tab" id="dictionaryTab">Dictionary</button>
                     <button class="nav-tab" id="myWordsTab">My Words</button>
-                </div>
-                <div class="user-info">
-                    <div class="profile-dropdown">
-                        <div class="user-avatar" id="userAvatar">U</div>
-                        <div class="dropdown-menu" id="dropdownMenu">
-                            <button class="dropdown-item" id="myProfileBtn">
-                                <span>👤</span> My Profile
-                            </button>
-                            <button class="dropdown-item" id="logoutBtn">
-                                <span>🚪</span> Logout
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1335,29 +1228,6 @@
             </div>
         </div>
 
-        <!-- My Profile View -->
-        <div id="profileView" class="container hidden">
-            <div class="card">
-                <h2 style="margin-bottom: 32px; color: var(--primary-dark); font-family: 'Playfair Display', Georgia, serif;">👤 My Profile</h2>
-
-                <div class="profile-info">
-                    <div class="profile-field">
-                        <label class="profile-label">Name</label>
-                        <div class="profile-value" id="profileName">Loading...</div>
-                    </div>
-
-                    <div class="profile-field">
-                        <label class="profile-label">Email</label>
-                        <div class="profile-value" id="profileEmail">Loading...</div>
-                    </div>
-
-                    <div class="profile-field">
-                        <label class="profile-label">Member Since</label>
-                        <div class="profile-value" id="profileJoined">Loading...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="app.js"></script>

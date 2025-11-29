@@ -22,61 +22,25 @@ const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Check auth state
-    auth.onAuthStateChanged(function(user) {
-        currentUser = user;
-        // Handle initial route after auth state is determined
-        handleRoute();
-        // Hide loading screen after auth state is determined
-        setTimeout(() => {
-            document.getElementById('loadingScreen').classList.add('hidden');
-        }, 500);
-    });
-    
-    // Login form
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            // Auth state listener will handle UI update and redirect to home
-            navigate('/home');
-        } catch (error) {
-            alert('Login failed: ' + error.message);
-        }
-    });
-    
-    // Signup form
-    document.getElementById('signupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const name = document.getElementById('signupName').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-
-        try {
-            const result = await auth.createUserWithEmailAndPassword(email, password);
-
-            // Try to save user profile (optional - won't block signup if Firestore rules aren't set)
+    // Auto sign-in anonymously
+    auth.onAuthStateChanged(async function(user) {
+        if (!user) {
+            // No user signed in, sign in anonymously
             try {
-                await db.collection('users').doc(result.user.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (profileError) {
-                console.warn('Profile save failed (Firestore rules may not be set up):', profileError);
-                // Continue anyway - user account was created successfully
+                await auth.signInAnonymously();
+                console.log('Signed in anonymously');
+            } catch (error) {
+                console.error('Anonymous sign-in failed:', error);
             }
-
-            // Auth state listener will handle UI update and redirect to home
-            navigate('/home');
-        } catch (error) {
-            alert('Signup failed: ' + error.message);
+        } else {
+            currentUser = user;
+            // Show the app immediately
+            handleRoute();
+            // Hide loading screen immediately
+            document.getElementById('loadingScreen').classList.add('hidden');
         }
     });
-    
+
     // Search on Enter key
     document.getElementById('searchInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -85,14 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Navigation event listeners
-    document.getElementById('showSignupBtn').addEventListener('click', function() {
-        navigate('/signup');
-    });
-
-    document.getElementById('showLoginBtn').addEventListener('click', function() {
-        navigate('/login');
-    });
-
     document.getElementById('homeTab').addEventListener('click', function() {
         navigate('/home');
     });
@@ -109,30 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
         navigate('/home');
     });
 
-    document.getElementById('myProfileBtn').addEventListener('click', function() {
-        navigate('/profile');
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-
     document.getElementById('searchBtn').addEventListener('click', searchWord);
 
     document.getElementById('backBtn').addEventListener('click', goBack);
-
-    // Homepage navigation
-    document.getElementById('homeLogo').addEventListener('click', function() {
-        navigate('/home');
-    });
-
-    document.getElementById('homeLogoutBtn').addEventListener('click', logout);
-
-    document.getElementById('goToDictionary').addEventListener('click', function() {
-        navigate('/dictionary');
-    });
-
-    document.getElementById('goToMyWords').addEventListener('click', function() {
-        navigate('/words');
-    });
 
     document.getElementById('goToDictionary2').addEventListener('click', function() {
         navigate('/dictionary');
@@ -143,48 +78,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Show screens
-function showLogin() {
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('signupScreen').classList.add('hidden');
-    document.getElementById('homepageScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-}
-
-function showSignup() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('signupScreen').classList.remove('hidden');
-    document.getElementById('homepageScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
+// Show main app
+function showMainApp() {
+    document.getElementById('mainApp').classList.remove('hidden');
 }
 
 function showHomepage() {
     showMainApp();
 
-    document.getElementById('homepageScreen').classList.add('hidden');
     document.getElementById('homeView').classList.remove('hidden');
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
-    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
     });
     document.getElementById('homeTab').classList.add('active');
-}
-
-function showMainApp() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('signupScreen').classList.add('hidden');
-    document.getElementById('homepageScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-
-    // Update user avatar
-    if (currentUser && currentUser.email) {
-        const initial = currentUser.email[0].toUpperCase();
-        document.getElementById('userAvatar').textContent = initial;
-    }
 }
 
 // Navigation
@@ -194,7 +104,6 @@ function showDictionary() {
     document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.remove('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
-    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -209,7 +118,6 @@ function showMyWords() {
     document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.remove('hidden');
-    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -221,23 +129,6 @@ function showMyWords() {
     loadMyWords();
 }
 
-function showProfile() {
-    showMainApp();
-
-    document.getElementById('homeView').classList.add('hidden');
-    document.getElementById('dictionaryView').classList.add('hidden');
-    document.getElementById('myWordsView').classList.add('hidden');
-    document.getElementById('profileView').classList.remove('hidden');
-
-    // Clear active tab (profile is not in tabs)
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Load profile data
-    loadProfile();
-}
-
 // Hash-based Router
 function navigate(path) {
     window.location.hash = path;
@@ -246,55 +137,25 @@ function navigate(path) {
 function handleRoute() {
     const hash = window.location.hash.slice(1);
 
-    // Default routes based on auth state
+    // Default route
     if (!hash) {
-        if (currentUser) {
-            navigate('/home');
-            return;
-        } else {
-            navigate('/login');
-            return;
-        }
-    }
-
-    // Check if user is authenticated
-    if (!currentUser && hash !== '/login' && hash !== '/signup') {
-        // Redirect to login if not authenticated
-        navigate('/login');
+        navigate('/home');
         return;
     }
 
     // Route to appropriate view
     switch(hash) {
-        case '/login':
-            showLogin();
-            break;
-        case '/signup':
-            showSignup();
-            break;
         case '/home':
-            if (currentUser) showHomepage();
-            else navigate('/login');
+            showHomepage();
             break;
         case '/dictionary':
-            if (currentUser) showDictionary();
-            else navigate('/login');
+            showDictionary();
             break;
         case '/words':
-            if (currentUser) showMyWords();
-            else navigate('/login');
-            break;
-        case '/profile':
-            if (currentUser) showProfile();
-            else navigate('/login');
+            showMyWords();
             break;
         default:
-            // Default route based on auth state
-            if (currentUser) {
-                navigate('/dictionary');
-            } else {
-                navigate('/login');
-            }
+            navigate('/home');
     }
 }
 
@@ -515,57 +376,3 @@ async function deleteWord(wordId) {
     }
 }
 
-// Load profile
-async function loadProfile() {
-    if (!currentUser) return;
-
-    try {
-        // Get user profile from Firestore
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
-
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-
-            // Display name
-            document.getElementById('profileName').textContent = userData.name || 'Not set';
-
-            // Display email
-            document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
-
-            // Display member since date
-            if (userData.createdAt) {
-                const date = userData.createdAt.toDate();
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                document.getElementById('profileJoined').textContent = formattedDate;
-            } else {
-                document.getElementById('profileJoined').textContent = 'Unknown';
-            }
-        } else {
-            // If profile doesn't exist in Firestore, use auth data
-            document.getElementById('profileName').textContent = 'Not set';
-            document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
-            document.getElementById('profileJoined').textContent = 'Unknown';
-        }
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        // Fallback to auth data
-        document.getElementById('profileName').textContent = 'Error loading';
-        document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
-        document.getElementById('profileJoined').textContent = 'Error loading';
-    }
-}
-
-// Logout
-async function logout() {
-    try {
-        await auth.signOut();
-        // Redirect to login page
-        navigate('/login');
-    } catch (error) {
-        console.error('Logout error:', error);
-    }
-}
