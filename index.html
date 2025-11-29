@@ -779,6 +779,107 @@
                 0 0 0 4px rgba(212, 175, 55, 0.3);
         }
 
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            min-width: 200px;
+            background: linear-gradient(to bottom, #FFFBF5 0%, #FFF9F0 100%);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            box-shadow:
+                0 12px 32px rgba(139, 69, 19, 0.25),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .profile-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 14px 20px;
+            background: none;
+            border: none;
+            text-align: left;
+            font-family: 'Lora', Georgia, serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item span {
+            font-size: 1.1rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(139, 69, 19, 0.1);
+            color: var(--primary-dark);
+            padding-left: 24px;
+        }
+
+        .dropdown-item:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Profile Page */
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .profile-field {
+            padding: 24px;
+            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--secondary);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .profile-field:hover {
+            border-left-color: var(--gold);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .profile-label {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .profile-value {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 12px;
@@ -1169,8 +1270,17 @@
                     <button class="nav-tab" id="myWordsTab">My Words</button>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <button class="link-btn" id="logoutBtn">Logout</button>
+                    <div class="profile-dropdown">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <button class="dropdown-item" id="myProfileBtn">
+                                <span>👤</span> My Profile
+                            </button>
+                            <button class="dropdown-item" id="logoutBtn">
+                                <span>🚪</span> Logout
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1224,8 +1334,32 @@
                 <div id="wordList"></div>
             </div>
         </div>
+
+        <!-- My Profile View -->
+        <div id="profileView" class="container hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 32px; color: var(--primary-dark); font-family: 'Playfair Display', Georgia, serif;">👤 My Profile</h2>
+
+                <div class="profile-info">
+                    <div class="profile-field">
+                        <label class="profile-label">Name</label>
+                        <div class="profile-value" id="profileName">Loading...</div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label class="profile-label">Email</label>
+                        <div class="profile-value" id="profileEmail">Loading...</div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label class="profile-label">Member Since</label>
+                        <div class="profile-value" id="profileJoined">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <script src="app.js"></script>
 </body>
 </html>

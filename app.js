@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             await auth.signInWithEmailAndPassword(email, password);
-            // Auth state listener will handle UI update and redirect to dictionary
-            navigate('/dictionary');
+            // Auth state listener will handle UI update and redirect to home
+            navigate('/home');
         } catch (error) {
             alert('Login failed: ' + error.message);
         }
@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Continue anyway - user account was created successfully
             }
 
-            // Auth state listener will handle UI update and redirect to dictionary
-            navigate('/dictionary');
+            // Auth state listener will handle UI update and redirect to home
+            navigate('/home');
         } catch (error) {
             alert('Signup failed: ' + error.message);
         }
@@ -107,6 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('logoLink').addEventListener('click', function() {
         navigate('/home');
+    });
+
+    document.getElementById('myProfileBtn').addEventListener('click', function() {
+        navigate('/profile');
     });
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -161,6 +165,7 @@ function showHomepage() {
     document.getElementById('homeView').classList.remove('hidden');
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
+    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -189,6 +194,7 @@ function showDictionary() {
     document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.remove('hidden');
     document.getElementById('myWordsView').classList.add('hidden');
+    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -203,6 +209,7 @@ function showMyWords() {
     document.getElementById('homeView').classList.add('hidden');
     document.getElementById('dictionaryView').classList.add('hidden');
     document.getElementById('myWordsView').classList.remove('hidden');
+    document.getElementById('profileView').classList.add('hidden');
 
     // Update tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -212,6 +219,23 @@ function showMyWords() {
 
     // Load words
     loadMyWords();
+}
+
+function showProfile() {
+    showMainApp();
+
+    document.getElementById('homeView').classList.add('hidden');
+    document.getElementById('dictionaryView').classList.add('hidden');
+    document.getElementById('myWordsView').classList.add('hidden');
+    document.getElementById('profileView').classList.remove('hidden');
+
+    // Clear active tab (profile is not in tabs)
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Load profile data
+    loadProfile();
 }
 
 // Hash-based Router
@@ -258,6 +282,10 @@ function handleRoute() {
             break;
         case '/words':
             if (currentUser) showMyWords();
+            else navigate('/login');
+            break;
+        case '/profile':
+            if (currentUser) showProfile();
             else navigate('/login');
             break;
         default:
@@ -484,6 +512,50 @@ async function deleteWord(wordId) {
     } catch (error) {
         console.error('Error deleting word:', error);
         alert('Failed to delete word. Please try again.');
+    }
+}
+
+// Load profile
+async function loadProfile() {
+    if (!currentUser) return;
+
+    try {
+        // Get user profile from Firestore
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+
+            // Display name
+            document.getElementById('profileName').textContent = userData.name || 'Not set';
+
+            // Display email
+            document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
+
+            // Display member since date
+            if (userData.createdAt) {
+                const date = userData.createdAt.toDate();
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('profileJoined').textContent = formattedDate;
+            } else {
+                document.getElementById('profileJoined').textContent = 'Unknown';
+            }
+        } else {
+            // If profile doesn't exist in Firestore, use auth data
+            document.getElementById('profileName').textContent = 'Not set';
+            document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
+            document.getElementById('profileJoined').textContent = 'Unknown';
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        // Fallback to auth data
+        document.getElementById('profileName').textContent = 'Error loading';
+        document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
+        document.getElementById('profileJoined').textContent = 'Error loading';
     }
 }
 
