@@ -141,6 +141,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('goToMyWords2').addEventListener('click', function() {
         navigate('/words');
     });
+
+    // Google Sign-In buttons
+    document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
+    document.getElementById('googleSignupBtn').addEventListener('click', signInWithGoogle);
 });
 
 // Show screens
@@ -181,9 +185,23 @@ function showMainApp() {
     document.getElementById('mainApp').classList.remove('hidden');
 
     // Update user avatar
-    if (currentUser && currentUser.email) {
-        const initial = currentUser.email[0].toUpperCase();
-        document.getElementById('userAvatar').textContent = initial;
+    if (currentUser) {
+        const userAvatar = document.getElementById('userAvatar');
+        if (currentUser.photoURL) {
+            // Use Google profile photo if available
+            userAvatar.style.backgroundImage = `url(${currentUser.photoURL})`;
+            userAvatar.style.backgroundSize = 'cover';
+            userAvatar.style.backgroundPosition = 'center';
+            userAvatar.textContent = '';
+        } else if (currentUser.displayName) {
+            // Use first letter of display name
+            const initial = currentUser.displayName[0].toUpperCase();
+            userAvatar.textContent = initial;
+        } else if (currentUser.email) {
+            // Use first letter of email
+            const initial = currentUser.email[0].toUpperCase();
+            userAvatar.textContent = initial;
+        }
     }
 }
 
@@ -526,8 +544,9 @@ async function loadProfile() {
         if (userDoc.exists) {
             const userData = userDoc.data();
 
-            // Display name
-            document.getElementById('profileName').textContent = userData.name || 'Not set';
+            // Display name (prefer Firestore name, fallback to Google displayName)
+            document.getElementById('profileName').textContent =
+                userData.name || currentUser.displayName || 'Not set';
 
             // Display email
             document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
@@ -546,7 +565,8 @@ async function loadProfile() {
             }
         } else {
             // If profile doesn't exist in Firestore, use auth data
-            document.getElementById('profileName').textContent = 'Not set';
+            document.getElementById('profileName').textContent =
+                currentUser.displayName || 'Not set';
             document.getElementById('profileEmail').textContent = currentUser.email || 'Not set';
             document.getElementById('profileJoined').textContent = 'Unknown';
         }
@@ -567,5 +587,43 @@ async function logout() {
         navigate('/login');
     } catch (error) {
         console.error('Logout error:', error);
+    }
+}
+
+// Google Sign-In
+async function signInWithGoogle() {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        // Check if this is a new user
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+            // Create user profile for new Google users
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    name: user.displayName || 'User',
+                    email: user.email,
+                    photoURL: user.photoURL || null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    provider: 'google'
+                });
+            } catch (profileError) {
+                console.warn('Profile save failed (Firestore rules may not be set up):', profileError);
+                // Continue anyway - user account was created successfully
+            }
+        }
+
+        // Auth state listener will handle UI update and redirect to home
+        navigate('/home');
+    } catch (error) {
+        console.error('Google sign-in error:', error);
+        if (error.code === 'auth/popup-closed-by-user') {
+            // User closed the popup, no need to show error
+            return;
+        }
+        alert('Google sign-in failed: ' + error.message);
     }
 }
