@@ -22,6 +22,51 @@ let currentWordOfDay = null;
 // Dictionary API
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
+// Custom Notification System
+function showNotification(message, type = 'success', title = null) {
+    const container = document.getElementById('notificationContainer');
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification-toast ${type}`;
+
+    // Icon based on type
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+    };
+
+    // Default titles
+    const defaultTitles = {
+        success: 'Success',
+        error: 'Error',
+        info: 'Information'
+    };
+
+    const icon = icons[type] || icons.info;
+    const notifTitle = title || defaultTitles[type];
+
+    notification.innerHTML = `
+        <div class="notification-icon">${icon}</div>
+        <div class="notification-content">
+            <div class="notification-title">${notifTitle}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(notification);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        notification.classList.add('hiding');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 4000);
+}
+
 // Combined vocabulary word list (for all users)
 const VOCABULARY_WORDS = [
     // Literary & beautiful words
@@ -63,7 +108,16 @@ document.addEventListener('DOMContentLoaded', function() {
             await auth.signInWithEmailAndPassword(email, password);
             navigate('/home');
         } catch (error) {
-            alert('Login failed: ' + error.message);
+            // Check if user tried to login with email but account was created with Google
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+                showNotification(
+                    'This account may have been created with Google Sign-In. Please try using the "Continue with Google" button.',
+                    'error',
+                    'Login Failed'
+                );
+            } else {
+                showNotification(error.message, 'error', 'Login Failed');
+            }
         }
     });
 
@@ -90,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             navigate('/home');
         } catch (error) {
-            alert('Signup failed: ' + error.message);
+            showNotification(error.message, 'error', 'Signup Failed');
         }
     });
 
@@ -389,7 +443,7 @@ function playAudio(audioUrl) {
     const audio = new Audio(audioUrl);
     audio.play().catch(error => {
         console.error('Error playing audio:', error);
-        alert('Could not play audio pronunciation');
+        showNotification('Could not play audio pronunciation', 'error');
     });
 }
 
@@ -492,7 +546,7 @@ async function deleteWord(wordId) {
         loadMyWords();
     } catch (error) {
         console.error('Error deleting word:', error);
-        alert('Failed to delete word. Please try again.');
+        showNotification('Failed to delete word. Please try again.', 'error');
     }
 }
 
@@ -570,7 +624,7 @@ async function signInWithGoogle() {
     } catch (error) {
         console.error('Google sign-in error:', error);
         if (error.code !== 'auth/popup-closed-by-user') {
-            alert('Google sign-in failed: ' + error.message);
+            showNotification(error.message, 'error', 'Google Sign-In Failed');
         }
     }
 }
@@ -676,10 +730,10 @@ async function saveWordOfDay() {
 
     try {
         await saveWord(currentWordOfDay);
-        alert('✓ Word added to My Words!');
+        showNotification('Word added to My Words!', 'success');
     } catch (error) {
         console.error('Error saving word:', error);
-        alert('Failed to save word. Please try again.');
+        showNotification('Failed to save word. Please try again.', 'error');
     }
 }
 

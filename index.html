@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Lora:wght@400;500;600;700&family=Source+Serif+Pro:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Lora:wght@400;500;600;700&family=Source+Serif+Pro:wght@300;400;600;700&display=swap');
 
         * {
             margin: 0;
@@ -41,7 +41,7 @@
         }
 
         body {
-            font-family: 'Source Serif Pro', 'Lora', Georgia, serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #F5F7FA;
             background-attachment: fixed;
             min-height: 100vh;
@@ -162,18 +162,17 @@
             }
         }
 
-        /* Literary Typography */
+        /* Modern Typography */
         h1 {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 3.5rem;
-            font-weight: 800;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
             color: var(--primary-dark);
             margin-bottom: 16px;
             text-align: center;
-            letter-spacing: 0.02em;
+            letter-spacing: -0.02em;
             animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.1);
         }
 
         h1::before {
@@ -1116,6 +1115,105 @@
                 padding: 36px 28px;
             }
         }
+
+        /* Custom Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .notification-toast.success {
+            border-left-color: var(--forest);
+        }
+
+        .notification-toast.error {
+            border-left-color: #EF4444;
+        }
+
+        .notification-toast.info {
+            border-left-color: var(--primary);
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .notification-close:hover {
+            color: var(--text-dark);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .notification-toast.hiding {
+            animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
 </head>
 <body>
@@ -1372,6 +1470,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
 
     <script src="app.js"></script>
 </body>
