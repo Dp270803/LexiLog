@@ -176,6 +176,9 @@ function showHomepage() {
     document.getElementById('profileView').classList.add('hidden');
 
     setActiveTab('homeTab');
+
+    // Load Word of the Day on home page
+    loadWordOfDayForHome();
 }
 
 function showMainApp() {
@@ -677,5 +680,57 @@ async function saveWordOfDay() {
     } catch (error) {
         console.error('Error saving word:', error);
         alert('Failed to save word. Please try again.');
+    }
+}
+
+// Load Word of Day for home page preview
+async function loadWordOfDayForHome() {
+    if (!currentUser) return;
+
+    const homeContentDiv = document.querySelector('#homeView #wordOfDayContent');
+    if (!homeContentDiv) return;
+
+    homeContentDiv.innerHTML = '<div class="loading">Loading today\'s word...</div>';
+
+    try {
+        const word = await getWordOfDay();
+
+        if (!word) {
+            homeContentDiv.innerHTML = '<div class="error">Unable to load word</div>';
+            return;
+        }
+
+        const response = await fetch(DICTIONARY_API + encodeURIComponent(word));
+
+        if (!response.ok) {
+            throw new Error('Word not found');
+        }
+
+        const data = await response.json();
+        const wordData = data[0];
+
+        // Display compact version for home page
+        const wordTitle = wordData.word;
+        const phonetic = wordData.phonetic || wordData.phonetics?.find(p => p.text)?.text || '';
+        const meaning = wordData.meanings?.[0]?.definitions?.[0]?.definition || '';
+        const partOfSpeech = wordData.meanings?.[0]?.partOfSpeech || '';
+
+        let html = `
+            <div style="text-align: center;">
+                <div class="word-title" style="font-size: 2rem; margin-bottom: 8px;">${wordTitle}</div>
+                ${phonetic ? `<div class="phonetic" style="font-size: 1rem; margin-bottom: 16px;">${phonetic}</div>` : ''}
+                ${partOfSpeech ? `<span class="part-of-speech" style="display: inline-block; margin-bottom: 12px;">${partOfSpeech}</span>` : ''}
+                <div class="definition" style="font-size: 1rem; line-height: 1.7; color: var(--text); margin-bottom: 20px;">${meaning}</div>
+                <button class="btn" onclick="navigate('/word-of-day')" style="padding: 12px 24px; font-size: 0.95rem;">
+                    View Full Details →
+                </button>
+            </div>
+        `;
+
+        homeContentDiv.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error loading Word of the Day for home:', error);
+        homeContentDiv.innerHTML = '<div class="error">Failed to load today\'s word.</div>';
     }
 }

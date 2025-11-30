@@ -20,29 +20,29 @@
         }
 
         :root {
-            /* Modern Sober Color Palette */
-            --primary: #5D4E37;
-            --primary-dark: #3E2F1F;
-            --secondary: #8B7355;
-            --accent: #A0826D;
-            --burgundy: #6B4E3D;
-            --cream: #FAF8F5;
-            --parchment: #F5F2ED;
-            --ink: #2A2420;
-            --gold: #B8976A;
-            --forest: #5C7457;
-            --text: #3A3530;
-            --text-dark: #2A2420;
-            --text-light: #6B6158;
-            --bg: #FDFCFA;
-            --bg-light: #FFFFFE;
-            --border: #E5E0D8;
-            --shadow: rgba(93, 78, 55, 0.12);
+            /* Professional Blue Color Palette (Zerodha-inspired) */
+            --primary: #0066FF;
+            --primary-dark: #0052CC;
+            --secondary: #4285F4;
+            --accent: #5E97F6;
+            --burgundy: #1E3A8A;
+            --cream: #F8F9FA;
+            --parchment: #FFFFFF;
+            --ink: #1A1A1A;
+            --gold: #FFA000;
+            --forest: #00C853;
+            --text: #212121;
+            --text-dark: #000000;
+            --text-light: #666666;
+            --bg: #F5F7FA;
+            --bg-light: #FFFFFF;
+            --border: #E0E0E0;
+            --shadow: rgba(0, 102, 255, 0.1);
         }
 
         body {
             font-family: 'Source Serif Pro', 'Lora', Georgia, serif;
-            background: linear-gradient(135deg, #F5F2ED 0%, #EAE5DD 50%, #E0D9CE 100%);
+            background: #F5F7FA;
             background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
@@ -50,40 +50,6 @@
             overflow-x: hidden;
         }
 
-        /* Book texture overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(139, 69, 19, 0.02) 2px,
-                    rgba(139, 69, 19, 0.02) 4px
-                );
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Vintage book corner decorations */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 2px solid rgba(139, 69, 19, 0.2);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 1;
-            box-shadow: inset 0 0 60px rgba(212, 175, 55, 0.1);
-        }
 
         html {
             scroll-behavior: smooth;
@@ -96,7 +62,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #F5F2ED 0%, #EAE5DD 100%);
+            background: #FFFFFF;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -155,61 +121,23 @@
             z-index: 2;
         }
 
-        /* Vintage Book Page Card */
+        /* Modern Clean Card */
         .card {
-            background: linear-gradient(to bottom, #FFFBF5 0%, #FFF9F0 100%);
-            border-radius: 4px;
-            padding: 50px;
-            box-shadow:
-                0 10px 40px var(--shadow),
-                inset 0 1px 0 rgba(255,255,255,0.9),
-                inset 0 0 60px rgba(212, 175, 55, 0.05);
-            margin-bottom: 30px;
+            background: #FFFFFF;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
             border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
             animation: pageOpen 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
         }
 
-        /* Book page texture */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 1.5rem,
-                    rgba(139, 69, 19, 0.03) 1.5rem,
-                    rgba(139, 69, 19, 0.03) calc(1.5rem + 1px)
-                );
-            pointer-events: none;
-        }
-
-        /* Gold bookmark ribbon */
-        .card::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            right: 60px;
-            width: 3px;
-            height: 80px;
-            background: linear-gradient(to bottom, var(--gold), var(--secondary));
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
-        }
-
         .card:hover {
-            transform: translateY(-6px) scale(1.01);
-            box-shadow:
-                0 20px 60px rgba(139, 69, 19, 0.25),
-                inset 0 1px 0 rgba(255,255,255,0.9),
-                inset 0 0 80px rgba(212, 175, 55, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
         }
 
         @keyframes pageOpen {
@@ -303,31 +231,23 @@
             font-family: 'Lora', Georgia, serif;
         }
 
-        /* Parchment-style inputs */
+        /* Modern Clean Inputs */
         input {
             width: 100%;
-            padding: 16px 20px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            font-size: 16px;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: #FFFFFF;
             color: var(--text-dark);
             font-family: 'Source Serif Pro', Georgia, serif;
-            box-shadow:
-                inset 0 2px 4px rgba(139, 69, 19, 0.05),
-                0 1px 2px rgba(255,255,255,0.9);
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow:
-                0 0 0 3px rgba(139, 69, 19, 0.1),
-                inset 0 2px 4px rgba(139, 69, 19, 0.08),
-                0 4px 12px rgba(139, 69, 19, 0.15);
-            transform: translateY(-2px);
-            background: #FFFBF5;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
         }
 
         input::placeholder {
@@ -335,76 +255,35 @@
             font-style: italic;
         }
 
-        /* Leather-bound Book Button */
+        /* Modern Clean Button */
         .btn {
             width: 100%;
-            padding: 18px 32px;
-            background: linear-gradient(145deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: var(--cream);
-            border: 2px solid var(--primary-dark);
-            border-radius: 4px;
-            font-size: 17px;
-            font-weight: 700;
+            padding: 14px 24px;
+            background: var(--primary);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
             font-family: 'Lora', Georgia, serif;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow:
-                0 6px 20px rgba(139, 69, 19, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 102, 255, 0.2);
             position: relative;
             overflow: hidden;
             animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
             z-index: 10;
         }
 
-        /* Leather texture */
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
-                repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Gold foil text effect */
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
-            transition: left 0.6s;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .btn:hover::after {
-            left: 100%;
-        }
-
         .btn:hover {
-            transform: translateY(-4px);
-            box-shadow:
-                0 12px 32px rgba(139, 69, 19, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-            border-color: var(--gold);
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            transform: translateY(-1px);
         }
 
         .btn:active {
-            transform: translateY(-2px);
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 102, 255, 0.2);
         }
 
         /* Google Sign-In Button */
@@ -621,38 +500,32 @@
         }
 
         .meaning {
-            margin-bottom: 20px;
-            padding: 24px 28px;
-            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            margin-bottom: 16px;
+            padding: 20px 24px;
+            background: #F8F9FA;
             border-radius: 8px;
-            border: 2px solid var(--border);
-            border-left: 4px solid var(--secondary);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 16px var(--shadow);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            transition: all 0.3s ease;
         }
 
         .meaning:hover {
-            border-left-color: var(--gold);
-            transform: translateX(8px);
-            box-shadow:
-                0 8px 24px rgba(139, 69, 19, 0.2),
-                0 0 0 1px var(--gold);
+            border-left-color: var(--primary-dark);
+            background: #F5F7FA;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .part-of-speech {
             display: inline-block;
-            background: linear-gradient(135deg, var(--burgundy) 0%, var(--primary-dark) 100%);
-            color: var(--cream);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            box-shadow:
-                0 4px 12px rgba(128, 0, 32, 0.3),
-                0 0 0 1px rgba(255, 255, 255, 0.2);
+            background: var(--primary);
+            color: #FFFFFF;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
             letter-spacing: 0.02em;
-            text-transform: uppercase;
+            text-transform: lowercase;
             font-family: 'Lora', Georgia, serif;
         }
 
@@ -721,25 +594,22 @@
         }
 
         .word-item {
-            padding: 24px 28px;
-            background: linear-gradient(to bottom, #FFFBF5, #FFF9F0);
+            padding: 20px 24px;
+            background: #FFFFFF;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 2px solid var(--border);
-            border-left: 4px solid var(--secondary);
-            box-shadow: 0 4px 16px var(--shadow);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .word-item:hover {
-            border-left-color: var(--gold);
-            transform: translateX(8px);
-            box-shadow:
-                0 8px 24px rgba(139, 69, 19, 0.2),
-                0 0 0 1px var(--gold);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
         }
 
         .word-item h3 {
@@ -781,11 +651,9 @@
 
         .nav {
             width: 100%;
-            background: linear-gradient(to bottom, #FFFBF5 0%, #FFF9F0 100%);
-            box-shadow:
-                0 4px 20px var(--shadow),
-                inset 0 1px 0 rgba(255,255,255,0.9);
-            border-bottom: 3px solid var(--primary);
+            background: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border-bottom: 1px solid var(--border);
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             position: sticky;
             top: 0;
@@ -830,38 +698,34 @@
 
         .nav-tabs {
             display: flex;
-            gap: 8px;
-            background: var(--parchment);
-            padding: 6px;
-            border-radius: 14px;
-            border: 2px solid var(--border);
+            gap: 4px;
+            background: #F5F7FA;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
         .nav-tab {
-            padding: 10px 24px;
+            padding: 8px 20px;
             background: transparent;
             border: none;
-            border-radius: 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             color: var(--text-light);
-            font-size: 0.95rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 14px;
+            transition: all 0.2s ease;
             font-family: 'Lora', Georgia, serif;
         }
 
         .nav-tab.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: var(--cream);
-            box-shadow:
-                0 4px 12px rgba(139, 69, 19, 0.4),
-                0 0 0 1px rgba(212, 175, 55, 0.3);
-            transform: scale(1.02);
+            background: var(--primary);
+            color: #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0, 102, 255, 0.2);
         }
 
         .nav-tab:not(.active):hover {
-            background: rgba(139, 69, 19, 0.1);
-            transform: translateY(-2px);
+            background: rgba(0, 102, 255, 0.08);
             color: var(--primary);
         }
 
@@ -1145,41 +1009,22 @@
         }
 
         .feature-card {
-            background: linear-gradient(to bottom, #FFFBF5 0%, #FFF9F0 100%);
+            background: #FFFFFF;
             border-radius: 12px;
-            padding: 48px 40px;
-            border: 2px solid var(--border);
-            border-left: 6px solid var(--primary);
-            box-shadow: 0 8px 32px var(--shadow);
+            padding: 40px 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 1.5rem,
-                    rgba(139, 69, 19, 0.03) 1.5rem,
-                    rgba(139, 69, 19, 0.03) calc(1.5rem + 1px)
-                );
-            pointer-events: none;
-        }
-
         .feature-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 16px 48px rgba(139, 69, 19, 0.3);
-            border-left-color: var(--gold);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
         }
 
         .feature-icon {
