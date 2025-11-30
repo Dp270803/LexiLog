@@ -687,7 +687,7 @@ async function saveWordOfDay() {
 async function loadWordOfDayForHome() {
     if (!currentUser) return;
 
-    const homeContentDiv = document.querySelector('#homeView #wordOfDayContent');
+    const homeContentDiv = document.getElementById('wordOfDayHomeContent');
     if (!homeContentDiv) return;
 
     homeContentDiv.innerHTML = '<div class="loading">Loading today\'s word...</div>';
